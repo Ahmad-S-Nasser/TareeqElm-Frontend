@@ -99,7 +99,7 @@ const MockExamRunner = () => {
     return (
         <div className="min-h-screen bg-background">
             <ApplicantSidebar onCollapse={setSidebarCollapsed} />
-            <Header sidebarCollapsed={sidebarCollapsed} userRole="Student" />
+            <Header sidebarCollapsed={sidebarCollapsed} userRole="Trainer" />
 
             <main
                 className={cn(

@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCourses } from "@/hooks/useCourses";
 import { useCourseEditor, Chapter } from "@/hooks/useCourseEditor";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import api, { getApiError } from "@/lib/api";
 import {
   BookOpen, Sparkles, Upload, FileQuestion, CheckCircle, ArrowRight, ArrowLeft, Plus, Trash2, Loader2, GripVertical,
   Video, FileText, HelpCircle
@@ -27,9 +27,15 @@ const STEPS = [
 
 const LESSON_TYPE_ICON: Record<string, typeof Video> = { video: Video, reading: FileText, text: FileText, quiz: HelpCircle };
 
+interface CourseOutlineResponse {
+  Title: string;
+  Chapters: { Title: string; Lessons: string[] }[];
+  Generator: string;
+}
+
 const CreateCourse = () => {
   const [step, setStep] = useState(0);
-  const [courseInfo, setCourseInfo] = useState({ title: "", description: "", category: "", level: "beginner", duration_hours: 0 });
+  const [courseInfo, setCourseInfo] = useState({ title: "", description: "", category: "", level: "beginner" });
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
   const [createdCourseId, setCreatedCourseId] = useState<string | null>(null);
@@ -42,25 +48,23 @@ const CreateCourse = () => {
     if (!courseInfo.title) { toast({ title: "Title required", variant: "destructive" }); return; }
     setAiLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-course-outline", {
-        body: { title: courseInfo.title, description: courseInfo.description, level: courseInfo.level, category: courseInfo.category },
+      const { data } = await api.post<CourseOutlineResponse>("/AI/course-outline", {
+        Topic: courseInfo.title,
+        Description: courseInfo.description || undefined,
       });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      const generated: Chapter[] = (data.chapters || []).map((ch: any, i: number) => ({
-        id: `gen-${i}`,
-        title: ch.title,
-        lessons: (ch.lessons || []).map((l: any, j: number) => ({
-          id: `gen-${i}-${j}`,
-          title: l.title,
-          type: l.type === "reading" ? "text" : l.type,
-          duration: l.duration_minutes,
+      const suggested: Chapter[] = (data.Chapters || []).map((ch) => ({
+        Id: crypto.randomUUID(),
+        Title: ch.Title,
+        Lessons: (ch.Lessons || []).map((title) => ({
+          Id: crypto.randomUUID(),
+          Title: title,
+          LessonType: "Reading" as const,
         })),
       }));
-      setChapters(generated);
-      toast({ title: "AI Outline Generated", description: `${generated.length} chapters created.` });
-    } catch (e: any) {
-      toast({ title: "Generation Failed", description: e.message, variant: "destructive" });
+      setChapters(suggested);
+      toast({ title: "Suggested outline ready", description: `${suggested.length} chapters suggested. Review and edit them before continuing.` });
+    } catch (e) {
+      toast({ title: "Could not suggest an outline", description: getApiError(e), variant: "destructive" });
     } finally {
       setAiLoading(false);
     }
@@ -69,34 +73,45 @@ const CreateCourse = () => {
   const handleNext = async () => {
     if (step === 0 && !courseInfo.title) { toast({ title: "Course title is required", variant: "destructive" }); return; }
     if (step === 0 && !createdCourseId) {
-      const { data, error } = await createCourse(courseInfo);
+      const { data, error } = await createCourse({
+        Title: courseInfo.title,
+        Description: courseInfo.description,
+        Category: courseInfo.category,
+        Level: courseInfo.level,
+      });
       if (error || !data) return;
-      setCreatedCourseId(data.id);
+      setCreatedCourseId(data.Id);
     }
     if (step === 1 && createdCourseId && chapters.length > 0) {
-      await saveCurriculum(createdCourseId, chapters);
+      const saved = await saveCurriculum(createdCourseId, chapters);
+      if (!saved) return;
+      setChapters(saved);
     }
     setStep((s) => Math.min(s + 1, 4));
   };
 
   const handlePublish = async () => {
     if (!createdCourseId) return;
-    await publishCourse(createdCourseId);
+    const { error } = await publishCourse(createdCourseId);
+    if (error) {
+      toast({ title: "Publish failed", description: getApiError(error), variant: "destructive" });
+      return;
+    }
     toast({ title: "Course Published!", description: "Your course is now live." });
     navigate("/instructor/courses");
   };
 
-  const addChapter = () => setChapters((c) => [...c, { id: `ch-${Date.now()}`, title: "New Chapter", lessons: [] }]);
+  const addChapter = () => setChapters((c) => [...c, { Id: crypto.randomUUID(), Title: "New Chapter", Lessons: [] }]);
   const addLesson = (chIdx: number) => {
-    setChapters((prev) => prev.map((ch, i) => i === chIdx ? { ...ch, lessons: [...ch.lessons, { id: `l-${Date.now()}`, title: "New Lesson", type: "text" }] } : ch));
+    setChapters((prev) => prev.map((ch, i) => i === chIdx ? { ...ch, Lessons: [...ch.Lessons, { Id: crypto.randomUUID(), Title: "New Lesson", LessonType: "Reading" }] } : ch));
   };
   const removeChapter = (idx: number) => setChapters((c) => c.filter((_, i) => i !== idx));
   const removeLesson = (chIdx: number, lIdx: number) => {
-    setChapters((prev) => prev.map((ch, i) => i === chIdx ? { ...ch, lessons: ch.lessons.filter((_, j) => j !== lIdx) } : ch));
+    setChapters((prev) => prev.map((ch, i) => i === chIdx ? { ...ch, Lessons: ch.Lessons.filter((_, j) => j !== lIdx) } : ch));
   };
-  const updateChapterTitle = (idx: number, title: string) => setChapters((c) => c.map((ch, i) => i === idx ? { ...ch, title } : ch));
+  const updateChapterTitle = (idx: number, title: string) => setChapters((c) => c.map((ch, i) => i === idx ? { ...ch, Title: title } : ch));
   const updateLessonTitle = (chIdx: number, lIdx: number, title: string) => {
-    setChapters((prev) => prev.map((ch, i) => i === chIdx ? { ...ch, lessons: ch.lessons.map((l, j) => j === lIdx ? { ...l, title } : l) } : ch));
+    setChapters((prev) => prev.map((ch, i) => i === chIdx ? { ...ch, Lessons: ch.Lessons.map((l, j) => j === lIdx ? { ...l, Title: title } : l) } : ch));
   };
 
   return (
@@ -140,9 +155,9 @@ const CreateCourse = () => {
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Description</label>
-              <Textarea value={courseInfo.description} onChange={(e) => setCourseInfo({ ...courseInfo, description: e.target.value })} placeholder="What will students learn?" rows={4} />
+              <Textarea value={courseInfo.description} onChange={(e) => setCourseInfo({ ...courseInfo, description: e.target.value })} placeholder="What will trainers learn?" rows={4} />
             </div>
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium mb-1 block">Category</label>
                 <Input value={courseInfo.category} onChange={(e) => setCourseInfo({ ...courseInfo, category: e.target.value })} placeholder="e.g. Computer Science" />
@@ -158,10 +173,6 @@ const CreateCourse = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Duration (hours)</label>
-                <Input type="number" value={courseInfo.duration_hours} onChange={(e) => setCourseInfo({ ...courseInfo, duration_hours: Number(e.target.value) })} />
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -175,7 +186,7 @@ const CreateCourse = () => {
             <div className="flex gap-2">
               <Button variant="outline" onClick={generateOutline} disabled={aiLoading}>
                 {aiLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-                AI Generate Outline
+                Suggest Outline
               </Button>
               <Button variant="outline" onClick={addChapter}><Plus className="w-4 h-4 mr-2" /> Add Chapter</Button>
             </div>
@@ -183,26 +194,26 @@ const CreateCourse = () => {
           {chapters.length === 0 && (
             <Card className="shadow-soft border-border/50 p-8 text-center">
               <Sparkles className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-              <p className="text-muted-foreground">No chapters yet. Click "AI Generate Outline" or add manually.</p>
+              <p className="text-muted-foreground">No chapters yet. Click "Suggest Outline" or add manually.</p>
             </Card>
           )}
           {chapters.map((ch, chIdx) => (
-            <Card key={ch.id} className="shadow-soft border-border/50">
+            <Card key={ch.Id} className="shadow-soft border-border/50">
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">Ch {chIdx + 1}</Badge>
-                  <Input value={ch.title} onChange={(e) => updateChapterTitle(chIdx, e.target.value)} className="font-semibold text-sm h-8" />
+                  <Input value={ch.Title} onChange={(e) => updateChapterTitle(chIdx, e.target.value)} className="font-semibold text-sm h-8" />
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeChapter(chIdx)}><Trash2 className="w-4 h-4" /></Button>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                {ch.lessons.map((lesson, lIdx) => {
-                  const LIcon = LESSON_TYPE_ICON[lesson.type] || FileText;
+                {ch.Lessons.map((lesson, lIdx) => {
+                  const LIcon = LESSON_TYPE_ICON[lesson.LessonType.toLowerCase()] || FileText;
                   return (
-                    <div key={lesson.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                    <div key={lesson.Id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
                       <LIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      <Input value={lesson.title} onChange={(e) => updateLessonTitle(chIdx, lIdx, e.target.value)} className="h-7 text-sm" />
-                      <Badge variant="secondary" className="text-xs capitalize">{lesson.type}</Badge>
+                      <Input value={lesson.Title} onChange={(e) => updateLessonTitle(chIdx, lIdx, e.target.value)} className="h-7 text-sm" />
+                      <Badge variant="secondary" className="text-xs capitalize">{lesson.LessonType.toLowerCase()}</Badge>
                       <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => removeLesson(chIdx, lIdx)}><Trash2 className="w-3 h-3" /></Button>
                     </div>
                   );
@@ -272,7 +283,7 @@ const CreateCourse = () => {
               </div>
               <div className="p-4 rounded-xl bg-muted/50">
                 <p className="text-xs text-muted-foreground mb-1">Lessons</p>
-                <p className="font-medium">{chapters.reduce((sum, ch) => sum + ch.lessons.length, 0)}</p>
+                <p className="font-medium">{chapters.reduce((sum, ch) => sum + ch.Lessons.length, 0)}</p>
               </div>
             </div>
             <div className="flex justify-center pt-4">

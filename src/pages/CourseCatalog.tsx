@@ -50,7 +50,7 @@ const CourseCatalog = () => {
     } else {
       fetchEnrolledCourses();
     }
-  }, [activeTab]);
+  }, [activeTab, fetchPublishedCourses, fetchEnrolledCourses]);
 
   const handleEnroll = async (courseId: string) => {
     setEnrollingId(courseId);
@@ -65,26 +65,26 @@ const CourseCatalog = () => {
 
   const filteredCourses = currentCourses.filter((course) => {
     const matchesSearch =
-      course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (course.description && course.description.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesLevel = levelFilter === "all" || course.level === levelFilter;
+      course.Title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (course.Description && course.Description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesLevel = levelFilter === "all" || course.Level?.toLowerCase() === levelFilter.toLowerCase();
     return matchesSearch && matchesLevel;
   });
 
   const renderCourseCard = (course: CourseWithEnrollment) => {
-    const isEnrolled = !!course.enrollment;
+    const isEnrolled = !!course.Enrollment;
 
     return (
       <Card
-        key={course.id}
+        key={course.Id}
         className="overflow-hidden hover:shadow-lg transition-all cursor-pointer group"
-        onClick={() => isEnrolled && navigate(`/courses/${course.id}`)}
+        onClick={() => isEnrolled && navigate(`/courses/${course.Id}`)}
       >
         <div className="h-36 bg-gradient-to-br from-primary/20 to-accent/20 relative overflow-hidden">
-          {course.image_url && (
+          {course.ImageUrl && (
             <img
-              src={course.image_url}
-              alt={course.title}
+              src={course.ImageUrl}
+              alt={course.Title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform"
             />
           )}
@@ -100,27 +100,27 @@ const CourseCatalog = () => {
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="text-lg line-clamp-2 group-hover:text-primary transition-colors">
-              {course.title}
+              {course.Title}
             </CardTitle>
           </div>
-          {course.category && (
+          {course.Category && (
             <Badge variant="outline" className="w-fit">
-              {course.category}
+              {course.Category}
             </Badge>
           )}
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground line-clamp-2">
-            {course.description || "No description available"}
+            {course.Description || "No description available"}
           </p>
 
-          {isEnrolled && course.enrollment && (
+          {isEnrolled && course.Enrollment && (
             <div className="space-y-1">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium">{course.enrollment.progress_percentage}%</span>
+                <span className="font-medium">{course.Enrollment.ProgressPercentage}%</span>
               </div>
-              <Progress value={course.enrollment.progress_percentage} className="h-2" />
+              <Progress value={course.Enrollment.ProgressPercentage} className="h-2" />
             </div>
           )}
 
@@ -128,10 +128,10 @@ const CourseCatalog = () => {
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
-                <span>{course.duration_hours || 0}h</span>
+                <span>{course.DurationHours || 0}h</span>
               </div>
               <Badge variant="secondary" className="capitalize">
-                {course.level}
+                {course.Level}
               </Badge>
             </div>
 
@@ -140,11 +140,11 @@ const CourseCatalog = () => {
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleEnroll(course.id);
+                  handleEnroll(course.Id);
                 }}
-                disabled={enrollingId === course.id}
+                disabled={enrollingId === course.Id}
               >
-                {enrollingId === course.id ? (
+                {enrollingId === course.Id ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   "Enroll"
@@ -158,7 +158,7 @@ const CourseCatalog = () => {
                 variant="outline"
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/courses/${course.id}`);
+                  navigate(`/courses/${course.Id}`);
                 }}
               >
                 Continue
@@ -175,7 +175,6 @@ const CourseCatalog = () => {
       <ApplicantSidebar onCollapse={setSidebarCollapsed} />
       <Header
         sidebarCollapsed={sidebarCollapsed}
-        userRole="Student"
         mobileSidebar={<ApplicantSidebarContent onItemClick={() => console.log('Mobile sidebar clicked')} />}
       />
 

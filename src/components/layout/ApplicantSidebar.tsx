@@ -5,6 +5,7 @@ import {
   BookOpen,
   Brain,
   FileQuestion,
+  ClipboardCheck,
   BarChart3,
   Settings,
   ChevronLeft,
@@ -33,6 +34,7 @@ const navItems: NavItem[] = [
   { icon: BookOpen, label: "Browse Courses", href: "/catalog" },
   { icon: GraduationCap, label: "My Courses", href: "/courses" },
   { icon: Brain, label: "Flashcards", href: "/flashcards" },
+  { icon: ClipboardCheck, label: "Quizzes", href: "/quizzes" },
   { icon: FileQuestion, label: "Mock Exams", href: "/mock-exam" },
   { icon: BarChart3, label: "Analytics", href: "/analytics" },
   { icon: Sparkles, label: "AI Tutor", href: "/ai-tutor" },
@@ -74,8 +76,8 @@ export const ApplicantSidebarContent = ({ collapsed, onItemClick, className }: S
         </div>
         {!collapsed && (
           <div className="animate-fade-in text-left">
-            <h1 className="font-bold text-lg">Nafea</h1>
-            <p className="text-xs text-muted-foreground">Student Portal</p>
+            <h1 className="font-bold text-lg">TareeqElm</h1>
+            <p className="text-xs text-muted-foreground">Trainer Portal</p>
           </div>
         )}
       </div>

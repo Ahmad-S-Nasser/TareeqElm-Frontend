@@ -36,7 +36,7 @@ const menuItems = [
     { icon: Calendar, label: "Academic Terms", path: "/university/terms" },
     { icon: Layers, label: "Sections", path: "/university/sections" },
     { icon: Users, label: "Instructors", path: "/university/instructors" },
-    { icon: GraduationCap, label: "Students", path: "/university/students" },
+    { icon: GraduationCap, label: "Trainers", path: "/university/trainers" },
     { icon: BookOpen, label: "Courses", path: "/university/courses" },
     { icon: UserCheck, label: "Enrollment", path: "/university/enrollment" },
     { icon: ClipboardList, label: "Exams", path: "/university/exams" },

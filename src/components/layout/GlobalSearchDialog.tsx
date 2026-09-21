@@ -15,7 +15,7 @@ interface SearchResult {
   id: string;
   title: string;
   subtitle: string;
-  category: "course" | "lesson" | "flashcard" | "instructor" | "student" | "department";
+  category: "course" | "lesson" | "flashcard" | "instructor" | "trainer" | "department";
   url: string;
 }
 
@@ -24,7 +24,7 @@ const categoryConfig: Record<string, { icon: React.ElementType; color: string; l
   lesson: { icon: FileText, color: "text-emerald-500", label: "Lesson" },
   flashcard: { icon: Brain, color: "text-accent", label: "Flashcard" },
   instructor: { icon: GraduationCap, color: "text-amber-500", label: "Instructor" },
-  student: { icon: Users, color: "text-blue-500", label: "Student" },
+  trainer: { icon: Users, color: "text-blue-500", label: "Trainer" },
   department: { icon: Building2, color: "text-rose-500", label: "Department" },
 };
 
@@ -38,8 +38,8 @@ const MOCK_DATA: SearchResult[] = [
   { id: "7", title: "Boundary Value Analysis", subtitle: "12 cards • Due for review", category: "flashcard", url: "/spaced-repetition" },
   { id: "8", title: "Dr. Ahmed Hassan", subtitle: "Software Testing • 3 courses", category: "instructor", url: "/catalog" },
   { id: "9", title: "Sara Al-Rashid", subtitle: "UX Design • 2 courses", category: "instructor", url: "/catalog" },
-  { id: "10", title: "Computer Science", subtitle: "12 courses • 450 students", category: "department", url: "/catalog" },
-  { id: "11", title: "UI/UX Design", subtitle: "8 courses • 280 students", category: "department", url: "/catalog" },
+  { id: "10", title: "Computer Science", subtitle: "12 courses • 450 trainers", category: "department", url: "/catalog" },
+  { id: "11", title: "UI/UX Design", subtitle: "8 courses • 280 trainers", category: "department", url: "/catalog" },
 ];
 
 interface GlobalSearchDialogProps {

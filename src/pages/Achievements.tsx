@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Award, Trophy, Flame, BookOpen, Target, Zap, Lock, Star } from "lucide-react";
+import { Award, Lock, Star, Loader2, AlertCircle } from "lucide-react";
 import { useAchievements } from "@/hooks/useAchievements";
 import { AchievementUnlockToast } from "@/components/gamification/AchievementUnlockToast";
 
@@ -22,7 +22,7 @@ const tierStyles = {
 const Achievements = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
-  const { achievements, earned, locked, loading, stats, newlyUnlocked, dismissNewlyUnlocked, totalXP, levelInfo } = useAchievements();
+  const { achievements, earned, loading, error, newlyUnlocked, dismissNewlyUnlocked, totalXP, levelInfo } = useAchievements();
   const navigate = useNavigate();
 
   const categories = ['all', 'streak', 'study', 'mastery', 'productivity'] as const;
@@ -31,7 +31,7 @@ const Achievements = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <ApplicantSidebar onCollapse={setSidebarCollapsed} />
-      <Header sidebarCollapsed={sidebarCollapsed} userRole="Student" mobileSidebar={<ApplicantSidebarContent onItemClick={() => {}} />} />
+      <Header sidebarCollapsed={sidebarCollapsed} userRole="Trainer" mobileSidebar={<ApplicantSidebarContent onItemClick={() => {}} />} />
 
       <AchievementUnlockToast
         achievements={achievements.filter(a => newlyUnlocked.includes(a.id))}
@@ -39,6 +39,18 @@ const Achievements = () => {
       />
 
       <main className={cn("pt-20 pb-8 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64", "ml-0")}>
+        {loading ? (
+          <div className="max-w-5xl mx-auto flex flex-col items-center justify-center py-24">
+            <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+            <p className="text-muted-foreground">Loading achievements...</p>
+          </div>
+        ) : error ? (
+          <div className="max-w-5xl mx-auto text-center py-24">
+            <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-3" />
+            <p className="font-medium mb-1">Could not load achievements</p>
+            <p className="text-sm text-muted-foreground">{error}</p>
+          </div>
+        ) : (
         <div className="max-w-5xl mx-auto space-y-6">
           {/* Header */}
           <section className="animate-slide-up">
@@ -148,6 +160,7 @@ const Achievements = () => {
             </div>
           </Tabs>
         </div>
+        )}
       </main>
     </div>
   );

@@ -1,6 +1,6 @@
-export interface StudentMastery {
-    studentId: string;
-    studentName: string;
+export interface TrainerMastery {
+    trainerId: string;
+    trainerName: string;
     avatar?: string;
     topicScores: Record<string, TopicScore>;
     overallMastery: number;

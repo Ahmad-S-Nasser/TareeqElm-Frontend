@@ -7,19 +7,19 @@ import { useStudyCoach } from "@/hooks/useStudyCoach";
 
 export const StudyCoachWidget = () => {
   const navigate = useNavigate();
-  const { studentData, dataLoading } = useStudyCoach();
+  const { trainerData, dataLoading } = useStudyCoach();
 
   const alerts: { icon: React.ElementType; text: string; color: string }[] = [];
 
-  if (studentData) {
-    if (studentData.flashcardsDue > 0) {
-      alerts.push({ icon: RotateCcw, text: `${studentData.flashcardsDue} flashcards due for review`, color: "text-rose-500" });
+  if (trainerData) {
+    if (trainerData.FlashcardsDue > 0) {
+      alerts.push({ icon: RotateCcw, text: `${trainerData.FlashcardsDue} flashcards due for review`, color: "text-rose-500" });
     }
-    if (studentData.streak > 0) {
-      alerts.push({ icon: Flame, text: `🔥 ${studentData.streak}-day streak! Keep it up!`, color: "text-orange-500" });
+    if (trainerData.Streak > 0) {
+      alerts.push({ icon: Flame, text: `🔥 ${trainerData.Streak}-day streak! Keep it up!`, color: "text-orange-500" });
     }
-    if (studentData.weakTopics.length > 0) {
-      alerts.push({ icon: Target, text: `Focus on: ${studentData.weakTopics[0]}`, color: "text-amber-500" });
+    if (trainerData.WeakTopics && trainerData.WeakTopics.length > 0) {
+      alerts.push({ icon: Target, text: `Focus on: ${trainerData.WeakTopics[0]}`, color: "text-amber-500" });
     }
     if (alerts.length === 0) {
       alerts.push({ icon: Lightbulb, text: "Start a study session to get personalized insights", color: "text-primary" });

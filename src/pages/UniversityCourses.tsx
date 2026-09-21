@@ -19,112 +19,69 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import api, { getApiError } from "@/lib/api";
 import {
     BookOpen,
     Search,
     MoreHorizontal,
-    CheckCircle,
-    XCircle,
-    Clock,
+    Loader2,
     FileText,
 } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
 interface Course {
-    id: string;
-    title: string;
-    instructor: string;
-    department: string;
-    enrolledStudents: number;
-    status: "active" | "pending_approval" | "archived";
-    lastUpdated: string;
+    Id: string;
+    Title: string;
+    Category: string | null;
+    InstructorName: string | null;
+    EnrolledCount: number;
+    Status: string;
 }
+interface CurriculumChapter {
+    Id: string;
+    Title: string;
+    Lessons: { Id: string; Title: string }[];
+}
+
+const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+        case "published":
+            return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
+        case "draft":
+            return "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20";
+        default:
+            return "bg-muted text-muted-foreground hover:bg-muted/80";
+    }
+};
 
 const UniversityCourses = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [syllabusCourse, setSyllabusCourse] = useState<Course | null>(null);
-    const { toast } = useToast();
 
-    // Mock Data
-    const [courses, setCourses] = useState<Course[]>([
-        {
-            id: "1",
-            title: "Introduction to Computer Science",
-            instructor: "Dr. Alan Turing",
-            department: "Computer Science",
-            enrolledStudents: 120,
-            status: "active",
-            lastUpdated: "2024-02-10"
-        },
-        {
-            id: "2",
-            title: "Advanced Marketing Strategies",
-            instructor: "Prof. Mary Barra",
-            department: "Business",
-            enrolledStudents: 85,
-            status: "active",
-            lastUpdated: "2024-02-12"
-        },
-        {
-            id: "3",
-            title: "Thermodynamics II",
-            instructor: "Dr. Elon Musk",
-            department: "Engineering",
-            enrolledStudents: 0,
-            status: "pending_approval",
-            lastUpdated: "2024-02-14"
-        },
-    ]);
+    const { data: courses = [], isLoading, isError, error } = useQuery({
+        queryKey: ["university-courses"],
+        queryFn: async () => (await api.get<Course[]>("/Courses", { params: { pageSize: 100 } })).data,
+    });
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case "active":
-                return "bg-green-500/10 text-green-500 hover:bg-green-500/20";
-            case "pending_approval":
-                return "bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20";
-            case "archived":
-                return "bg-muted text-muted-foreground hover:bg-muted/80";
-            default:
-                return "bg-secondary text-secondary-foreground";
-        }
-    };
+    const { data: curriculum = [], isLoading: curriculumLoading } = useQuery({
+        queryKey: ["course-curriculum", syllabusCourse?.Id],
+        enabled: !!syllabusCourse,
+        queryFn: async () => (await api.get<CurriculumChapter[]>(`/Courses/${syllabusCourse!.Id}/curriculum`)).data,
+    });
 
     const filteredCourses = courses.filter(course =>
-        course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.instructor.toLowerCase().includes(searchTerm.toLowerCase())
+        course.Title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (course.InstructorName || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    const handleStatusChange = (id: string, newStatus: Course['status']) => {
-        setCourses(courses.map(c =>
-            c.id === id ? { ...c, status: newStatus } : c
-        ));
-        toast({
-            title: "Course Updated",
-            description: `Course status changed to ${newStatus.replace('_', ' ')}.`,
-        });
-    };
-
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "published":
-                return <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20"><CheckCircle className="w-3 h-3 mr-1" /> Published</Badge>;
-            case "under_review":
-                return <Badge className="bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20"><Clock className="w-3 h-3 mr-1" /> Under Review</Badge>;
-            case "draft":
-                return <Badge variant="secondary"><MoreHorizontal className="w-3 h-3 mr-1" /> Draft</Badge>;
-            default: return null;
-        }
-    };
 
     return (
         <div className="min-h-screen bg-background">
@@ -174,36 +131,45 @@ const UniversityCourses = () => {
                             <TableHeader>
                                 <TableRow className="bg-muted/30 hover:bg-muted/30">
                                     <TableHead>Course Title</TableHead>
-                                    <TableHead>Department</TableHead>
+                                    <TableHead>Category</TableHead>
                                     <TableHead>Instructor</TableHead>
                                     <TableHead>Status</TableHead>
-                                    <TableHead>Students</TableHead>
+                                    <TableHead>Trainers</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
+                                {isLoading && (
+                                    <TableRow><TableCell colSpan={6} className="text-center py-10"><Loader2 className="w-6 h-6 animate-spin text-primary inline" /></TableCell></TableRow>
+                                )}
+                                {isError && (
+                                    <TableRow><TableCell colSpan={6} className="text-center py-10 text-destructive">{getApiError(error, "Could not load courses.")}</TableCell></TableRow>
+                                )}
+                                {!isLoading && !isError && filteredCourses.length === 0 && (
+                                    <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No courses found.</TableCell></TableRow>
+                                )}
                                 {filteredCourses.map((course) => (
-                                    <TableRow key={course.id} className="hover:bg-muted/30 transition-colors">
+                                    <TableRow key={course.Id} className="hover:bg-muted/30 transition-colors">
                                         <TableCell className="font-medium">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/20 transition-colors">
                                                     <BookOpen className="w-4 h-4" />
                                                 </div>
-                                                {course.title}
+                                                {course.Title}
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className="text-xs font-normal">
-                                                {course.department}
+                                                {course.Category || "Uncategorized"}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>{course.instructor}</TableCell>
+                                        <TableCell>{course.InstructorName || "-"}</TableCell>
                                         <TableCell>
-                                            <Badge className={cn("text-xs capitalize", getStatusColor(course.status))} variant="secondary">
-                                                {course.status.replace('_', ' ')}
+                                            <Badge className={cn("text-xs capitalize", getStatusColor(course.Status))} variant="secondary">
+                                                {course.Status}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>{course.enrolledStudents}</TableCell>
+                                        <TableCell>{course.EnrolledCount}</TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
@@ -212,38 +178,9 @@ const UniversityCourses = () => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                    <DropdownMenuSeparator />
                                                     <DropdownMenuItem onClick={() => setSyllabusCourse(course)}>
                                                         <FileText className="w-4 h-4 mr-2" /> View Syllabus
                                                     </DropdownMenuItem>
-                                                    {course.status === 'pending_approval' && (
-                                                        <>
-                                                            <DropdownMenuItem
-                                                                className="text-green-600 focus:text-green-600"
-                                                                onClick={() => handleStatusChange(course.id, 'active')}
-                                                            >
-                                                                <CheckCircle className="w-4 h-4 mr-2" />
-                                                                Approve Course
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem
-                                                                className="text-destructive focus:text-destructive"
-                                                                onClick={() => handleStatusChange(course.id, 'archived')}
-                                                            >
-                                                                <XCircle className="w-4 h-4 mr-2" />
-                                                                Reject Course
-                                                            </DropdownMenuItem>
-                                                        </>
-                                                    )}
-                                                    {course.status === 'active' && (
-                                                        <DropdownMenuItem
-                                                            className="text-muted-foreground focus:text-muted-foreground"
-                                                            onClick={() => handleStatusChange(course.id, 'archived')}
-                                                        >
-                                                            <Clock className="w-4 h-4 mr-2" />
-                                                            Archive Course
-                                                        </DropdownMenuItem>
-                                                    )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
@@ -260,33 +197,30 @@ const UniversityCourses = () => {
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
                         <DialogTitle>Course Syllabus</DialogTitle>
-                        <DialogDescription>{syllabusCourse?.title} — {syllabusCourse?.instructor}</DialogDescription>
+                        <DialogDescription>{syllabusCourse?.Title} — {syllabusCourse?.InstructorName}</DialogDescription>
                     </DialogHeader>
                     <div className="py-4 space-y-4">
                         <div className="grid grid-cols-2 gap-3">
                             <div className="p-3 rounded-lg bg-muted/40">
-                                <p className="text-xs text-muted-foreground">Department</p>
-                                <p className="font-semibold text-sm">{syllabusCourse?.department}</p>
+                                <p className="text-xs text-muted-foreground">Category</p>
+                                <p className="font-semibold text-sm">{syllabusCourse?.Category || "Uncategorized"}</p>
                             </div>
                             <div className="p-3 rounded-lg bg-muted/40">
-                                <p className="text-xs text-muted-foreground">Enrolled Students</p>
-                                <p className="font-semibold text-sm">{syllabusCourse?.enrolledStudents}</p>
+                                <p className="text-xs text-muted-foreground">Enrolled Trainers</p>
+                                <p className="font-semibold text-sm">{syllabusCourse?.EnrolledCount}</p>
                             </div>
                         </div>
                         <div className="border rounded-lg p-4 space-y-3">
                             <h4 className="font-semibold text-sm">Course Outline</h4>
                             <div className="space-y-2 text-sm">
-                                {[
-                                    { week: "Week 1-2", topic: "Introduction & Fundamentals" },
-                                    { week: "Week 3-4", topic: "Core Concepts & Theory" },
-                                    { week: "Week 5-6", topic: "Practical Applications" },
-                                    { week: "Week 7-8", topic: "Advanced Topics" },
-                                    { week: "Week 9-10", topic: "Projects & Assessment" },
-                                    { week: "Week 11-12", topic: "Review & Final Exam" },
-                                ].map((item) => (
-                                    <div key={item.week} className="flex items-center gap-3 py-1.5 border-b border-border/30 last:border-0">
-                                        <span className="text-xs font-mono text-muted-foreground w-20 shrink-0">{item.week}</span>
-                                        <span>{item.topic}</span>
+                                {curriculumLoading && <Loader2 className="w-5 h-5 animate-spin text-primary" />}
+                                {!curriculumLoading && curriculum.length === 0 && (
+                                    <p className="text-muted-foreground">No curriculum has been added yet.</p>
+                                )}
+                                {curriculum.map((chapter, i) => (
+                                    <div key={chapter.Id} className="flex items-center gap-3 py-1.5 border-b border-border/30 last:border-0">
+                                        <span className="text-xs font-mono text-muted-foreground w-20 shrink-0">Chapter {i + 1}</span>
+                                        <span>{chapter.Title} <span className="text-xs text-muted-foreground">({chapter.Lessons.length} lessons)</span></span>
                                     </div>
                                 ))}
                             </div>

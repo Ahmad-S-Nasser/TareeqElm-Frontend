@@ -75,7 +75,7 @@ const UniversitySettings = () => {
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="domain">Custom Domain</Label>
-                                        <Input id="domain" defaultValue="university.learnwise.edu" className="bg-background/50 focus-visible:ring-primary" />
+                                        <Input id="domain" defaultValue="university.example.edu" className="bg-background/50 focus-visible:ring-primary" />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="address">Address</Label>

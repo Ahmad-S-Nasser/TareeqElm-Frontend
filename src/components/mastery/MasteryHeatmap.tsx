@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
-    StudentMastery,
+    TrainerMastery,
     Topic,
     getMasteryLevel,
     getMasteryColor,
@@ -15,12 +15,12 @@ import { TrendingUp, TrendingDown, Minus, User } from "lucide-react";
 import { HeatmapLegend } from "./HeatmapLegend";
 
 interface MasteryHeatmapProps {
-    students: StudentMastery[];
+    trainers: TrainerMastery[];
     topics: Topic[];
     className?: string;
 }
 
-export function MasteryHeatmap({ students, topics, className }: MasteryHeatmapProps) {
+export function MasteryHeatmap({ trainers, topics, className }: MasteryHeatmapProps) {
     const getTrendIcon = (trend: "improving" | "stable" | "declining") => {
         switch (trend) {
             case "improving":
@@ -47,7 +47,7 @@ export function MasteryHeatmap({ students, topics, className }: MasteryHeatmapPr
                                 <th className="sticky left-0 bg-card z-10 px-4 py-3 text-left text-sm font-semibold min-w-[180px]">
                                     <div className="flex items-center gap-2">
                                         <User className="w-4 h-4 text-muted-foreground" />
-                                        Student
+                                        Trainer
                                     </div>
                                 </th>
                                 {topics.map((topic) => (
@@ -69,26 +69,26 @@ export function MasteryHeatmap({ students, topics, className }: MasteryHeatmapPr
                             </tr>
                         </thead>
 
-                        {/* Student Rows */}
+                        {/* Trainer Rows */}
                         <tbody>
-                            {students.map((student, index) => (
+                            {trainers.map((trainer, index) => (
                                 <tr
-                                    key={student.studentId}
+                                    key={trainer.trainerId}
                                     className={cn(
                                         "border-b border-border/30 transition-colors hover:bg-muted/30",
                                         index % 2 === 0 && "bg-muted/10"
                                     )}
                                 >
-                                    {/* Student Name Cell */}
+                                    {/* Trainer Name Cell */}
                                     <td className="sticky left-0 bg-card z-10 px-4 py-3">
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
-                                                {student.studentName.split(" ").map((n) => n[0]).join("")}
+                                                {trainer.trainerName.split(" ").map((n) => n[0]).join("")}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium">{student.studentName}</p>
+                                                <p className="text-sm font-medium">{trainer.trainerName}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    Last active: {student.lastActive.toLocaleDateString()}
+                                                    Last active: {trainer.lastActive.toLocaleDateString()}
                                                 </p>
                                             </div>
                                         </div>
@@ -96,7 +96,7 @@ export function MasteryHeatmap({ students, topics, className }: MasteryHeatmapPr
 
                                     {/* Topic Score Cells */}
                                     {topics.map((topic) => {
-                                        const score = student.topicScores[topic.id];
+                                        const score = trainer.topicScores[topic.id];
                                         const level = getMasteryLevel(score?.score);
                                         const colorClass = getMasteryColor(level);
                                         const textColorClass = getMasteryTextColor(level);
@@ -148,11 +148,11 @@ export function MasteryHeatmap({ students, topics, className }: MasteryHeatmapPr
                                         <div
                                             className={cn(
                                                 "mx-auto w-14 h-10 rounded-lg flex items-center justify-center font-bold",
-                                                getMasteryColor(getMasteryLevel(student.overallMastery)),
-                                                getMasteryTextColor(getMasteryLevel(student.overallMastery))
+                                                getMasteryColor(getMasteryLevel(trainer.overallMastery)),
+                                                getMasteryTextColor(getMasteryLevel(trainer.overallMastery))
                                             )}
                                         >
-                                            {student.overallMastery}%
+                                            {trainer.overallMastery}%
                                         </div>
                                     </td>
                                 </tr>
@@ -165,27 +165,27 @@ export function MasteryHeatmap({ students, topics, className }: MasteryHeatmapPr
             {/* Summary Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="rounded-xl bg-card border border-border/50 p-4">
-                    <p className="text-xs text-muted-foreground mb-1">Total Students</p>
-                    <p className="text-2xl font-bold">{students.length}</p>
+                    <p className="text-xs text-muted-foreground mb-1">Total Trainers</p>
+                    <p className="text-2xl font-bold">{trainers.length}</p>
                 </div>
                 <div className="rounded-xl bg-card border border-border/50 p-4">
                     <p className="text-xs text-muted-foreground mb-1">Avg. Mastery</p>
                     <p className="text-2xl font-bold">
                         {Math.round(
-                            students.reduce((sum, s) => sum + s.overallMastery, 0) / students.length
+                            trainers.reduce((sum, s) => sum + s.overallMastery, 0) / trainers.length
                         )}%
                     </p>
                 </div>
                 <div className="rounded-xl bg-card border border-border/50 p-4">
-                    <p className="text-xs text-muted-foreground mb-1">Students Struggling</p>
+                    <p className="text-xs text-muted-foreground mb-1">Trainers Struggling</p>
                     <p className="text-2xl font-bold text-destructive">
-                        {students.filter((s) => s.overallMastery < 40).length}
+                        {trainers.filter((s) => s.overallMastery < 40).length}
                     </p>
                 </div>
                 <div className="rounded-xl bg-card border border-border/50 p-4">
-                    <p className="text-xs text-muted-foreground mb-1">Students Mastered</p>
+                    <p className="text-xs text-muted-foreground mb-1">Trainers Mastered</p>
                     <p className="text-2xl font-bold text-success">
-                        {students.filter((s) => s.overallMastery >= 80).length}
+                        {trainers.filter((s) => s.overallMastery >= 80).length}
                     </p>
                 </div>
             </div>

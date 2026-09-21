@@ -1,210 +1,151 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import api, { getApiError, setUnauthorizedHandler } from '@/lib/api';
 
-export type AppRole = 'applicant' | 'instructor' | 'university' | 'admin';
+import { parseApiRole, type AppRole } from '@/lib/roles';
 
-// ─── Mock demo accounts ────────────────────────────────────────────────────
-const MOCK_USERS: Record<string, { password: string; role: AppRole; fullName: string }> = {
-  'student@demo.com': { password: 'demo1234', role: 'applicant', fullName: 'Demo Student' },
-  'instructor@demo.com': { password: 'demo1234', role: 'instructor', fullName: 'Demo Instructor' },
-  'university@demo.com': { password: 'demo1234', role: 'university', fullName: 'Demo University' },
-  'admin@demo.com': { password: 'demo1234', role: 'admin', fullName: 'Demo Admin' },
-};
+export type { AppRole };
 
-const MOCK_SESSION_KEY = 'learnwise_mock_session';
-
-interface MockSession {
-  email: string;
-  role: AppRole;
-  fullName: string;
-  id: string;
+// Shape of the user returned by the .NET API (PascalCase JSON).
+export interface AuthUser {
+  Id: string;
+  FullName: string;
+  Email: string;
+  Role: string;
+  AvatarUrl?: string | null;
 }
 
-const saveMockSession = (session: MockSession) =>
-  localStorage.setItem(MOCK_SESSION_KEY, JSON.stringify(session));
-
-const loadMockSession = (): MockSession | null => {
-  try {
-    const raw = localStorage.getItem(MOCK_SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-};
-
-const clearMockSession = () => localStorage.removeItem(MOCK_SESSION_KEY);
-
-// Build a minimal-shaped mock User object so the rest of the app just works
-const makeMockUser = (session: MockSession): User =>
-({
-  id: session.id,
-  email: session.email,
-  user_metadata: { full_name: session.fullName },
-  app_metadata: {},
-  aud: 'authenticated',
-  created_at: new Date().toISOString(),
-} as unknown as User);
-// ───────────────────────────────────────────────────────────────────────────
-
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: AuthUser | null;
   role: AppRole | null;
   loading: boolean;
-  isMockUser: boolean;
-  signUp: (email: string, password: string, role: AppRole, fullName: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  /** Merges profile changes into the signed-in user (state and stored session). */
+  updateUser: (patch: Partial<Pick<AuthUser, 'FullName' | 'AvatarUrl'>>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const TOKEN_KEY = 'tareeqelm_token';
+const USER_KEY = 'tareeqelm_user';
+const EXPIRY_KEY = 'tareeqelm_token_expires';
+
+// Per-user data kept in localStorage must not survive a sign-out on a shared machine.
+const USER_SCOPED_PREFIXES = ['chat_history_', 'achievements_'];
+
+const clearSession = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(EXPIRY_KEY);
+  Object.keys(localStorage)
+    .filter((key) => USER_SCOPED_PREFIXES.some((prefix) => key.startsWith(prefix)))
+    .forEach((key) => localStorage.removeItem(key));
+};
+
+const isExpired = (expiresAt: string | null) => {
+  if (!expiresAt) return false;
+  const time = Date.parse(expiresAt);
+  return Number.isFinite(time) && time <= Date.now();
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isMockUser, setIsMockUser] = useState(false);
 
-  const fetchUserRole = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .single();
-
-    if (error) {
-      console.error('Error fetching user role:', error);
-      return null;
-    }
-
-    return data?.role as AppRole;
-  };
-
-  useEffect(() => {
-    // Check for a persisted mock session first
-    const mockSession = loadMockSession();
-    if (mockSession) {
-      setUser(makeMockUser(mockSession));
-      setRole(mockSession.role);
-      setIsMockUser(true);
-      setLoading(false);
-      return; // don't start supabase listener while mock session is active
-    }
-
-    // Real Supabase listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setIsMockUser(false);
-
-        if (session?.user) {
-          fetchUserRole(session.user.id).then((role) => {
-            setRole(role);
-            setLoading(false);
-          });
-        } else {
-          setRole(null);
-          setLoading(false);
-        }
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        fetchUserRole(session.user.id).then((role) => {
-          setRole(role);
-          setLoading(false);
-        });
-      } else {
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+  const applySession = useCallback((token: string, expiresAt: string | undefined, userData: AuthUser) => {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(userData));
+    if (expiresAt) localStorage.setItem(EXPIRY_KEY, expiresAt);
+    setUser(userData);
+    setRole(parseApiRole(userData.Role));
   }, []);
 
-  // ── Sign In ──────────────────────────────────────────────────────────────
-  const signIn = async (email: string, password: string) => {
-    const mock = MOCK_USERS[email.toLowerCase()];
-    if (mock) {
-      if (mock.password !== password) {
-        return { error: new Error('Invalid email or password. Please try again.') };
-      }
-      const mockSession: MockSession = {
-        email: email.toLowerCase(),
-        role: mock.role,
-        fullName: mock.fullName,
-        id: `mock-${mock.role}`,
-      };
-      saveMockSession(mockSession);
-      setUser(makeMockUser(mockSession));
-      setRole(mock.role);
-      setIsMockUser(true);
-      return { error: null };
-    }
-
-    // Real Supabase sign-in
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      return { error: null };
-    } catch (error) {
-      return { error: error as Error };
-    }
-  };
-
-  // ── Sign Up ──────────────────────────────────────────────────────────────
-  const signUp = async (email: string, password: string, selectedRole: AppRole, fullName: string) => {
-    try {
-      const redirectUrl = `${window.location.origin}/`;
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: redirectUrl },
-      });
-
-      if (error) throw error;
-
-      if (data.user) {
-        const dbRole = selectedRole as "applicant" | "instructor" | "university";
-        await supabase.from('profiles').insert([{ user_id: data.user.id, full_name: fullName }]);
-        await supabase.from('user_roles').insert([{ user_id: data.user.id, role: dbRole }]);
-        setRole(selectedRole);
-      }
-
-      return { error: null };
-    } catch (error) {
-      return { error: error as Error };
-    }
-  };
-
-  // ── Sign Out ─────────────────────────────────────────────────────────────
-  const signOut = async () => {
-    if (isMockUser) {
-      clearMockSession();
-      setUser(null);
-      setSession(null);
-      setRole(null);
-      setIsMockUser(false);
-      return;
-    }
-    await supabase.auth.signOut();
+  const signOut = useCallback(async () => {
+    clearSession();
     setUser(null);
-    setSession(null);
     setRole(null);
-  };
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, session, role, loading, isMockUser, signUp, signIn, signOut }}>
-      {children}
-    </AuthContext.Provider>
+  const updateUser = useCallback((patch: Partial<Pick<AuthUser, 'FullName' | 'AvatarUrl'>>) => {
+    setUser((current) => {
+      if (!current) return current;
+      const next = { ...current, ...patch };
+      try { localStorage.setItem(USER_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
+      return next;
+    });
+  }, []);
+
+  // Restore the session on load, but never trust a token that has already expired.
+  useEffect(() => {
+    const savedUser = localStorage.getItem(USER_KEY);
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    if (savedUser && token) {
+      if (isExpired(localStorage.getItem(EXPIRY_KEY))) {
+        clearSession();
+      } else {
+        try {
+          const userData = JSON.parse(savedUser) as AuthUser;
+          setUser(userData);
+          setRole(parseApiRole(userData?.Role));
+        } catch (e) {
+          console.error('Failed to parse saved user', e);
+          clearSession();
+        }
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  // Sign out of React state when the API rejects the token, and when it expires while the app is open.
+  useEffect(() => {
+    setUnauthorizedHandler(() => { void signOut(); });
+    return () => setUnauthorizedHandler(null);
+  }, [signOut]);
+
+  useEffect(() => {
+    if (!user) return;
+    const timer = setInterval(() => {
+      if (isExpired(localStorage.getItem(EXPIRY_KEY))) void signOut();
+    }, 30_000);
+    return () => clearInterval(timer);
+  }, [user, signOut]);
+
+  const signIn = useCallback(async (email: string, password: string) => {
+    try {
+      const response = await api.post('/Auth/login', { Email: email, Password: password });
+      const { Token, ExpiresAt, User: userData } = response.data;
+      applySession(Token, ExpiresAt, userData);
+      return { error: null };
+    } catch (error) {
+      return { error: new Error(getApiError(error, 'Login failed')) };
+    }
+  }, [applySession]);
+
+  // Self-registration always creates a Trainer; the server ignores any role sent by the client.
+  const signUp = useCallback(async (email: string, password: string, fullName: string) => {
+    try {
+      const response = await api.post('/Auth/register', {
+        Email: email,
+        Password: password,
+        FullName: fullName
+      });
+      const { Token, ExpiresAt, User: userData } = response.data;
+      applySession(Token, ExpiresAt, userData);
+      return { error: null };
+    } catch (error) {
+      return { error: new Error(getApiError(error, 'Registration failed')) };
+    }
+  }, [applySession]);
+
+  const value = useMemo(
+    () => ({ user, role, loading, signUp, signIn, signOut, updateUser }),
+    [user, role, loading, signUp, signIn, signOut, updateUser]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

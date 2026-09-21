@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { AdminSidebar, AdminSidebarContent } from "@/components/layout/AdminSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -8,10 +9,16 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
     Users, BookOpen, TrendingUp, AlertTriangle, Activity,
-    ArrowUpRight, ArrowDownRight, Zap, ChevronRight, Shield,
-    CheckCircle2, Clock, BarChart2,
+    ArrowUpRight, ArrowDownRight, Zap, ChevronRight, Clock, BarChart2, Loader2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import api, { getApiError } from "@/lib/api";
+
+interface AdminStatsResponse {
+    Stats: { TotalUsers: number; ActiveCourses: number; AvgCompletion: number; AtRiskCount: number };
+    RecentActivity: { Event: string; Time: string; Type: string }[];
+    TopCourses: { Name: string; Enrolled: number; Completion: number; Score: number }[];
+}
 
 const StatCard = ({
     title, value, sub, icon: Icon, trend, color,
@@ -62,29 +69,35 @@ const AdminDashboard = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const navigate = useNavigate();
 
-    const recentActivity = [
-        { event: "Sarah Johnson enrolled in React Basics", time: "10m ago", type: "success" },
-        { event: "Team Alpha completed Python Fundamentals", time: "1h ago", type: "success" },
-        { event: "3 employees flagged for low performance", time: "2h ago", type: "warn" },
-        { event: "New course 'Data Analysis' published", time: "4h ago", type: "info" },
-        { event: "Quarterly report exported", time: "Yesterday", type: "info" },
-    ];
+    const { data, isLoading: loading, isError, error } = useQuery({
+        queryKey: ["admin-stats"],
+        queryFn: async () => (await api.get<AdminStatsResponse>("/Admin/stats")).data,
+    });
 
-    const topCourses = [
-        { name: "React Fundamentals", enrolled: 48, completion: 82, score: 91 },
-        { name: "Python for Data Science", enrolled: 36, completion: 74, score: 88 },
-        { name: "Leadership Essentials", enrolled: 64, completion: 91, score: 94 },
-        { name: "Excel & Data Analysis", enrolled: 29, completion: 65, score: 79 },
-    ];
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background p-6">
+                <p className="text-destructive text-center">{getApiError(error, "Could not load the dashboard.")}</p>
+            </div>
+        );
+    }
+
+    const stats = data?.Stats || { TotalUsers: 0, ActiveCourses: 0, AvgCompletion: 0, AtRiskCount: 0 };
+    const recentActivity = data?.RecentActivity || [];
+    const topCourses = data?.TopCourses || [];
 
     return (
         <div className="min-h-screen bg-background">
             <AdminSidebar onCollapse={setSidebarCollapsed} />
-            <Header
-                sidebarCollapsed={sidebarCollapsed}
-                userRole="Admin"
-                mobileSidebar={<AdminSidebarContent collapsed={false} />}
-            />
+            <Header sidebarCollapsed={sidebarCollapsed} />
             <main className={cn("pt-20 pb-12 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64")}>
                 <div className="max-w-7xl mx-auto space-y-8">
 
@@ -98,11 +111,11 @@ const AdminDashboard = () => {
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
-                                    <span className="text-xs font-semibold uppercase tracking-widest opacity-80">Live Dashboard</span>
+                                    <span className="text-xs font-semibold uppercase tracking-widest opacity-80">Live Admin Dashboard</span>
                                 </div>
-                                <h1 className="text-4xl font-black tracking-tight">Admin Control Center</h1>
+                                <h1 className="text-4xl font-black tracking-tight">System Control Center</h1>
                                 <p className="text-white/70 mt-1 text-sm">
-                                    Training Intelligence Platform · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                                    Global Intelligence Platform · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                                 </p>
                             </div>
                             <div className="flex gap-3">
@@ -111,23 +124,23 @@ const AdminDashboard = () => {
                                     className="bg-white/20 hover:bg-white/30 text-white border-white/30 border backdrop-blur-sm font-semibold"
                                     variant="secondary"
                                 >
-                                    <BookOpen className="w-4 h-4 mr-2" /> Create Course
+                                    <BookOpen className="w-4 h-4 mr-2" /> All Courses
                                 </Button>
                                 <Button
                                     onClick={() => navigate("/admin/users")}
                                     className="bg-white/20 hover:bg-white/30 text-white border-white/30 border backdrop-blur-sm font-semibold"
                                     variant="secondary"
                                 >
-                                    <Users className="w-4 h-4 mr-2" /> Add Users
+                                    <Users className="w-4 h-4 mr-2" /> User Management
                                 </Button>
                             </div>
                         </div>
                         <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/20">
                             {[
-                                { label: "Total Employees", val: "248", icon: Users },
-                                { label: "Active Courses", val: "14", icon: BookOpen },
-                                { label: "Avg Completion", val: "76%", icon: TrendingUp },
-                                { label: "At-Risk", val: "12", icon: AlertTriangle },
+                                { label: "Total Users", val: stats.TotalUsers, icon: Users },
+                                { label: "Active Courses", val: stats.ActiveCourses, icon: BookOpen },
+                                { label: "Avg Completion", val: `${stats.AvgCompletion}%`, icon: TrendingUp },
+                                { label: "At-Risk", val: stats.AtRiskCount, icon: AlertTriangle },
                             ].map((item) => (
                                 <div key={item.label} className="flex items-center gap-3">
                                     <item.icon className="w-4 h-4 opacity-60 shrink-0" />
@@ -142,15 +155,14 @@ const AdminDashboard = () => {
 
                     {/* Stat Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <StatCard title="Total Employees" value={248} sub="Across all teams" icon={Users} trend={{ value: 8, positive: true }} color="primary" />
-                        <StatCard title="Active Courses" value={14} sub="Published & running" icon={BookOpen} trend={{ value: 3, positive: true }} color="rose" />
-                        <StatCard title="Avg Completion" value="76%" sub="Organisation-wide" icon={TrendingUp} trend={{ value: 5, positive: true }} color="emerald" />
-                        <StatCard title="At-Risk Employees" value={12} sub="Below 50% score" icon={AlertTriangle} trend={{ value: 2, positive: false }} color="amber" />
+                        <StatCard title="Total Users" value={stats.TotalUsers} sub="Across the platform" icon={Users} color="primary" />
+                        <StatCard title="Active Courses" value={stats.ActiveCourses} sub="Published & running" icon={BookOpen} color="rose" />
+                        <StatCard title="Avg Completion" value={`${stats.AvgCompletion}%`} sub="Global average" icon={TrendingUp} color="emerald" />
+                        <StatCard title="At-Risk Trainers" value={stats.AtRiskCount} sub="Below 50% progress" icon={AlertTriangle} color="amber" />
                     </div>
 
                     {/* Main Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Course Performance */}
                         <div className="lg:col-span-2 space-y-4">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-lg font-bold flex items-center gap-2">
@@ -161,8 +173,11 @@ const AdminDashboard = () => {
                                 </Button>
                             </div>
                             <div className="space-y-3">
+                                {topCourses.length === 0 && (
+                                    <Card className="border-border/50"><CardContent className="p-8 text-center text-sm text-muted-foreground">No course data yet.</CardContent></Card>
+                                )}
                                 {topCourses.map((course, i) => (
-                                    <Card key={course.name} className="border-border/50 hover:border-rose-300/50 transition-all duration-200 hover:shadow-md cursor-pointer">
+                                    <Card key={course.Name} className="border-border/50 hover:border-rose-300/50 transition-all duration-200 hover:shadow-md cursor-pointer">
                                         <CardContent className="p-4">
                                             <div className="flex items-center gap-4">
                                                 <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black shrink-0",
@@ -171,23 +186,23 @@ const AdminDashboard = () => {
                                                     i === 2 && "bg-emerald-500/10 text-emerald-500",
                                                     i === 3 && "bg-amber-500/10 text-amber-500",
                                                 )}>
-                                                    {course.name.slice(0, 2).toUpperCase()}
+                                                    {course.Name.slice(0, 2).toUpperCase()}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between mb-1">
-                                                        <p className="font-semibold text-sm truncate">{course.name}</p>
+                                                        <p className="font-semibold text-sm truncate">{course.Name}</p>
                                                         <div className="flex items-center gap-2 shrink-0 ml-2">
                                                             <Badge variant="outline" className={cn("text-xs font-bold border",
-                                                                course.score >= 90 ? "text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20" :
-                                                                    course.score >= 80 ? "text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/20" :
+                                                                course.Score >= 90 ? "text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20" :
+                                                                    course.Score >= 80 ? "text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/20" :
                                                                         "text-destructive border-destructive/20 bg-destructive/5"
                                                             )}>
-                                                                {course.score}% avg score
+                                                                {course.Score}% avg score
                                                             </Badge>
                                                         </div>
                                                     </div>
-                                                    <p className="text-xs text-muted-foreground mb-2">{course.enrolled} enrolled · {course.completion}% completed</p>
-                                                    <Progress value={course.completion} className="h-1.5" />
+                                                    <p className="text-xs text-muted-foreground mb-2">{course.Enrolled} enrolled · {course.Completion}% completed</p>
+                                                    <Progress value={course.Completion} className="h-1.5" />
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -196,9 +211,7 @@ const AdminDashboard = () => {
                             </div>
                         </div>
 
-                        {/* Right column */}
                         <div className="space-y-6">
-                            {/* Quick Actions */}
                             <Card className="border-border/50">
                                 <CardHeader className="pb-3">
                                     <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -207,10 +220,9 @@ const AdminDashboard = () => {
                                 </CardHeader>
                                 <CardContent className="space-y-2">
                                     {[
-                                        { label: "Add New User", path: "/admin/users", icon: Users },
-                                        { label: "Create Course", path: "/admin/courses", icon: BookOpen },
-                                        { label: "View Analytics", path: "/admin/analytics", icon: BarChart2 },
-                                        { label: "Manage Enrollments", path: "/admin/enrollments", icon: CheckCircle2 },
+                                        { label: "User Management", path: "/admin/users", icon: Users },
+                                        { label: "Content Library", path: "/admin/courses", icon: BookOpen },
+                                        { label: "System Analytics", path: "/admin/analytics", icon: BarChart2 },
                                     ].map((a) => (
                                         <Button key={a.label} variant="ghost" className="w-full justify-start gap-3 text-sm" onClick={() => navigate(a.path)}>
                                             <a.icon className="w-4 h-4 text-rose-500" /> {a.label}
@@ -218,25 +230,25 @@ const AdminDashboard = () => {
                                     ))}
                                 </CardContent>
                             </Card>
-                            {/* Activity Feed */}
                             <Card className="border-border/50">
                                 <CardHeader className="pb-3">
                                     <CardTitle className="text-sm font-bold flex items-center gap-2">
-                                        <Activity className="w-4 h-4 text-primary" /> Recent Activity
+                                        <Activity className="w-4 h-4 text-primary" /> Live Activity
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
+                                    {recentActivity.length === 0 && <p className="text-sm text-muted-foreground">No recent activity.</p>}
                                     {recentActivity.map((item, i) => (
                                         <div key={i} className="flex items-start gap-3 group cursor-pointer">
                                             <div className={cn("w-2 h-2 rounded-full mt-1.5 shrink-0",
-                                                item.type === "success" && "bg-emerald-500",
-                                                item.type === "warn" && "bg-amber-500",
-                                                item.type === "info" && "bg-primary",
+                                                item.Type === "success" && "bg-emerald-500",
+                                                item.Type === "warn" && "bg-amber-500",
+                                                item.Type === "info" && "bg-primary",
                                             )} />
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium leading-tight">{item.event}</p>
+                                                <p className="text-sm font-medium leading-tight">{item.Event}</p>
                                                 <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                                    <Clock className="w-3 h-3" /> {item.time}
+                                                    <Clock className="w-3 h-3" /> {item.Time}
                                                 </p>
                                             </div>
                                         </div>

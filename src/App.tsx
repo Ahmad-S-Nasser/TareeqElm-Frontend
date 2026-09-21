@@ -1,612 +1,222 @@
+import { lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { StudySessionProvider } from "@/components/learning/StudySessionProvider";
+import { AppErrorBoundary } from "@/components/routing/AppErrorBoundary";
+import { PageLoader } from "@/components/routing/PageLoader";
+import { RoleGuard } from "@/components/routing/RoleGuard";
+import { RoleGroup } from "@/components/routing/RoleGroup";
+import { createQueryClient } from "@/lib/queryClient";
+import { roleHome } from "@/lib/roles";
 import Auth from "./pages/Auth";
-import CreateCourse from "./pages/CreateCourse";
-import ApplicantDashboard from "./pages/ApplicantDashboard";
-import InstructorDashboard from "./pages/InstructorDashboard";
-import InstructorCourses from "./pages/InstructorCourses";
-import CourseEditor from "./pages/CourseEditor";
-import CourseStudents from "./pages/CourseStudents";
-import AllStudents from "./pages/AllStudents";
-import StudentProgress from "./pages/StudentProgress";
-import InstructorAI from "./pages/InstructorAI";
-import InstructorAnalytics from "./pages/InstructorAnalytics";
-import InstructorSettings from "./pages/InstructorSettings";
-import InstructorContent from "./pages/InstructorContent";
-import InstructorNotifications from "./pages/InstructorNotifications";
-import InstructorCurriculum from "./pages/InstructorCurriculum";
-import InstructorAssignments from "./pages/InstructorAssignments";
-import InstructorQuizzes from "./pages/InstructorQuizzes";
-import InstructorDiscussions from "./pages/InstructorDiscussions";
-import InstructorAnnouncements from "./pages/InstructorAnnouncements";
-import InstructorFlashcards from "./pages/InstructorFlashcards";
-import InstructorLeaderboard from "./pages/InstructorLeaderboard";
-import StudentNotifications from "./pages/StudentNotifications";
-import StudentAITutor from "./pages/StudentAITutor";
-import StudentSettings from "./pages/StudentSettings";
-import CourseCatalog from "./pages/CourseCatalog";
-import SyllabusUpload from "./pages/SyllabusUpload";
-import MockExamRunner from "./pages/MockExamRunner";
-import Courses from "./pages/Courses";
-import CourseDetail from "./pages/CourseDetail";
-import LessonPlayer from "./pages/LessonPlayer";
-import Flashcards from "./pages/Flashcards";
-import TimeBlocking from "./pages/TimeBlocking";
-import SpacedRepetition from "./pages/SpacedRepetition";
-import LearningAnalytics from "./pages/LearningAnalytics";
-import AIStudyCoach from "./pages/AIStudyCoach";
-import Achievements from "./pages/Achievements";
 import NotFound from "./pages/NotFound";
-import UniversityDashboard from "./pages/UniversityDashboard";
-import UniversityDepartments from "./pages/UniversityDepartments";
-import UniversityInstructors from "./pages/UniversityInstructors";
-import UniversityStudents from "./pages/UniversityStudents";
-import UniversityCourses from "./pages/UniversityCourses";
-import UniversityAnalytics from "./pages/UniversityAnalytics";
-import UniversitySettings from "./pages/UniversitySettings";
-import UniversityAcademicTerms from "./pages/UniversityAcademicTerms";
-import UniversitySections from "./pages/UniversitySections";
-import UniversityEnrollment from "./pages/UniversityEnrollment";
-import UniversityExams from "./pages/UniversityExams";
-import UniversityAnnouncements from "./pages/UniversityAnnouncements";
-import UniversityContentLibrary from "./pages/UniversityContentLibrary";
-import UniversityReports from "./pages/UniversityReports";
-import UniversityAIInsights from "./pages/UniversityAIInsights";
-import UniversityRoles from "./pages/UniversityRoles";
-import { Loader2 } from "lucide-react";
-import Onboarding from "./pages/Onboarding";
-import UserProfile from "./pages/UserProfile";
-import Landing from "./pages/Landing";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminUsers from "./pages/AdminUsers";
-import AdminCourses from "./pages/AdminCourses";
-import AdminEnrollments from "./pages/AdminEnrollments";
-import AdminAnalytics from "./pages/AdminAnalytics";
-import AdminSettings from "./pages/AdminSettings";
 
-const queryClient = new QueryClient();
+const queryClient = createQueryClient();
 
-// Landing page: show landing for guests, redirect logged-in users to dashboard
-const LandingOrDashboard = () => {
+// ── Shared / onboarding ─────────────────────────────────────────────────────
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
+
+// ── Trainer (role "applicant") ──────────────────────────────────────────────
+const ApplicantDashboard = lazy(() => import("./pages/ApplicantDashboard"));
+const CourseCatalog = lazy(() => import("./pages/CourseCatalog"));
+const Courses = lazy(() => import("./pages/Courses"));
+const CourseDetail = lazy(() => import("./pages/CourseDetail"));
+const LessonPlayer = lazy(() => import("./pages/LessonPlayer"));
+const Flashcards = lazy(() => import("./pages/Flashcards"));
+const MockExamRunner = lazy(() => import("./pages/MockExamRunner"));
+const TrainerProgress = lazy(() => import("./pages/TrainerProgress"));
+const TrainerNotifications = lazy(() => import("./pages/TrainerNotifications"));
+const TrainerAITutor = lazy(() => import("./pages/TrainerAITutor"));
+const TrainerSettings = lazy(() => import("./pages/TrainerSettings"));
+const TimeBlocking = lazy(() => import("./pages/TimeBlocking"));
+const SpacedRepetition = lazy(() => import("./pages/SpacedRepetition"));
+const LearningAnalytics = lazy(() => import("./pages/LearningAnalytics"));
+const AIStudyCoach = lazy(() => import("./pages/AIStudyCoach"));
+const Achievements = lazy(() => import("./pages/Achievements"));
+const TrainerQuizzes = lazy(() => import("./pages/TrainerQuizzes"));
+const QuizRunner = lazy(() => import("./pages/QuizRunner"));
+
+// ── Instructor ──────────────────────────────────────────────────────────────
+const InstructorDashboard = lazy(() => import("./pages/InstructorDashboard"));
+const InstructorCourses = lazy(() => import("./pages/InstructorCourses"));
+const CourseEditor = lazy(() => import("./pages/CourseEditor"));
+const CourseTrainers = lazy(() => import("./pages/CourseTrainers"));
+const InstructorAI = lazy(() => import("./pages/InstructorAI"));
+const SyllabusUpload = lazy(() => import("./pages/SyllabusUpload"));
+const CreateCourse = lazy(() => import("./pages/CreateCourse"));
+const InstructorAnalytics = lazy(() => import("./pages/InstructorAnalytics"));
+const InstructorSettings = lazy(() => import("./pages/InstructorSettings"));
+const InstructorContent = lazy(() => import("./pages/InstructorContent"));
+const InstructorNotifications = lazy(() => import("./pages/InstructorNotifications"));
+const AllTrainers = lazy(() => import("./pages/AllTrainers"));
+const InstructorCurriculum = lazy(() => import("./pages/InstructorCurriculum"));
+const InstructorAssignments = lazy(() => import("./pages/InstructorAssignments"));
+const InstructorQuizzes = lazy(() => import("./pages/InstructorQuizzes"));
+const InstructorDiscussions = lazy(() => import("./pages/InstructorDiscussions"));
+const InstructorAnnouncements = lazy(() => import("./pages/InstructorAnnouncements"));
+const InstructorFlashcards = lazy(() => import("./pages/InstructorFlashcards"));
+const InstructorLeaderboard = lazy(() => import("./pages/InstructorLeaderboard"));
+
+// ── University ──────────────────────────────────────────────────────────────
+const UniversityDashboard = lazy(() => import("./pages/UniversityDashboard"));
+const UniversityDepartments = lazy(() => import("./pages/UniversityDepartments"));
+const UniversityInstructors = lazy(() => import("./pages/UniversityInstructors"));
+const UniversityTrainers = lazy(() => import("./pages/UniversityTrainers"));
+const UniversityCourses = lazy(() => import("./pages/UniversityCourses"));
+const UniversityAnalytics = lazy(() => import("./pages/UniversityAnalytics"));
+const UniversitySettings = lazy(() => import("./pages/UniversitySettings"));
+const UniversityAcademicTerms = lazy(() => import("./pages/UniversityAcademicTerms"));
+const UniversitySections = lazy(() => import("./pages/UniversitySections"));
+const UniversityEnrollment = lazy(() => import("./pages/UniversityEnrollment"));
+const UniversityExams = lazy(() => import("./pages/UniversityExams"));
+const UniversityAnnouncements = lazy(() => import("./pages/UniversityAnnouncements"));
+const UniversityContentLibrary = lazy(() => import("./pages/UniversityContentLibrary"));
+const UniversityReports = lazy(() => import("./pages/UniversityReports"));
+const UniversityAIInsights = lazy(() => import("./pages/UniversityAIInsights"));
+const UniversityRoles = lazy(() => import("./pages/UniversityRoles"));
+
+// ── Admin ───────────────────────────────────────────────────────────────────
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminUsers = lazy(() => import("./pages/AdminUsers"));
+const AdminCourses = lazy(() => import("./pages/AdminCourses"));
+const AdminEnrollments = lazy(() => import("./pages/AdminEnrollments"));
+const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
+const AdminSettings = lazy(() => import("./pages/AdminSettings"));
+
+/** "/" sends guests to sign-in and signed-in users to their own dashboard. */
+const RootRedirect = () => {
   const { user, role, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Landing />;
-  }
-
-  // Redirect logged-in users to their dashboard
-  if (role === "instructor") return <Navigate to="/instructor" replace />;
-  if (role === "university") return <Navigate to="/university" replace />;
-  if (role === "admin") return <Navigate to="/admin" replace />;
-  return <Navigate to="/dashboard" replace />;
-};
-
-// Student dashboard route
-const StudentDashboardRoute = () => {
-  const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/auth" replace />;
-  return <ApplicantDashboard />;
+  return <Navigate to={roleHome(role)} replace />;
 };
 
-const AppRoutes = () => {
-  return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/" element={<LandingOrDashboard />} />
-      <Route path="/landing" element={<Landing />} />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/login" element={<Auth />} />
-      <Route path="/signup" element={<Auth />} />
-      <Route path="/onboarding" element={<Onboarding />} />
+const AppRoutes = () => (
+  <Routes>
+    {/* Public */}
+    <Route path="/" element={<RootRedirect />} />
+    <Route path="/auth" element={<Auth />} />
+    <Route path="/login" element={<Auth />} />
+    <Route path="/signup" element={<Auth />} />
 
-      {/* Student dashboard */}
-      <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["applicant"]}><ApplicantDashboard /></ProtectedRoute>} />
+    {/* Any signed-in user: onboarding + shared pages */}
+    <Route element={<RoleGuard />}>
+      <Route element={<RoleGroup />}>
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/profile" element={<UserProfile />} />
+      </Route>
+    </Route>
 
-      {/* Profile route - accessible by all authenticated users */}
-      <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
-      {/* Legacy root redirect - handled by / above */}
+    {/* Trainer (16). To add a page: add a lazy import above and a <Route> here. */}
+    <Route element={<RoleGuard roles={["applicant"]} />}>
+      <Route element={<RoleGroup />}>
+        <Route path="/dashboard" element={<ApplicantDashboard />} />
+        <Route path="/catalog" element={<CourseCatalog />} />
+        <Route path="/courses" element={<Courses />} />
+        <Route path="/courses/:courseId" element={<CourseDetail />} />
+        <Route path="/courses/:courseId/lessons/:lessonId" element={<LessonPlayer />} />
+        <Route path="/flashcards" element={<Flashcards />} />
+        <Route path="/mock-exam" element={<MockExamRunner />} />
+        <Route path="/progress" element={<TrainerProgress />} />
+        <Route path="/notifications" element={<TrainerNotifications />} />
+        <Route path="/ai-tutor" element={<TrainerAITutor />} />
+        <Route path="/settings" element={<TrainerSettings />} />
+        <Route path="/time-blocking" element={<TimeBlocking />} />
+        <Route path="/spaced-repetition" element={<SpacedRepetition />} />
+        <Route path="/analytics" element={<LearningAnalytics />} />
+        <Route path="/ai-coach" element={<AIStudyCoach />} />
+        <Route path="/achievements" element={<Achievements />} />
+        <Route path="/quizzes" element={<TrainerQuizzes />} />
+        <Route path="/quizzes/:quizId" element={<QuizRunner />} />
+      </Route>
+    </Route>
 
-      {/* Applicant routes */}
-      <Route
-        path="/catalog"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <CourseCatalog />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/courses"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <Courses />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/courses/:courseId"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <CourseDetail />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/courses/:courseId/lessons/:lessonId"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <LessonPlayer />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/flashcards"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <Flashcards />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/mock-exam"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <MockExamRunner />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/progress"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <StudentProgress />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/notifications"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <StudentNotifications />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/ai-tutor"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <StudentAITutor />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <StudentSettings />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/time-blocking"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <TimeBlocking />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/spaced-repetition"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <SpacedRepetition />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/analytics"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <LearningAnalytics />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/ai-coach"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <AIStudyCoach />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/achievements"
-        element={
-          <ProtectedRoute allowedRoles={["applicant"]}>
-            <Achievements />
-          </ProtectedRoute>
-        }
-      />
+    {/* Instructor (19) */}
+    <Route element={<RoleGuard roles={["instructor"]} />}>
+      <Route element={<RoleGroup />}>
+        <Route path="/instructor" element={<InstructorDashboard />} />
+        <Route path="/instructor/courses" element={<InstructorCourses />} />
+        <Route path="/instructor/courses/:courseId" element={<CourseEditor />} />
+        <Route path="/instructor/courses/:courseId/trainers" element={<CourseTrainers />} />
+        <Route path="/instructor/ai-tools" element={<InstructorAI />} />
+        <Route path="/syllabus-upload" element={<SyllabusUpload />} />
+        <Route path="/instructor/create-course" element={<CreateCourse />} />
+        <Route path="/instructor/analytics" element={<InstructorAnalytics />} />
+        <Route path="/instructor/settings" element={<InstructorSettings />} />
+        <Route path="/instructor/content" element={<InstructorContent />} />
+        <Route path="/instructor/notifications" element={<InstructorNotifications />} />
+        <Route path="/instructor/trainers" element={<AllTrainers />} />
+        <Route path="/instructor/curriculum" element={<InstructorCurriculum />} />
+        <Route path="/instructor/assignments" element={<InstructorAssignments />} />
+        <Route path="/instructor/quizzes" element={<InstructorQuizzes />} />
+        <Route path="/instructor/discussions" element={<InstructorDiscussions />} />
+        <Route path="/instructor/announcements" element={<InstructorAnnouncements />} />
+        <Route path="/instructor/flashcards" element={<InstructorFlashcards />} />
+        <Route path="/instructor/leaderboard" element={<InstructorLeaderboard />} />
+      </Route>
+    </Route>
 
-      <Route
-        path="/instructor"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/courses"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorCourses />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/courses/:courseId"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <CourseEditor />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/courses/:courseId/students"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <CourseStudents />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/ai-tools"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorAI />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/syllabus-upload"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <SyllabusUpload />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/create-course"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <CreateCourse />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/analytics"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorAnalytics />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/settings"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorSettings />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/content"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorContent />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/notifications"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorNotifications />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/students"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <AllStudents />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/curriculum"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorCurriculum />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/assignments"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorAssignments />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/quizzes"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorQuizzes />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/discussions"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorDiscussions />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/announcements"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorAnnouncements />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/flashcards"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorFlashcards />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/instructor/leaderboard"
-        element={
-          <ProtectedRoute allowedRoles={["instructor"]}>
-            <InstructorLeaderboard />
-          </ProtectedRoute>
-        }
-      />
-      {/* duplicate removed */}
+    {/* University (16 + catch-all) */}
+    <Route element={<RoleGuard roles={["university"]} />}>
+      <Route element={<RoleGroup />}>
+        <Route path="/university" element={<UniversityDashboard />} />
+        <Route path="/university/departments" element={<UniversityDepartments />} />
+        <Route path="/university/instructors" element={<UniversityInstructors />} />
+        <Route path="/university/trainers" element={<UniversityTrainers />} />
+        <Route path="/university/courses" element={<UniversityCourses />} />
+        <Route path="/university/analytics" element={<UniversityAnalytics />} />
+        <Route path="/university/settings" element={<UniversitySettings />} />
+        <Route path="/university/terms" element={<UniversityAcademicTerms />} />
+        <Route path="/university/sections" element={<UniversitySections />} />
+        <Route path="/university/enrollment" element={<UniversityEnrollment />} />
+        <Route path="/university/exams" element={<UniversityExams />} />
+        <Route path="/university/announcements" element={<UniversityAnnouncements />} />
+        <Route path="/university/content" element={<UniversityContentLibrary />} />
+        <Route path="/university/reports" element={<UniversityReports />} />
+        <Route path="/university/ai-insights" element={<UniversityAIInsights />} />
+        <Route path="/university/roles" element={<UniversityRoles />} />
+        <Route path="/university/*" element={<NotFound />} />
+      </Route>
+    </Route>
 
-      <Route
-        path="/university"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/departments"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityDepartments />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/instructors"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityInstructors />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/students"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityStudents />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/courses"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityCourses />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/analytics"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityAnalytics />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/settings"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversitySettings />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/terms"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityAcademicTerms />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/sections"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversitySections />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/enrollment"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityEnrollment />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/exams"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityExams />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/announcements"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityAnnouncements />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/content"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityContentLibrary />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/reports"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityReports />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/ai-insights"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityAIInsights />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/roles"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityRoles />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/university/*"
-        element={
-          <ProtectedRoute allowedRoles={["university"]}>
-            <UniversityDashboard />
-          </ProtectedRoute>
-        }
-      />
+    {/* Admin (6) */}
+    <Route element={<RoleGuard roles={["admin"]} />}>
+      <Route element={<RoleGroup />}>
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/courses" element={<AdminCourses />} />
+        <Route path="/admin/enrollments" element={<AdminEnrollments />} />
+        <Route path="/admin/analytics" element={<AdminAnalytics />} />
+        <Route path="/admin/settings" element={<AdminSettings />} />
+      </Route>
+    </Route>
 
-      {/* Admin routes */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <AdminDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/users"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <AdminUsers />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/courses"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <AdminCourses />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/enrollments"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <AdminEnrollments />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/analytics"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <AdminAnalytics />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/settings"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
-            <AdminSettings />
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Catch-all */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
+    {/* Catch-all */}
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+);
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <StudySessionProvider>
-            <AppRoutes />
-          </StudySessionProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <AppErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <StudySessionProvider>
+              <AppRoutes />
+            </StudySessionProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </AppErrorBoundary>
 );
 
 export default App;

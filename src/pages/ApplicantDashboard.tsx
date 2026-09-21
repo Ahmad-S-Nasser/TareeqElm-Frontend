@@ -40,22 +40,20 @@ const ApplicantDashboard = () => {
 
   const { courses, loading: coursesLoading, fetchEnrolledCourses } = useCourses();
   const { stats, loading: progressLoading } = useProgress();
-  const { studentData, dataLoading: coachLoading } = useStudyCoach();
+  const { trainerData, dataLoading: coachLoading } = useStudyCoach();
   const { levelInfo, totalXP, earned } = useAchievements();
-  const { unreadCount, notifications } = useSmartNotifications();
+  const { unreadCount } = useSmartNotifications();
 
-  useEffect(() => { fetchEnrolledCourses(); }, []);
+  useEffect(() => { fetchEnrolledCourses(); }, [fetchEnrolledCourses]);
 
   const loading = coursesLoading || progressLoading;
 
-  const readinessPercentage = stats
-    ? Math.min(100, Math.round((stats.totalLessonsCompleted * 5 + stats.totalQuizzesTaken * 10 + stats.averageQuizScore * 0.5) / 2))
-    : 0;
+  const readinessPercentage = trainerData?.RetentionRate || 0;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <ApplicantSidebar onCollapse={setSidebarCollapsed} />
-      <Header sidebarCollapsed={sidebarCollapsed} userRole="Student" mobileSidebar={<ApplicantSidebarContent onItemClick={() => console.log('Mobile sidebar clicked')} />} />
+      <Header sidebarCollapsed={sidebarCollapsed} mobileSidebar={<ApplicantSidebarContent onItemClick={() => console.log('Mobile sidebar clicked')} />} />
 
       <main className={cn("pt-20 pb-24 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64", "ml-0")}>
         <div className="max-w-7xl mx-auto space-y-6">
@@ -94,15 +92,15 @@ const ApplicantDashboard = () => {
             <StatsCard
               icon={Flame}
               title="Study Streak"
-              value={`${studentData?.streak ?? stats?.currentStreak ?? 0} days`}
-              trend={studentData?.streak ? { value: studentData.streak, positive: true } : undefined}
+              value={`${trainerData?.Streak ?? 0} days`}
+              trend={trainerData?.Streak ? { value: trainerData.Streak, positive: true } : undefined}
               variant="warning"
               onClick={() => navigate('/achievements')}
             />
             <StatsCard
               icon={Target}
               title="Focus Score"
-              value={`${studentData?.avgFocusScore ?? 0}%`}
+              value={`${trainerData?.AvgFocusScore ?? 0}%`}
               trend={{ value: 8, positive: true }}
               variant="success"
               onClick={() => navigate('/analytics')}
@@ -110,7 +108,7 @@ const ApplicantDashboard = () => {
             <StatsCard
               icon={Clock}
               title="Study Hours"
-              value={`${studentData?.totalStudyHours ?? Math.round((stats?.totalStudyTimeMinutes ?? 0) / 60)}h`}
+              value={`${trainerData?.TotalStudyHours ?? 0}h`}
               subtitle="Total"
               variant="primary"
               onClick={() => navigate('/analytics')}
@@ -126,14 +124,14 @@ const ApplicantDashboard = () => {
           </section>
 
           {/* Quick Action Chips */}
-          {studentData && (
+          {trainerData && (
             <section className="flex gap-2 flex-wrap animate-slide-up" style={{ animationDelay: "150ms" }}>
-              {studentData.flashcardsDue > 0 && (
+              {trainerData.FlashcardsDue > 0 && (
                 <Button variant="outline" size="sm" className="gap-1.5 border-rose-500/30 text-rose-600 hover:bg-rose-500/5" onClick={() => navigate('/spaced-repetition')}>
-                  <RotateCcw className="w-3.5 h-3.5" /> {studentData.flashcardsDue} cards due
+                  <RotateCcw className="w-3.5 h-3.5" /> {trainerData.FlashcardsDue} cards due
                 </Button>
               )}
-              {studentData.timeBlocksToday === 0 && (
+              {trainerData.TimeBlocksToday === 0 && (
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/time-blocking')}>
                   <Clock className="w-3.5 h-3.5" /> Plan today
                 </Button>
@@ -173,7 +171,15 @@ const ApplicantDashboard = () => {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {courses.slice(0, 4).map((course) => (
-                      <CourseCard key={course.id} title={course.title} description={course.description || ""} progress={course.enrollment?.progress_percentage || 0} lessons={0} duration={`${course.duration_hours || 0}h`} onClick={() => navigate(`/courses/${course.id}`)} />
+                      <CourseCard 
+                        key={course.Id} 
+                        Title={course.Title} 
+                        Description={course.Description || ""} 
+                        Progress={course.Enrollment?.ProgressPercentage || 0} 
+                        Lessons={course.LessonsCount || 0} 
+                        Duration={`${course.DurationHours || 0}h`} 
+                        onClick={() => navigate(`/courses/${course.Id}`)} 
+                      />
                     ))}
                   </div>
                 )}
@@ -184,39 +190,6 @@ const ApplicantDashboard = () => {
             <div className="space-y-6 animate-slide-up" style={{ animationDelay: "300ms" }}>
               <TodaysPlan items={todaysPlanItems} onToggleComplete={handleTogglePlanItem} />
               <StudyCoachWidget />
-
-              {/* Notification Alerts */}
-              {notifications.filter(n => !n.read && n.priority === 'high').length > 0 && (
-                <Card className="border-destructive/20 bg-destructive/5">
-                  <CardContent className="p-4 space-y-2">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Bell className="w-4 h-4 text-destructive" />
-                      <p className="text-sm font-semibold">Important Alerts</p>
-                    </div>
-                    {notifications.filter(n => !n.read && n.priority === 'high').slice(0, 2).map(n => (
-                      <div key={n.id} className="flex items-center justify-between">
-                        <p className="text-xs text-muted-foreground">{n.title}</p>
-                        {n.actionUrl && (
-                          <Button variant="ghost" size="sm" className="text-xs h-6 px-2" onClick={() => navigate(n.actionUrl!)}>{n.actionLabel}</Button>
-                        )}
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
-
-              <WeaknessAnalysis
-                weaknesses={
-                  studentData?.weakTopics.length
-                    ? studentData.weakTopics.map(t => ({ topic: t, score: Math.floor(Math.random() * 20 + 40), questionsAttempted: Math.floor(Math.random() * 20 + 15) }))
-                    : [
-                      { topic: "Test Design Techniques", score: 45, questionsAttempted: 32 },
-                      { topic: "Static Testing", score: 52, questionsAttempted: 28 },
-                      { topic: "Test Management", score: 58, questionsAttempted: 24 },
-                    ]
-                }
-                onPractice={(topic) => navigate(`/ai-tutor?q=${encodeURIComponent(`Help me practice ${topic}`)}`)}
-              />
             </div>
           </div>
         </div>

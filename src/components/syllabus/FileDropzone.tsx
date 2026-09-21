@@ -18,7 +18,7 @@ export const FileDropzone = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const validateFile = (file: File): boolean => {
+  const validateFile = useCallback((file: File): boolean => {
     const extension = "." + file.name.split('.').pop()?.toLowerCase();
     if (!acceptedTypes.includes(extension)) {
       setError(`Invalid file type. Accepted: ${acceptedTypes.join(", ")}`);
@@ -30,7 +30,7 @@ export const FileDropzone = ({
     }
     setError(null);
     return true;
-  };
+  }, [acceptedTypes, maxSize]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -51,7 +51,7 @@ export const FileDropzone = ({
       setSelectedFile(file);
       onFileSelect(file);
     }
-  }, [onFileSelect]);
+  }, [onFileSelect, validateFile]);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

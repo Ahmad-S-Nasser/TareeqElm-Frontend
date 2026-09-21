@@ -23,14 +23,15 @@ interface HeaderProps {
 }
 
 export const Header = ({
-  userName = "Alex Johnson",
-  userRole = "Student",
   sidebarCollapsed = false,
   mobileSidebar
 }: HeaderProps) => {
-  const { signOut } = useAuth();
+  const { user, role, signOut } = useAuth();
   const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const userName = user?.FullName || "Guest";
+  const userRole = role ? (role.charAt(0).toUpperCase() + role.slice(1)) : "Trainer";
 
   const handleSignOut = async () => {
     await signOut();

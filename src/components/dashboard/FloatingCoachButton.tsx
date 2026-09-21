@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 export const FloatingCoachButton = () => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
-  const { messages, isLoading, sendMessage, studentData } = useStudyCoach();
+  const { messages, isLoading, sendMessage, trainerData } = useStudyCoach();
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -61,7 +61,7 @@ export const FloatingCoachButton = () => {
           </div>
 
           {/* Messages */}
-          <ScrollArea className="flex-1 max-h-[320px] px-3 py-2" ref={scrollRef as any}>
+          <ScrollArea className="flex-1 max-h-[320px] px-3 py-2" ref={scrollRef}>
             <div className="space-y-3">
               {messages.length === 0 && (
                 <div className="text-center py-6">
@@ -81,21 +81,21 @@ export const FloatingCoachButton = () => {
                 </div>
               )}
               {messages.map((msg) => (
-                <div key={msg.id} className={cn(
+                <div key={msg.Id} className={cn(
                   "flex gap-2 max-w-[90%]",
-                  msg.role === 'user' ? "ml-auto flex-row-reverse" : ""
+                  msg.Role === 'user' ? "ml-auto flex-row-reverse" : ""
                 )}>
                   <div className={cn(
                     "rounded-xl px-3 py-2 text-xs whitespace-pre-wrap",
-                    msg.role === 'user'
+                    msg.Role === 'user'
                       ? "bg-primary text-primary-foreground rounded-tr-none"
                       : "bg-muted rounded-tl-none"
                   )}>
-                    {msg.content}
+                    {msg.Content}
                   </div>
                 </div>
               ))}
-              {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
+              {isLoading && messages[messages.length - 1]?.Role !== 'assistant' && (
                 <div className="flex gap-2">
                   <div className="bg-muted rounded-xl rounded-tl-none px-3 py-2 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-foreground/30 rounded-full animate-bounce" />

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { InstructorPageLayout } from "@/components/instructor/InstructorPageLayout";
-import { FileQuestion, Plus, Sparkles, Clock, Users, BarChart3, Loader2, X } from "lucide-react";
+import { FileQuestion, Plus, Sparkles, Clock, BarChart3, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,124 +10,124 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
 import { useCourses } from "@/hooks/useCourses";
-import { supabase } from "@/integrations/supabase/client";
+import api, { getApiError } from "@/lib/api";
 
 interface GeneratedQuestion {
-  question_text: string;
-  question_type: string;
-  options: string[];
-  correct_answer: string;
-  points: number;
+  QuestionText: string;
+  Options: string[];
+  CorrectOptionIndex: number;
+  Points: number;
+  Explanation?: string | null;
+}
+
+interface GenerateQuizResponse {
+  Questions: GeneratedQuestion[];
+  Generator: string;
 }
 
 interface QuizWithMeta {
-  id: string;
-  title: string;
-  course_id: string;
-  course_title?: string;
-  question_count: number;
-  passing_score: number | null;
-  time_limit_minutes: number | null;
+  Id: string;
+  CourseId: string;
+  CourseTitle: string | null;
+  Title: string;
+  QuestionCount: number;
+  PassingScore: number | null;
+  TimeLimitMinutes: number | null;
+  CreatedAt: string;
+}
+
+interface QuizResult {
+  Id: string;
+  TrainerName: string;
+  Score: number;
+  TotalPoints: number;
+  Percentage: number;
+  Passed: boolean;
+  TakenAt: string;
 }
 
 const InstructorQuizzes = () => {
-  const [quizzes, setQuizzes] = useState<QuizWithMeta[]>([]);
-  const [loading, setLoading] = useState(true);
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [material, setMaterial] = useState("");
   const [numQuestions, setNumQuestions] = useState(5);
-  const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState<GeneratedQuestion[]>([]);
+  const [generator, setGenerator] = useState<string | null>(null);
   const [selectedCourseId, setSelectedCourseId] = useState("");
   const [quizTitle, setQuizTitle] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [resultsQuiz, setResultsQuiz] = useState<QuizWithMeta | null>(null);
   const { toast } = useToast();
-  const { user, isMockUser } = useAuth();
+  const queryClient = useQueryClient();
   const { courses, fetchInstructorCourses } = useCourses();
 
-  useEffect(() => { fetchInstructorCourses(); }, []);
+  useEffect(() => { fetchInstructorCourses(); }, [fetchInstructorCourses]);
 
-  useEffect(() => {
-    if (isMockUser || !user) { setLoading(false); return; }
-    const fetchQuizzes = async () => {
-      const { data, error } = await supabase
-        .from("quizzes")
-        .select("id, title, course_id, passing_score, time_limit_minutes, quiz_questions(id)")
-        .order("created_at", { ascending: false });
-      if (error) { console.error(error); setLoading(false); return; }
-      const mapped = (data || []).map((q: any) => ({
-        id: q.id,
-        title: q.title,
-        course_id: q.course_id,
-        course_title: courses.find((c) => c.id === q.course_id)?.title,
-        question_count: q.quiz_questions?.length || 0,
-        passing_score: q.passing_score,
-        time_limit_minutes: q.time_limit_minutes,
-      }));
-      setQuizzes(mapped);
-      setLoading(false);
-    };
-    fetchQuizzes();
-  }, [user, isMockUser, courses]);
+  const { data: quizzes = [], isLoading: loading, error: quizzesError } = useQuery({
+    queryKey: ["instructor-quizzes"],
+    queryFn: async () => (await api.get<QuizWithMeta[]>("/Quizzes")).data ?? [],
+  });
 
-  const handleGenerate = async () => {
-    if (!material.trim()) { toast({ title: "Provide course material", variant: "destructive" }); return; }
-    setGenerating(true);
-    setGenerated([]);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-quiz", {
-        body: { courseMaterial: material, numQuestions, questionTypes: ["multiple_choice", "true_false"] },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      setGenerated(data.questions || []);
-      toast({ title: "Questions Generated!", description: `${(data.questions || []).length} questions ready.` });
-    } catch (e: any) {
-      toast({ title: "Generation Failed", description: e.message, variant: "destructive" });
-    } finally {
-      setGenerating(false);
+  const { data: results = [], isLoading: resultsLoading, error: resultsError } = useQuery({
+    queryKey: ["quiz-results", resultsQuiz?.Id],
+    queryFn: async () => (await api.get<QuizResult[]>(`/Quizzes/${resultsQuiz!.Id}/results`)).data ?? [],
+    enabled: !!resultsQuiz,
+  });
+
+  const generateMutation = useMutation({
+    mutationFn: async () =>
+      (await api.post<GenerateQuizResponse>("/Quizzes/generate", { CourseMaterial: material, NumQuestions: numQuestions })).data,
+    onSuccess: (data) => {
+      setGenerated(data.Questions || []);
+      setGenerator(data.Generator);
+      toast({ title: "Questions ready", description: `${(data.Questions || []).length} suggested questions. Review them before saving.` });
+    },
+    onError: (e) => toast({ title: "Generation Failed", description: getApiError(e), variant: "destructive" }),
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async () =>
+      api.post("/Quizzes", {
+        CourseId: selectedCourseId,
+        Title: quizTitle,
+        PassingScore: 70,
+        Questions: generated.map((q) => ({
+          QuestionText: q.QuestionText,
+          Options: q.Options,
+          CorrectOptionIndex: q.CorrectOptionIndex,
+          Points: q.Points,
+          Explanation: q.Explanation || undefined,
+        })),
+      }),
+    onSuccess: () => {
+      toast({ title: "Quiz Saved!", description: `"${quizTitle}" with ${generated.length} questions.` });
+      setAiDialogOpen(false);
+      setGenerated([]);
+      setGenerator(null);
+      setMaterial("");
+      setQuizTitle("");
+      queryClient.invalidateQueries({ queryKey: ["instructor-quizzes"] });
+    },
+    onError: (e) => toast({ title: "Save Failed", description: getApiError(e), variant: "destructive" }),
+  });
+
+  const generating = generateMutation.isPending;
+  const saving = saveMutation.isPending;
+
+  const handleGenerate = () => {
+    if (material.trim().length < 20) {
+      toast({ title: "Provide course material", description: "Paste at least 20 characters of material.", variant: "destructive" });
+      return;
     }
+    setGenerated([]);
+    generateMutation.mutate();
   };
 
-  const handleSaveQuiz = async () => {
+  const handleSaveQuiz = () => {
     if (!selectedCourseId || !quizTitle || generated.length === 0) {
       toast({ title: "Fill all fields", description: "Select course, title, and generate questions first.", variant: "destructive" });
       return;
     }
-    setSaving(true);
-    try {
-      const { data: quiz, error: qErr } = await supabase
-        .from("quizzes")
-        .insert({ course_id: selectedCourseId, title: quizTitle, passing_score: 70 })
-        .select()
-        .single();
-      if (qErr) throw qErr;
-
-      const questionsToInsert = generated.map((q, i) => ({
-        quiz_id: quiz.id,
-        question_text: q.question_text,
-        options: q.options,
-        correct_answer: q.correct_answer,
-        points: q.points,
-        order_index: i,
-      }));
-      const { error: qqErr } = await supabase.from("quiz_questions").insert(questionsToInsert);
-      if (qqErr) throw qqErr;
-
-      toast({ title: "Quiz Saved!", description: `"${quizTitle}" with ${generated.length} questions.` });
-      setAiDialogOpen(false);
-      setGenerated([]);
-      setMaterial("");
-      setQuizTitle("");
-      // Refresh
-      setQuizzes((prev) => [{ id: quiz.id, title: quizTitle, course_id: selectedCourseId, course_title: courses.find((c) => c.id === selectedCourseId)?.title, question_count: generated.length, passing_score: 70, time_limit_minutes: null }, ...prev]);
-    } catch (e: any) {
-      toast({ title: "Save Failed", description: e.message, variant: "destructive" });
-    } finally {
-      setSaving(false);
-    }
+    saveMutation.mutate();
   };
 
   return (
@@ -144,9 +145,9 @@ const InstructorQuizzes = () => {
           </div>
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => setAiDialogOpen(true)}>
-              <Sparkles className="w-4 h-4 mr-2" /> AI Generate Quiz
+              <Sparkles className="w-4 h-4 mr-2" /> Generate Quiz
             </Button>
-            <Button className="gradient-accent text-white shadow-glow-accent">
+            <Button className="gradient-accent text-white shadow-glow-accent" onClick={() => setAiDialogOpen(true)}>
               <Plus className="w-4 h-4 mr-2" /> Create Quiz
             </Button>
           </div>
@@ -157,30 +158,34 @@ const InstructorQuizzes = () => {
       <section className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-slide-up" style={{ animationDelay: "100ms" }}>
         {loading ? (
           <div className="col-span-full flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+        ) : quizzesError ? (
+          <div className="col-span-full text-center py-12">
+            <p className="text-destructive">{getApiError(quizzesError, "Failed to load quizzes.")}</p>
+          </div>
         ) : quizzes.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <FileQuestion className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">No quizzes yet. Create one or use AI to generate.</p>
+            <p className="text-muted-foreground">No quizzes yet. Create one or generate suggested questions from your material.</p>
           </div>
         ) : (
           quizzes.map((q) => (
-            <Card key={q.id} className="shadow-soft border-border/50 hover:shadow-elevated transition-shadow cursor-pointer">
+            <Card key={q.Id} className="shadow-soft border-border/50 hover:shadow-elevated transition-shadow cursor-pointer" onClick={() => setResultsQuiz(q)}>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <Badge variant="outline" className="text-xs">Quiz</Badge>
-                  {q.time_limit_minutes && (
+                  {q.TimeLimitMinutes && (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" /> {q.time_limit_minutes}m
+                      <Clock className="w-3 h-3" /> {q.TimeLimitMinutes}m
                     </div>
                   )}
                 </div>
-                <CardTitle className="text-sm mt-2">{q.title}</CardTitle>
-                <CardDescription className="text-xs">{q.course_title || "—"}</CardDescription>
+                <CardTitle className="text-sm mt-2">{q.Title}</CardTitle>
+                <CardDescription className="text-xs">{q.CourseTitle || "—"}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{q.question_count} questions</span>
-                  {q.passing_score && <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> Pass: {q.passing_score}%</span>}
+                  <span>{q.QuestionCount} questions</span>
+                  {q.PassingScore != null && <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> Pass: {q.PassingScore}%</span>}
                 </div>
               </CardContent>
             </Card>
@@ -192,8 +197,8 @@ const InstructorQuizzes = () => {
       <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" /> AI Quiz Generator</DialogTitle>
-            <DialogDescription>Paste course material and let AI create quiz questions automatically.</DialogDescription>
+            <DialogTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" /> Quiz Generator</DialogTitle>
+            <DialogDescription>Paste course material to get suggested quiz questions. Review them before saving.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -202,7 +207,7 @@ const InstructorQuizzes = () => {
               <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
                 <SelectTrigger><SelectValue placeholder="Choose a course" /></SelectTrigger>
                 <SelectContent>
-                  {courses.map((c) => <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>)}
+                  {courses.map((c) => <SelectItem key={c.Id} value={c.Id}>{c.Title}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -230,22 +235,21 @@ const InstructorQuizzes = () => {
 
             {generated.length > 0 && (
               <div className="space-y-3 pt-2">
-                <h3 className="text-sm font-semibold">Generated Questions ({generated.length})</h3>
+                <h3 className="text-sm font-semibold">Suggested Questions ({generated.length}){generator === "template" ? " - built from templates" : ""}</h3>
                 {generated.map((q, i) => (
                   <Card key={i} className="border-border/50">
                     <CardContent className="pt-4 space-y-2">
                       <div className="flex items-start justify-between">
-                        <p className="text-sm font-medium">Q{i + 1}. {q.question_text}</p>
-                        <Badge variant="secondary" className="text-xs ml-2 capitalize">{q.question_type.replace("_", " ")}</Badge>
+                        <p className="text-sm font-medium">Q{i + 1}. {q.QuestionText}</p>
                       </div>
                       <div className="grid grid-cols-2 gap-1">
-                        {q.options.map((opt, j) => (
-                          <div key={j} className={`text-xs px-2 py-1 rounded ${opt === q.correct_answer ? "bg-primary/10 text-primary font-medium" : "bg-muted text-muted-foreground"}`}>
+                        {q.Options.map((opt, j) => (
+                          <div key={j} className={`text-xs px-2 py-1 rounded ${j === q.CorrectOptionIndex ? "bg-primary/10 text-primary font-medium" : "bg-muted text-muted-foreground"}`}>
                             {opt}
                           </div>
                         ))}
                       </div>
-                      <p className="text-xs text-muted-foreground">Points: {q.points} | Correct: {q.correct_answer}</p>
+                      <p className="text-xs text-muted-foreground">Points: {q.Points} | Correct: {q.Options[q.CorrectOptionIndex]}</p>
                     </CardContent>
                   </Card>
                 ))}
@@ -256,6 +260,38 @@ const InstructorQuizzes = () => {
               </div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Results Dialog */}
+      <Dialog open={!!resultsQuiz} onOpenChange={(open) => !open && setResultsQuiz(null)}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{resultsQuiz?.Title} - Results</DialogTitle>
+            <DialogDescription>{resultsQuiz?.CourseTitle}</DialogDescription>
+          </DialogHeader>
+          {resultsLoading ? (
+            <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
+          ) : resultsError ? (
+            <p className="text-sm text-destructive text-center py-6">{getApiError(resultsError, "Failed to load results.")}</p>
+          ) : results.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">No trainer has taken this quiz yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {results.map((r) => (
+                <div key={r.Id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 text-sm">
+                  <div>
+                    <p className="font-medium">{r.TrainerName}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(r.TakenAt).toLocaleDateString()}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span>{Math.round(r.Percentage)}% ({r.Score}/{r.TotalPoints})</span>
+                    <Badge variant={r.Passed ? "default" : "destructive"}>{r.Passed ? "Passed" : "Failed"}</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </InstructorPageLayout>

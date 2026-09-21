@@ -24,6 +24,8 @@ export const ParsingProgress = ({ isActive, onComplete }: ParsingProgressProps) 
     { id: "generate", label: "Generating course outline", icon: Sparkles, status: "pending" },
   ]);
 
+  const totalSteps = steps.length;
+
   useEffect(() => {
     if (!isActive) return;
 
@@ -31,12 +33,12 @@ export const ParsingProgress = ({ isActive, onComplete }: ParsingProgressProps) 
     let currentStep = 0;
 
     const interval = setInterval(() => {
-      if (currentStep < steps.length) {
+      if (currentStep < totalSteps) {
         setSteps(prev => prev.map((step, idx) => ({
           ...step,
           status: idx < currentStep ? "complete" : idx === currentStep ? "active" : "pending"
         })));
-        setProgress(((currentStep + 1) / steps.length) * 100);
+        setProgress(((currentStep + 1) / totalSteps) * 100);
         currentStep++;
       } else {
         clearInterval(interval);
@@ -47,7 +49,7 @@ export const ParsingProgress = ({ isActive, onComplete }: ParsingProgressProps) 
     }, stepDuration);
 
     return () => clearInterval(interval);
-  }, [isActive, onComplete]);
+  }, [isActive, onComplete, totalSteps]);
 
   if (!isActive && progress === 0) return null;
 

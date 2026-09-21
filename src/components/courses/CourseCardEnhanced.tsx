@@ -82,13 +82,15 @@ export function CourseCardEnhanced({
                 {/* Level & Rating */}
                 <div className="flex items-center justify-between mb-3">
                     <Badge variant="outline" className={cn("text-xs", getLevelColor(course.level))}>
-                        {levelLabels[course.level]}
+                        {levelLabels[course.level] ?? course.level}
                     </Badge>
-                    <div className="flex items-center gap-1 text-xs">
-                        <Star className="w-3.5 h-3.5 fill-warning text-warning" />
-                        <span className="font-medium">{course.rating}</span>
-                        <span className="text-muted-foreground">({course.studentsEnrolled.toLocaleString()})</span>
-                    </div>
+                    {course.rating > 0 && (
+                        <div className="flex items-center gap-1 text-xs">
+                            <Star className="w-3.5 h-3.5 fill-warning text-warning" />
+                            <span className="font-medium">{course.rating}</span>
+                            <span className="text-muted-foreground">({course.trainersEnrolled.toLocaleString()})</span>
+                        </div>
+                    )}
                 </div>
 
                 <h3 className="font-semibold text-lg text-foreground mb-1 line-clamp-1 group-hover:text-primary transition-colors">
@@ -128,7 +130,7 @@ export function CourseCardEnhanced({
                     </div>
                     <div className="flex items-center gap-1.5">
                         <Users className="w-3.5 h-3.5" />
-                        <span>{course.studentsEnrolled.toLocaleString()}</span>
+                        <span>{course.trainersEnrolled.toLocaleString()}</span>
                     </div>
                 </div>
             </div>

@@ -53,12 +53,13 @@ interface AchievementBadgesProps {
 }
 
 export function AchievementBadges({ streak, totalWeeklyHours, todayBlockCount, totalBlocks }: AchievementBadgesProps) {
-  const now = new Date();
-  const nowMin = now.getHours() * 60 + now.getMinutes();
-  // Consider "all completed" if it's past 9pm and there are blocks
-  const todayAllCompleted = nowMin >= 1260 && todayBlockCount >= 3;
-
-  const stats: BadgeStats = { streak, totalWeeklyHours, todayBlockCount, todayAllCompleted, totalBlocks };
+  const stats = useMemo<BadgeStats>(() => {
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    // Consider "all completed" if it's past 9pm and there are blocks
+    const todayAllCompleted = nowMin >= 1260 && todayBlockCount >= 3;
+    return { streak, totalWeeklyHours, todayBlockCount, todayAllCompleted, totalBlocks };
+  }, [streak, totalWeeklyHours, todayBlockCount, totalBlocks]);
 
   const earned = useMemo(() => allBadges.filter((b) => b.check(stats)), [stats]);
   const locked = useMemo(() => allBadges.filter((b) => !b.check(stats)), [stats]);

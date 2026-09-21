@@ -23,7 +23,7 @@ const InstructorAnnouncements = () => {
               </div>
               <h1 className="text-2xl font-bold">Announcements</h1>
             </div>
-            <p className="text-muted-foreground">Post updates and reminders to your students</p>
+            <p className="text-muted-foreground">Post updates and reminders to your trainers</p>
           </div>
           <Button className="gradient-accent text-white shadow-glow-accent">
             <Plus className="w-4 h-4 mr-2" /> New Announcement

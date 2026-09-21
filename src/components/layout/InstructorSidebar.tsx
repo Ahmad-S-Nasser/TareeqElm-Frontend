@@ -37,7 +37,7 @@ const navItems: NavItem[] = [
   { icon: BookOpen, label: "My Courses", href: "/instructor/courses" },
   { icon: Upload, label: "Create Course", href: "/instructor/create-course" },
   { icon: ListTree, label: "Curriculum", href: "/instructor/curriculum" },
-  { icon: Users, label: "Students", href: "/instructor/students" },
+  { icon: Users, label: "Trainers", href: "/instructor/trainers" },
   { icon: ClipboardList, label: "Assignments", href: "/instructor/assignments" },
   { icon: FileQuestion, label: "Quizzes & Exams", href: "/instructor/quizzes" },
   { icon: MessageSquare, label: "Discussions", href: "/instructor/discussions" },
@@ -79,7 +79,7 @@ export const InstructorSidebarContent = ({ collapsed, onItemClick, className }: 
         </div>
         {!collapsed && (
           <div className="animate-fade-in text-left">
-            <h1 className="font-bold text-lg">Nafea</h1>
+            <h1 className="font-bold text-lg">TareeqElm</h1>
             <p className="text-xs text-muted-foreground">Instructor Portal</p>
           </div>
         )}

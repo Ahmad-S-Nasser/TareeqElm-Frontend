@@ -24,37 +24,37 @@ export function ChapterAccordion({
     onToggle,
     onLessonClick
 }: ChapterAccordionProps) {
-    const completedLessons = chapter.lessons.filter(l => l.isCompleted).length;
-    const totalLessons = chapter.lessons.length;
+    const completedLessons = chapter.Lessons.filter(l => l.IsCompleted).length;
+    const totalLessons = chapter.Lessons.length;
     const progressPercent = (completedLessons / totalLessons) * 100;
 
     return (
         <div className={cn(
             "rounded-2xl border border-border/50 overflow-hidden transition-all",
             isOpen ? "bg-card shadow-soft" : "bg-card/50 hover:bg-card",
-            chapter.isLocked && "opacity-60"
+            chapter.IsLocked && "opacity-60"
         )}>
             {/* Chapter Header */}
             <button
                 onClick={onToggle}
-                disabled={chapter.isLocked}
+                disabled={chapter.IsLocked}
                 className="w-full flex items-center gap-4 p-5 text-left"
             >
                 {/* Chapter Number */}
                 <div className={cn(
                     "w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold shrink-0",
-                    chapter.isCompleted
+                    chapter.IsCompleted
                         ? "bg-success text-white"
-                        : chapter.isLocked
+                        : chapter.IsLocked
                             ? "bg-muted text-muted-foreground"
                             : "gradient-primary text-white"
                 )}>
-                    {chapter.isCompleted ? (
+                    {chapter.IsCompleted ? (
                         <CheckCircle className="w-6 h-6" />
-                    ) : chapter.isLocked ? (
+                    ) : chapter.IsLocked ? (
                         <Lock className="w-5 h-5" />
                     ) : (
-                        chapter.number
+                        chapter.Number
                     )}
                 </div>
 
@@ -62,16 +62,16 @@ export function ChapterAccordion({
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-lg truncate">
-                            {chapter.title}
+                            {chapter.Title}
                         </h3>
-                        {chapter.isCompleted && (
+                        {chapter.IsCompleted && (
                             <span className="px-2 py-0.5 text-xs rounded-full bg-success/10 text-success font-medium">
                                 Completed
                             </span>
                         )}
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
-                        {chapter.description}
+                        {chapter.Description}
                     </p>
 
                     {/* Meta & Progress */}
@@ -83,10 +83,10 @@ export function ChapterAccordion({
                             </span>
                             <span className="flex items-center gap-1">
                                 <Clock className="w-3.5 h-3.5" />
-                                {chapter.duration}
+                                {chapter.Duration}
                             </span>
                         </div>
-                        {!chapter.isLocked && (
+                        {!chapter.IsLocked && (
                             <div className="flex items-center gap-2 flex-1 max-w-[150px]">
                                 <Progress value={progressPercent} className="h-1.5" />
                                 <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -105,14 +105,14 @@ export function ChapterAccordion({
             </button>
 
             {/* Lessons List */}
-            {isOpen && !chapter.isLocked && (
+            {isOpen && !chapter.IsLocked && (
                 <div className="border-t border-border/50 p-2 bg-muted/20">
                     <div className="space-y-1">
-                        {chapter.lessons.map((lesson) => (
+                        {chapter.Lessons.map((lesson) => (
                             <LessonItem
-                                key={lesson.id}
+                                key={lesson.Id}
                                 lesson={lesson}
-                                onClick={() => onLessonClick?.(lesson.id)}
+                                onClick={() => onLessonClick?.(lesson.Id)}
                             />
                         ))}
                     </div>

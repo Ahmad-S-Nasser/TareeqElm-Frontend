@@ -50,34 +50,34 @@ export function LessonItem({ lesson, onClick }: LessonItemProps) {
         }
     };
 
-    const Icon = getTypeIcon(lesson.type);
+    const Icon = getTypeIcon(lesson.Type);
 
     return (
         <button
             onClick={onClick}
-            disabled={lesson.isLocked}
+            disabled={lesson.IsLocked}
             className={cn(
                 "w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left",
                 "hover:bg-muted/50 group",
-                lesson.isLocked && "opacity-50 cursor-not-allowed",
-                lesson.isCompleted && "bg-success/5"
+                lesson.IsLocked && "opacity-50 cursor-not-allowed",
+                lesson.IsCompleted && "bg-success/5"
             )}
         >
             {/* Lesson Number & Status */}
             <div className={cn(
                 "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium shrink-0",
-                lesson.isCompleted
+                lesson.IsCompleted
                     ? "bg-success text-white"
-                    : lesson.isLocked
+                    : lesson.IsLocked
                         ? "bg-muted text-muted-foreground"
                         : "bg-primary/10 text-primary"
             )}>
-                {lesson.isCompleted ? (
+                {lesson.IsCompleted ? (
                     <CheckCircle className="w-4 h-4" />
-                ) : lesson.isLocked ? (
+                ) : lesson.IsLocked ? (
                     <Lock className="w-4 h-4" />
                 ) : (
-                    lesson.number
+                    lesson.Number
                 )}
             </div>
 
@@ -85,27 +85,27 @@ export function LessonItem({ lesson, onClick }: LessonItemProps) {
             <div className="flex-1 min-w-0">
                 <h4 className={cn(
                     "font-medium text-sm truncate group-hover:text-primary transition-colors",
-                    lesson.isCompleted && "text-muted-foreground"
+                    lesson.IsCompleted && "text-muted-foreground"
                 )}>
-                    {lesson.title}
+                    {lesson.Title}
                 </h4>
                 <div className="flex items-center gap-3 mt-1">
                     <span className={cn(
                         "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium",
-                        getTypeColor(lesson.type)
+                        getTypeColor(lesson.Type)
                     )}>
                         <Icon className="w-3 h-3" />
-                        {getTypeLabel(lesson.type)}
+                        {getTypeLabel(lesson.Type)}
                     </span>
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="w-3 h-3" />
-                        {lesson.duration}
+                        {lesson.Duration}
                     </span>
                 </div>
             </div>
 
             {/* Play/View Icon */}
-            {!lesson.isLocked && !lesson.isCompleted && (
+            {!lesson.IsLocked && !lesson.IsCompleted && (
                 <PlayCircle className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
             )}
         </button>

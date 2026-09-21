@@ -1,14 +1,17 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
-import { CourseCardEnhanced, mockCourses, categoryLabels, levelLabels, CourseCategory, CourseLevel, Course } from "@/components/courses";
+import { CourseCardEnhanced, categoryLabels, levelLabels, CourseCategory, CourseLevel, Course } from "@/components/courses";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useCourses } from "@/hooks/useCourses";
-import { Loader2 } from "lucide-react";
+import api, { getApiError } from "@/lib/api";
+import { CourseSummary, useEnrollmentsQuery } from "@/hooks/useTrainerApi";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader2, AlertCircle } from "lucide-react";
 import {
     BookOpen,
     Search,
@@ -37,39 +40,41 @@ const Courses = () => {
     const [selectedCategories, setSelectedCategories] = useState<CourseCategory[]>([]);
     const [selectedLevels, setSelectedLevels] = useState<CourseLevel[]>([]);
 
-    const { courses: dbCourses, loading, fetchPublishedCourses } = useCourses();
+    const { user } = useAuth();
 
-    useEffect(() => {
-        fetchPublishedCourses();
-    }, []);
+    const catalogQuery = useQuery({
+        queryKey: ["courses-catalog"],
+        queryFn: async () => (await api.get<CourseSummary[]>("/Courses", { params: { status: "Published" } })).data,
+    });
+    const enrollmentsQuery = useEnrollmentsQuery();
 
-    const allCourses = useMemo(() => {
-        // Map DB courses to the format expected by CourseCardEnhanced
-        const mappedDbCourses: Course[] = dbCourses.map(c => ({
-            id: c.id,
-            title: c.title,
-            description: c.description || "",
-            progress: (c as any).enrollment?.progress_percentage || 0,
-            duration: `${c.duration_hours || 0} hours`,
-            lessons: 0, // Need to fetch lesson count separately if needed
-            category: (c.category as any) || "certification",
-            level: (c.level as any) || "beginner",
-            instructor: "Instructor",
-            rating: 4.5,
-            studentsEnrolled: 0,
+    const loading = catalogQuery.isLoading || (!!user && enrollmentsQuery.isLoading);
+    const errorMessage = catalogQuery.error
+        ? getApiError(catalogQuery.error, "Failed to load courses.")
+        : null;
+
+    const allCourses = useMemo<Course[]>(() => {
+        const progressByCourse = new Map<string, number>(
+            (enrollmentsQuery.data ?? []).map(e => [e.CourseId, Math.round(e.ProgressPercentage || 0)])
+        );
+        const apiOrigin = (api.defaults.baseURL ?? "").replace(/\/api\/?$/, "");
+        return (catalogQuery.data ?? []).map(c => ({
+            id: c.Id,
+            title: c.Title,
+            description: c.Description || "",
+            progress: progressByCourse.get(c.Id) ?? 0,
+            duration: `${c.DurationHours ?? 0} hours`,
+            lessons: c.LessonsCount,
+            category: (c.Category?.toLowerCase() ?? "certification") as CourseCategory,
+            level: (c.Level?.toLowerCase() ?? "beginner") as CourseLevel,
+            instructor: c.InstructorName || "Instructor",
+            rating: 0,
+            trainersEnrolled: c.EnrolledCount,
             tags: [],
-            image_url: c.image_url || undefined
+            image: c.ImageUrl ? (c.ImageUrl.startsWith("/") ? `${apiOrigin}${c.ImageUrl}` : c.ImageUrl) : undefined,
+            isFeatured: c.IsFeatured,
         }));
-
-        // Merge mock and DB courses, avoiding duplicates if they have the same ID
-        const combined = [...mappedDbCourses];
-        mockCourses.forEach(mock => {
-            if (!combined.find(c => c.id === mock.id)) {
-                combined.push(mock);
-            }
-        });
-        return combined;
-    }, [dbCourses]);
+    }, [catalogQuery.data, enrollmentsQuery.data]);
 
     const filteredCourses = useMemo(() => {
         return allCourses.filter((course) => {
@@ -129,7 +134,7 @@ const Courses = () => {
             <ApplicantSidebar onCollapse={setSidebarCollapsed} />
             <Header
                 sidebarCollapsed={sidebarCollapsed}
-                userRole="Student"
+                userRole="Trainer"
                 mobileSidebar={<ApplicantSidebarContent onItemClick={() => console.log('Mobile sidebar clicked')} />}
             />
 
@@ -283,6 +288,13 @@ const Courses = () => {
                                 <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
                                 <p className="text-muted-foreground">Loading courses...</p>
                             </div>
+                        ) : errorMessage ? (
+                            <div className="text-center py-16">
+                                <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-3" />
+                                <h3 className="text-lg font-semibold mb-1">Could not load courses</h3>
+                                <p className="text-muted-foreground mb-4">{errorMessage}</p>
+                                <Button variant="outline" onClick={() => catalogQuery.refetch()}>Try again</Button>
+                            </div>
                         ) : filteredCourses.length > 0 ? (
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {filteredCourses.map((course) => (
@@ -301,7 +313,9 @@ const Courses = () => {
                                 </div>
                                 <h3 className="text-lg font-semibold mb-2">No courses found</h3>
                                 <p className="text-muted-foreground mb-4">
-                                    Try adjusting your search or filters
+                                    {allCourses.length === 0
+                                        ? "There are no published courses yet. Check back soon."
+                                        : "Try adjusting your search or filters"}
                                 </p>
                                 <Button
                                     variant="outline"

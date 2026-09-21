@@ -1,45 +1,66 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InstructorSidebar } from "@/components/layout/InstructorSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User, Bell, Lock, Mail, Globe, Save } from "lucide-react";
+import { User, Bell, Lock, Save, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getApiError } from "@/lib/api";
+import { useProfile, splitName, initials } from "@/hooks/useProfile";
 
 const InstructorSettings = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const { toast } = useToast();
-    const [isLoading, setIsLoading] = useState(false);
+    const { data: me, isLoading: profileLoading, isError, error, saveProfile, changePassword } = useProfile();
 
-    // Profile State
-    const [profile, setProfile] = useState({
-        firstName: "Sarah",
-        lastName: "Mitchell",
-        bio: "Senior Software Engineer with 10+ years of experience in web development. Passionate about teaching modern React patterns.",
-        website: "https://sarahmitchell.dev",
-        emailNotifications: {
-            enrollments: true,
-            completions: true,
-            questions: false
+    const [name, setName] = useState({ firstName: "", lastName: "" });
+    const [passwords, setPasswords] = useState({ current: "", next: "", confirm: "" });
+    // Local-only preview toggles: there is no server-side notification preference yet.
+    const [emailNotifications, setEmailNotifications] = useState({ enrollments: true, completions: true, questions: false });
+
+    useEffect(() => {
+        if (me) {
+            const { first, last } = splitName(me.FullName);
+            setName({ firstName: first, lastName: last });
         }
-    });
+    }, [me]);
 
-    const handleSave = () => {
-        setIsLoading(true);
-        setTimeout(() => {
-            setIsLoading(false);
-            toast({
-                title: "Settings Saved",
-                description: "Your changes have been updated successfully.",
-            });
-        }, 1000);
+    const handleSave = async () => {
+        const fullName = `${name.firstName} ${name.lastName}`.trim();
+        if (!fullName) {
+            toast({ variant: "destructive", title: "Name is required" });
+            return;
+        }
+        try {
+            await saveProfile.mutateAsync({ FullName: fullName });
+            toast({ title: "Profile Saved", description: "Your changes have been updated successfully." });
+        } catch (err) {
+            toast({ variant: "destructive", title: "Could not save", description: getApiError(err, "Could not save your profile.") });
+        }
+    };
+
+    const handlePassword = async () => {
+        if (!passwords.current || passwords.next.length < 8) {
+            toast({ variant: "destructive", title: "Check your passwords", description: "Enter your current password and a new one of at least 8 characters." });
+            return;
+        }
+        if (passwords.next !== passwords.confirm) {
+            toast({ variant: "destructive", title: "Passwords do not match" });
+            return;
+        }
+        try {
+            await changePassword.mutateAsync({ CurrentPassword: passwords.current, NewPassword: passwords.next });
+            setPasswords({ current: "", next: "", confirm: "" });
+            toast({ title: "Password updated" });
+        } catch (err) {
+            toast({ variant: "destructive", title: "Could not update password", description: getApiError(err, "Could not update your password.") });
+        }
     };
 
     return (
@@ -71,70 +92,42 @@ const InstructorSettings = () => {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Public Profile</CardTitle>
-                                    <CardDescription>This information will be displayed to students on your course pages.</CardDescription>
+                                    <CardDescription>Your name is displayed to trainers on your course pages.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
-                                    <div className="flex items-center gap-6">
-                                        <Avatar className="w-20 h-20">
-                                            <AvatarImage src="/placeholder-avatar.jpg" />
-                                            <AvatarFallback className="text-lg">{profile.firstName[0]}{profile.lastName[0]}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="space-y-2">
-                                            <Button variant="outline" size="sm">Change Avatar</Button>
-                                            <p className="text-xs text-muted-foreground">JPG, GIF or PNG. Max 1MB.</p>
-                                        </div>
-                                    </div>
+                                    {profileLoading ? (
+                                        <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+                                    ) : isError ? (
+                                        <p className="text-destructive text-sm">{getApiError(error, "Could not load your profile.")}</p>
+                                    ) : (
+                                        <>
+                                            <div className="flex items-center gap-6">
+                                                <Avatar className="w-20 h-20">
+                                                    {me?.AvatarUrl && <AvatarImage src={me.AvatarUrl} />}
+                                                    <AvatarFallback className="text-lg">{initials(me?.FullName ?? "")}</AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="font-semibold">{me?.FullName}</p>
+                                                    <p className="text-sm text-muted-foreground">{me?.Email}</p>
+                                                </div>
+                                            </div>
 
-                                    <div className="grid gap-4 md:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="firstName">First Name</Label>
-                                            <Input
-                                                id="firstName"
-                                                value={profile.firstName}
-                                                onChange={(e) => setProfile({ ...profile, firstName: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="lastName">Last Name</Label>
-                                            <Input
-                                                id="lastName"
-                                                value={profile.lastName}
-                                                onChange={(e) => setProfile({ ...profile, lastName: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="bio">Bio</Label>
-                                        <Textarea
-                                            id="bio"
-                                            className="h-24"
-                                            placeholder="Tell students about yourself..."
-                                            value={profile.bio}
-                                            onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                                        />
-                                        <p className="text-xs text-muted-foreground">Brief description for your instructor profile.</p>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="website">Website</Label>
-                                        <div className="flex">
-                                            <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm">
-                                                <Globe className="w-4 h-4" />
-                                            </span>
-                                            <Input
-                                                id="website"
-                                                className="rounded-l-none"
-                                                placeholder="https://your-website.com"
-                                                value={profile.website}
-                                                onChange={(e) => setProfile({ ...profile, website: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
+                                            <div className="grid gap-4 md:grid-cols-2">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="firstName">First Name</Label>
+                                                    <Input id="firstName" value={name.firstName} onChange={(e) => setName({ ...name, firstName: e.target.value })} />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="lastName">Last Name</Label>
+                                                    <Input id="lastName" value={name.lastName} onChange={(e) => setName({ ...name, lastName: e.target.value })} />
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
                                 </CardContent>
                                 <CardFooter className="border-t px-6 py-4">
-                                    <Button onClick={handleSave} disabled={isLoading}>
-                                        {isLoading ? "Saving..." : <><Save className="w-4 h-4 mr-2" /> Save Changes</>}
+                                    <Button onClick={handleSave} disabled={saveProfile.isPending || profileLoading || isError}>
+                                        {saveProfile.isPending ? "Saving..." : <><Save className="w-4 h-4 mr-2" /> Save Changes</>}
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -145,7 +138,7 @@ const InstructorSettings = () => {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>Notifications</CardTitle>
-                                    <CardDescription>Choose what you want to be notified about.</CardDescription>
+                                    <CardDescription>Email notifications are coming soon. These switches are a preview and are not saved yet.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <div className="space-y-4">
@@ -153,38 +146,35 @@ const InstructorSettings = () => {
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-0.5">
                                                 <Label>New Enrollments</Label>
-                                                <p className="text-sm text-muted-foreground">Receive an email when a student enrolls.</p>
+                                                <p className="text-sm text-muted-foreground">Receive an email when a trainer enrolls.</p>
                                             </div>
                                             <Switch
-                                                checked={profile.emailNotifications.enrollments}
-                                                onCheckedChange={(c) => setProfile(p => ({ ...p, emailNotifications: { ...p.emailNotifications, enrollments: c } }))}
+                                                checked={emailNotifications.enrollments}
+                                                onCheckedChange={(c) => setEmailNotifications(p => ({ ...p, enrollments: c }))}
                                             />
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-0.5">
                                                 <Label>Course Completions</Label>
-                                                <p className="text-sm text-muted-foreground">Receive an email when a student completes a course.</p>
+                                                <p className="text-sm text-muted-foreground">Receive an email when a trainer completes a course.</p>
                                             </div>
                                             <Switch
-                                                checked={profile.emailNotifications.completions}
-                                                onCheckedChange={(c) => setProfile(p => ({ ...p, emailNotifications: { ...p.emailNotifications, completions: c } }))}
+                                                checked={emailNotifications.completions}
+                                                onCheckedChange={(c) => setEmailNotifications(p => ({ ...p, completions: c }))}
                                             />
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-0.5">
                                                 <Label>Q&A Updates</Label>
-                                                <p className="text-sm text-muted-foreground">Receive an email when a student asks a question.</p>
+                                                <p className="text-sm text-muted-foreground">Receive an email when a trainer asks a question.</p>
                                             </div>
                                             <Switch
-                                                checked={profile.emailNotifications.questions}
-                                                onCheckedChange={(c) => setProfile(p => ({ ...p, emailNotifications: { ...p.emailNotifications, questions: c } }))}
+                                                checked={emailNotifications.questions}
+                                                onCheckedChange={(c) => setEmailNotifications(p => ({ ...p, questions: c }))}
                                             />
                                         </div>
                                     </div>
                                 </CardContent>
-                                <CardFooter className="border-t px-6 py-4">
-                                    <Button onClick={handleSave} disabled={isLoading}>Save Preferences</Button>
-                                </CardFooter>
                             </Card>
                         </TabsContent>
 
@@ -198,21 +188,21 @@ const InstructorSettings = () => {
                                 <CardContent className="space-y-6">
                                     <div className="space-y-2">
                                         <Label htmlFor="current-password">Current Password</Label>
-                                        <Input id="current-password" type="password" />
+                                        <Input id="current-password" type="password" autoComplete="current-password" value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} />
                                     </div>
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="space-y-2">
                                             <Label htmlFor="new-password">New Password</Label>
-                                            <Input id="new-password" type="password" />
+                                            <Input id="new-password" type="password" autoComplete="new-password" value={passwords.next} onChange={(e) => setPasswords({ ...passwords, next: e.target.value })} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="confirm-password">Confirm Password</Label>
-                                            <Input id="confirm-password" type="password" />
+                                            <Input id="confirm-password" type="password" autoComplete="new-password" value={passwords.confirm} onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })} />
                                         </div>
                                     </div>
                                 </CardContent>
                                 <CardFooter className="border-t px-6 py-4">
-                                    <Button onClick={handleSave} disabled={isLoading}>Update Password</Button>
+                                    <Button onClick={handlePassword} disabled={changePassword.isPending}>{changePassword.isPending ? "Updating..." : "Update Password"}</Button>
                                 </CardFooter>
                             </Card>
                         </TabsContent>

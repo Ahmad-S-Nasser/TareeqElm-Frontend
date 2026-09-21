@@ -20,8 +20,8 @@ const learningGoals = [
 ];
 
 const roles = [
-  { id: "applicant" as const, label: "Student", icon: GraduationCap, description: "Access courses, flashcards, and AI tutoring" },
-  { id: "instructor" as const, label: "Instructor", icon: BookOpen, description: "Create and manage courses, track student progress" },
+  { id: "applicant" as const, label: "Trainer", icon: GraduationCap, description: "Access courses, flashcards, and AI tutoring" },
+  { id: "instructor" as const, label: "Instructor", icon: BookOpen, description: "Create and manage courses, track trainer progress" },
   { id: "university" as const, label: "University / Admin", icon: Building2, description: "Manage departments, instructors, and analytics" },
 ];
 
@@ -34,11 +34,11 @@ const Onboarding = () => {
   const [aiReady, setAiReady] = useState(false);
 
   const stepIndex = STEPS.indexOf(currentStep);
-  const isStudent = selectedRole === "applicant";
+  const isTrainer = selectedRole === "applicant";
 
   const next = () => {
     if (currentStep === "welcome") setCurrentStep("role");
-    else if (currentStep === "role") setCurrentStep(isStudent ? "goals" : "ai-setup");
+    else if (currentStep === "role") setCurrentStep(isTrainer ? "goals" : "ai-setup");
     else if (currentStep === "goals") setCurrentStep("ai-setup");
     else finish();
   };
@@ -46,11 +46,11 @@ const Onboarding = () => {
   const back = () => {
     if (currentStep === "role") setCurrentStep("welcome");
     else if (currentStep === "goals") setCurrentStep("role");
-    else if (currentStep === "ai-setup") setCurrentStep(isStudent ? "goals" : "role");
+    else if (currentStep === "ai-setup") setCurrentStep(isTrainer ? "goals" : "role");
   };
 
   const finish = () => {
-    localStorage.setItem("nafea_onboarding_complete", "true");
+    localStorage.setItem("tareeqelm_onboarding_complete", "true");
     const dest = selectedRole === "instructor" ? "/instructor" : selectedRole === "university" ? "/university" : "/";
     navigate(dest, { replace: true });
   };
@@ -63,13 +63,13 @@ const Onboarding = () => {
       <div className="w-full max-w-2xl">
         {/* Progress */}
         <div className="flex items-center gap-2 mb-8 justify-center">
-          {STEPS.filter(s => isStudent || s !== "goals").map((s, i) => (
+          {STEPS.filter(s => isTrainer || s !== "goals").map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               <div className={cn(
                 "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all",
                 STEPS.indexOf(s) <= stepIndex ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               )}>{i + 1}</div>
-              {i < (isStudent ? 3 : 2) && <div className={cn("w-12 h-0.5", STEPS.indexOf(s) < stepIndex ? "bg-primary" : "bg-border")} />}
+              {i < (isTrainer ? 3 : 2) && <div className={cn("w-12 h-0.5", STEPS.indexOf(s) < stepIndex ? "bg-primary" : "bg-border")} />}
             </div>
           ))}
         </div>
@@ -80,9 +80,9 @@ const Onboarding = () => {
             <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
               <Rocket className="w-10 h-10 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold">مرحباً بك في نافع! 🎓</h1>
+            <h1 className="text-3xl font-bold">مرحباً بك في طريق علم! 🎓</h1>
             <p className="text-lg text-muted-foreground max-w-md mx-auto">
-              Welcome to <strong>Nafea</strong> — your AI-powered learning platform. Let's set up your personalized experience in just a few steps.
+              Welcome to <strong>TareeqElm</strong> — your AI-powered learning platform. Let's set up your personalized experience in just a few steps.
             </p>
             <Button size="lg" onClick={next} className="gap-2">
               Get Started <ArrowRight className="w-4 h-4" />
@@ -179,7 +179,7 @@ const Onboarding = () => {
             <div className="grid gap-3">
               {[
                 { label: "AI Study Coach", desc: "Get personalized guidance and study strategies", done: true },
-                { label: "Suggested Courses", desc: isStudent ? "Curated courses based on your goals" : "Popular courses in your domain", done: true },
+                { label: "Suggested Courses", desc: isTrainer ? "Curated courses based on your goals" : "Popular courses in your domain", done: true },
                 { label: "Smart Study Schedule", desc: "AI-generated time blocks optimized for your peak hours", done: true },
                 { label: "Spaced Repetition", desc: "Flashcard system with intelligent review intervals", done: true },
               ].map((item, i) => (

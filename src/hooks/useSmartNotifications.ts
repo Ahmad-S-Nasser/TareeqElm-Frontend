@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from './useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { getApiError } from '@/lib/api';
+import { useActivitySummaryQuery, useTrainerStatsQuery } from './useTrainerApi';
 
 export interface SmartNotification {
   id: string;
@@ -14,18 +15,8 @@ export interface SmartNotification {
   actionLabel?: string;
 }
 
-const isValidUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
-const MOCK_NOTIFICATIONS: SmartNotification[] = [
-  { id: 'mock-flash', type: 'flashcards_due', title: '8 Flashcards Due', message: 'You have 8 flashcards waiting for review. Reviewing now prevents forgetting!', priority: 'medium', read: false, createdAt: new Date().toISOString(), actionUrl: '/spaced-repetition', actionLabel: 'Review Now' },
-  { id: 'mock-streak', type: 'streak_risk', title: '🔥 12-Day Streak Active!', message: 'Complete one session today to keep your streak going!', priority: 'high', read: false, createdAt: new Date().toISOString(), actionUrl: '/courses', actionLabel: 'Continue Learning' },
-  { id: 'mock-plan', type: 'study_reminder', title: 'Good Morning! Plan Your Day', message: 'Start your day right — create a study schedule to maximize productivity.', priority: 'low', read: false, createdAt: new Date().toISOString(), actionUrl: '/time-blocking', actionLabel: 'Plan Day' },
-];
-
 export const useSmartNotifications = () => {
-  const { user, isMockUser } = useAuth();
-  const [notifications, setNotifications] = useState<SmartNotification[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const [pushEnabled, setPushEnabled] = useState(false);
 
   useEffect(() => {
@@ -48,106 +39,99 @@ export const useSmartNotifications = () => {
     }
   }, [pushEnabled]);
 
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
+  const pushedRef = useRef<Set<string>>(new Set());
+  const REFRESH_MS = 5 * 60 * 1000;
+  const summaryQuery = useActivitySummaryQuery();
+  const statsQuery = useTrainerStatsQuery();
+  const summary = summaryQuery.data;
+  const trainer = statsQuery.data;
+  const dataUpdatedAt = Math.max(summaryQuery.dataUpdatedAt, statsQuery.dataUpdatedAt);
+
+  // Keep the underlying numbers fresh while the app is open.
+  const { refetch: refetchSummary } = summaryQuery;
+  const { refetch: refetchStats } = statsQuery;
   useEffect(() => {
     if (!user) return;
+    const interval = setInterval(() => {
+      refetchSummary();
+      refetchStats();
+    }, REFRESH_MS);
+    return () => clearInterval(interval);
+  }, [user, refetchSummary, refetchStats, REFRESH_MS]);
 
-    // Mock users get instant mock notifications
-    if (isMockUser || !isValidUuid(user.id)) {
-      setNotifications(MOCK_NOTIFICATIONS);
-      setLoading(false);
-      return;
+  const generated = useMemo<SmartNotification[]>(() => {
+    if (!user || !summary || !trainer) return [];
+    const list: SmartNotification[] = [];
+    const now = new Date();
+    const createdAt = new Date(dataUpdatedAt || Date.now()).toISOString();
+
+    // 1. Flashcards due
+    if (summary.CardsDue > 0) {
+      list.push({
+        id: 'flashcards-due', type: 'flashcards_due',
+        title: `${summary.CardsDue} Flashcards Due`,
+        message: summary.CardsDue > 5 ? `You have ${summary.CardsDue} flashcards waiting for review. Reviewing now prevents forgetting!` : `${summary.CardsDue} cards are ready for review. A quick session will strengthen your memory.`,
+        priority: summary.CardsDue > 10 ? 'high' : 'medium', read: false, createdAt, actionUrl: '/spaced-repetition', actionLabel: 'Review Now',
+      });
     }
 
-    const generateNotifications = async () => {
-      setLoading(true);
-      const generated: SmartNotification[] = [];
-      const now = new Date();
-      const today = now.toISOString().split('T')[0];
+    // 2. Weekly goal check
+    if (trainer.SessionsThisWeek < 3 && now.getDay() >= 3) {
+      list.push({ id: 'goal-unmet', type: 'goal_unmet', title: 'Weekly Study Goal at Risk', message: `Only ${trainer.SessionsThisWeek} study sessions this week. Try to fit in ${5 - trainer.SessionsThisWeek} more to stay on track.`, priority: 'high', read: false, createdAt, actionUrl: '/time-blocking', actionLabel: 'Plan Session' });
+    }
 
-      try {
-        const [cardsRes, sessionsRes, blocksRes, lessonsRes, quizRes] = await Promise.all([
-          supabase.from('sr_cards').select('*').eq('student_id', user.id),
-          supabase.from('study_sessions').select('*').eq('student_id', user.id).gte('started_at', new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()),
-          supabase.from('time_blocks').select('*').eq('student_id', user.id).eq('block_date', today),
-          supabase.from('lesson_completions').select('*').eq('student_id', user.id),
-          supabase.from('quiz_results').select('*').eq('student_id', user.id).order('completed_at', { ascending: false }).limit(5),
-        ]);
+    // 3. Focus drop
+    if (trainer.SessionsThisWeek >= 3 && trainer.AvgFocusScore > 0 && trainer.AvgFocusScore < 60) {
+      list.push({ id: 'focus-drop', type: 'focus_drop', title: 'Focus Score Dropping', message: 'Your recent study sessions have had a low focus score. Try the Pomodoro technique for longer, deeper focus.', priority: 'medium', read: false, createdAt, actionUrl: '/time-blocking', actionLabel: 'Start Pomodoro' });
+    }
 
-        const cards = cardsRes.data || [];
-        const sessions = sessionsRes.data || [];
-        const todayBlocks = blocksRes.data || [];
-        const lessons = lessonsRes.data || [];
-        const recentQuizzes = quizRes.data || [];
+    // 4. Streak risk: an active streak and no review activity yet today, late in the day
+    if (summary.Streak > 0 && trainer.CardsReviewedToday === 0 && now.getHours() >= 18) {
+      list.push({ id: 'streak-risk', type: 'streak_risk', title: `🔥 ${summary.Streak}-Day Streak at Risk!`, message: 'Complete one lesson or review session today to keep your streak alive!', priority: 'high', read: false, createdAt, actionUrl: '/courses', actionLabel: 'Continue Learning' });
+    }
 
-        // 1. Flashcards due
-        const dueCards = cards.filter(c => new Date(c.next_review) <= now);
-        if (dueCards.length > 0) {
-          const n: SmartNotification = {
-            id: 'flashcards-due', type: 'flashcards_due',
-            title: `${dueCards.length} Flashcards Due`,
-            message: dueCards.length > 5 ? `You have ${dueCards.length} flashcards waiting for review. Reviewing now prevents forgetting!` : `${dueCards.length} cards are ready for review. A quick session will strengthen your memory.`,
-            priority: dueCards.length > 10 ? 'high' : 'medium', read: false, createdAt: now.toISOString(), actionUrl: '/spaced-repetition', actionLabel: 'Review Now',
-          };
-          generated.push(n);
-          if (dueCards.length > 10) sendPushNotification(n.title, n.message);
-        }
+    // 5. Morning planning
+    if (now.getHours() < 10 && trainer.TimeBlocksToday === 0) {
+      list.push({ id: 'morning-plan', type: 'study_reminder', title: 'Good Morning! Plan Your Day', message: 'Start your day right — create a study schedule to maximize productivity.', priority: 'low', read: false, createdAt, actionUrl: '/time-blocking', actionLabel: 'Plan Day' });
+    }
 
-        // 2. Goal check
-        if (sessions.length < 3 && now.getDay() >= 3) {
-          generated.push({ id: 'goal-unmet', type: 'goal_unmet', title: 'Weekly Study Goal at Risk', message: `Only ${sessions.length} study sessions this week. Try to fit in ${5 - sessions.length} more to stay on track.`, priority: 'high', read: false, createdAt: now.toISOString(), actionUrl: '/time-blocking', actionLabel: 'Plan Session' });
-        }
+    // 6. Quiz performance
+    if (summary.QuizzesTaken >= 2 && trainer.QuizAverage < 60) {
+      list.push({ id: 'quiz-drop', type: 'focus_drop', title: 'Quiz Scores Need Attention', message: `Your quiz average is ${Math.round(trainer.QuizAverage)}%. Consider reviewing weak topics with the AI Coach.`, priority: 'medium', read: false, createdAt, actionUrl: '/ai-coach', actionLabel: 'Get Help' });
+    }
 
-        // 3. Focus drop
-        const recentSessions = sessions.slice(-5);
-        const avgDuration = recentSessions.length > 0 ? recentSessions.reduce((s, sess) => s + (sess.duration_seconds || 0), 0) / recentSessions.length : 0;
-        if (recentSessions.length >= 3 && avgDuration < 900) {
-          generated.push({ id: 'focus-drop', type: 'focus_drop', title: 'Focus Score Dropping', message: 'Your recent study sessions have been short. Try the Pomodoro technique for longer, deeper focus.', priority: 'medium', read: false, createdAt: now.toISOString(), actionUrl: '/time-blocking', actionLabel: 'Start Pomodoro' });
-        }
+    return list;
+  }, [user, summary, trainer, dataUpdatedAt]);
 
-        // 4. Streak risk
-        const completionDates = new Set(lessons.map(l => l.completed_at.split('T')[0]));
-        const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        if (completionDates.has(yesterday) && !completionDates.has(today) && now.getHours() >= 18) {
-          const n: SmartNotification = { id: 'streak-risk', type: 'streak_risk', title: '🔥 Streak at Risk!', message: "Complete one lesson or review session today to keep your streak alive!", priority: 'high', read: false, createdAt: now.toISOString(), actionUrl: '/courses', actionLabel: 'Continue Learning' };
-          generated.push(n);
-          sendPushNotification(n.title, n.message);
-        }
+  const notifications = useMemo(
+    () => generated.map(n => (readIds.has(n.id) ? { ...n, read: true } : n)),
+    [generated, readIds]
+  );
 
-        // 5. Morning planning
-        if (now.getHours() < 10 && todayBlocks.length === 0) {
-          generated.push({ id: 'morning-plan', type: 'study_reminder', title: 'Good Morning! Plan Your Day', message: "Start your day right — create a study schedule to maximize productivity.", priority: 'low', read: false, createdAt: now.toISOString(), actionUrl: '/time-blocking', actionLabel: 'Plan Day' });
-        }
-
-        // 6. Quiz performance
-        if (recentQuizzes.length >= 2) {
-          const avgScore = recentQuizzes.reduce((s, q) => s + Number(q.percentage), 0) / recentQuizzes.length;
-          if (avgScore < 60) {
-            generated.push({ id: 'quiz-drop', type: 'focus_drop', title: 'Quiz Scores Need Attention', message: `Your recent quiz average is ${Math.round(avgScore)}%. Consider reviewing weak topics with the AI Coach.`, priority: 'medium', read: false, createdAt: now.toISOString(), actionUrl: '/ai-coach', actionLabel: 'Get Help' });
-          }
-        }
-
-        setNotifications(generated);
-      } catch (e) {
-        console.error('Failed to generate notifications', e);
-      } finally {
-        setLoading(false);
+  // Browser push for the urgent ones, once each
+  useEffect(() => {
+    generated.forEach(n => {
+      if (n.priority === 'high' && !pushedRef.current.has(n.id)) {
+        pushedRef.current.add(n.id);
+        sendPushNotification(n.title, n.message);
       }
-    };
+    });
+  }, [generated, sendPushNotification]);
 
-    generateNotifications();
-    const interval = setInterval(generateNotifications, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [user, isMockUser, sendPushNotification]);
+  const loading = !!user && (summaryQuery.isLoading || statsQuery.isLoading);
+  const queryError = summaryQuery.error || statsQuery.error;
+  const error = queryError ? getApiError(queryError, 'Failed to load notifications.') : null;
 
   const markRead = useCallback((id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    setReadIds(prev => new Set(prev).add(id));
   }, []);
 
   const markAllRead = useCallback(() => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  }, []);
+    setReadIds(new Set(generated.map(n => n.id)));
+  }, [generated]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  return { notifications, loading, unreadCount, markRead, markAllRead, pushEnabled, requestPushPermission };
+  return { notifications, loading, error, unreadCount, markRead, markAllRead, pushEnabled, requestPushPermission };
 };

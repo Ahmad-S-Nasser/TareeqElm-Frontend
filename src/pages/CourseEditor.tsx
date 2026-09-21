@@ -22,6 +22,9 @@ import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Copy, Eye, EyeOff, Lock, Unlock, Trash2, Archive, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useEnrolledTrainers } from "@/hooks/useEnrolledTrainers";
+import { format } from "date-fns";
+import { getApiError } from "@/lib/api";
 
 const CourseEditor = () => {
     const { courseId } = useParams();
@@ -29,33 +32,22 @@ const CourseEditor = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [activeTab, setActiveTab] = useState("info");
 
-    // State for Course Info
     const [courseInfo, setCourseInfo] = useState({
-        title: "",
-        description: "",
-        category: "",
-        level: "beginner",
-        minApplicants: 0,
-        pdfUrl: "",
-        startDate: "",
-        endDate: "",
-        attachmentUrl: ""
-    });
-
-    // State for Settings
-    const [settings, setSettings] = useState({
-        isPublished: false,
-        isPublic: true,
-        allowComments: true,
-        showReviews: true,
-        enrollmentType: "open"
+        Title: "",
+        Description: "",
+        Category: "",
+        Level: "beginner",
+        MinApplicants: 0,
+        ImageUrl: "",
+        Status: "Draft" as "Draft" | "Published" | "Archived"
     });
 
     const [chapters, setChapters] = useState<Chapter[]>([]);
     const [loadingCourse, setLoadingCourse] = useState(true);
 
-    const { updateCourse, getCourseById } = useCourses(); // Assuming we use existing hook for basic updates
-    const { analyzeSyllabus, uploadMedia, saveCurriculum, fetchCurriculum, analyzing, loading: savingCurriculum, uploading } = useCourseEditor();
+    const { updateCourse, getCourseById, deleteCourse } = useCourses();
+    const { trainers: enrolledTrainers, loading: trainersLoading, error: trainersError } = useEnrolledTrainers(courseId);
+    const { analyzeSyllabus, uploadMedia, saveCurriculum, fetchCurriculum, analyzing, analysisError, loading: savingCurriculum } = useCourseEditor();
     const { toast } = useToast();
 
     useEffect(() => {
@@ -63,104 +55,85 @@ const CourseEditor = () => {
             if (!courseId) return;
 
             setLoadingCourse(true);
-            const { course } = await getCourseById(courseId);
-            if (course) {
-                setCourseInfo({
-                    title: course.title || "",
-                    description: course.description || "",
-                    category: course.category || "",
-                    level: course.level || "beginner",
-                    minApplicants: 0, // Not in DB
-                    pdfUrl: course.attachment_url || "",
-                    startDate: course.start_date || "",
-                    endDate: course.end_date || "",
-                    attachmentUrl: course.attachment_url || ""
-                });
-            }
+            try {
+                const { course } = await getCourseById(courseId);
+                if (course) {
+                    setCourseInfo({
+                        Title: course.Title || "",
+                        Description: course.Description || "",
+                        Category: course.Category || "",
+                        Level: course.Level?.toLowerCase() || "beginner",
+                        MinApplicants: 0,
+                        ImageUrl: course.ImageUrl || "",
+                        Status: course.Status || "Draft"
+                    });
+                }
 
-            const curriculum = await fetchCurriculum(courseId);
-            if (curriculum) {
-                setChapters(curriculum);
+                const curr = await fetchCurriculum(courseId);
+                if (curr) {
+                    setChapters(curr);
+                }
+            } catch (error) {
+                console.error("Error loading course data:", error);
+            } finally {
+                setLoadingCourse(false);
             }
-            setLoadingCourse(false);
         };
 
         loadData();
-    }, [courseId]);
+    }, [courseId, getCourseById, fetchCurriculum]);
 
     const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Upload PDF and save as attachment
-        const url = await uploadMedia(file, 'attachments');
-        if (url) {
-            setCourseInfo(prev => ({ ...prev, pdfUrl: url, attachmentUrl: url }));
-            console.log("Attachment uploaded:", url);
-        }
-
-        // AI Analyze
         const structure = await analyzeSyllabus(file);
+        e.target.value = "";
         if (structure) {
-            // Map AI structure to chapters
-            const newChapters: Chapter[] = structure.map((module: any) => ({
-                id: crypto.randomUUID(),
-                title: module.title,
-                lessons: module.lessons.map((l: any) => ({
-                    id: crypto.randomUUID(),
-                    title: l.title,
-                    type: l.type,
-                    content: ""
-                }))
-            }));
-            setChapters(newChapters);
-            setActiveTab("curriculum"); // Switch to curriculum tab to show results
+            setChapters(structure);
+            setActiveTab("curriculum");
         }
     };
 
     const handleSaveInfo = async () => {
         if (!courseId) return;
         await updateCourse(courseId, {
-            title: courseInfo.title,
-            description: courseInfo.description,
-            category: courseInfo.category,
-            level: courseInfo.level as any,
-            // duration_hours: courseInfo.duration_hours, // Added if needed
+            Title: courseInfo.Title,
+            Description: courseInfo.Description,
+            Category: courseInfo.Category,
+            Level: courseInfo.Level,
+            Status: courseInfo.Status
         });
     };
 
     const handleSaveCurriculum = async () => {
         if (!courseId) return;
-        await saveCurriculum(courseId, chapters);
+        const saved = await saveCurriculum(courseId, chapters);
+        if (saved) setChapters(saved);
     };
 
-    const handleSaveSettings = () => {
-        toast({
-            title: "Settings Saved",
-            description: "Course settings have been updated successfully.",
-        });
+    const handleArchiveCourse = async () => {
+        if (!courseId) return;
+        const { error } = await updateCourse(courseId, { Status: "Archived" });
+        if (!error) setCourseInfo(prev => ({ ...prev, Status: "Archived" }));
+        else toast({ variant: "destructive", title: "Archive failed", description: getApiError(error) });
     };
 
-    const handleArchiveCourse = () => {
-        toast({
-            title: "Course Archived",
-            description: "This course is now hidden from students.",
-        });
-    };
-
-    const handleDeleteCourse = () => {
-        toast({
-            variant: "destructive",
-            title: "Course Deleted",
-            description: "The course has been permanently deleted.",
-        });
+    const handleDeleteCourse = async () => {
+        if (!courseId) return;
+        if (!window.confirm("Permanently delete this course and all of its content?")) return;
+        const { error } = await deleteCourse(courseId);
+        if (error) {
+            toast({ variant: "destructive", title: "Delete failed", description: getApiError(error, "The course could not be deleted.") });
+            return;
+        }
         navigate("/instructor/courses");
     };
 
     return (
         <div className="min-h-screen bg-background">
             <InstructorSidebar onCollapse={setSidebarCollapsed} />
-            <Header sidebarCollapsed={sidebarCollapsed} userRole="Instructor" />
+            <Header sidebarCollapsed={sidebarCollapsed} />
 
             <main className={cn(
                 "pt-20 pb-8 px-6 transition-all duration-300",
@@ -182,7 +155,7 @@ const CourseEditor = () => {
                         <TabsList>
                             <TabsTrigger value="info">Course Info</TabsTrigger>
                             <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
-                            <TabsTrigger value="students">Students</TabsTrigger>
+                            <TabsTrigger value="trainers">Trainers</TabsTrigger>
                             <TabsTrigger value="settings">Settings</TabsTrigger>
                         </TabsList>
 
@@ -197,8 +170,8 @@ const CourseEditor = () => {
                                         <Label htmlFor="title">Course Title</Label>
                                         <Input
                                             id="title"
-                                            value={courseInfo.title}
-                                            onChange={(e) => setCourseInfo({ ...courseInfo, title: e.target.value })}
+                                            value={courseInfo.Title}
+                                            onChange={(e) => setCourseInfo({ ...courseInfo, Title: e.target.value })}
                                             placeholder="e.g. Master React"
                                         />
                                     </div>
@@ -207,8 +180,8 @@ const CourseEditor = () => {
                                         <Label htmlFor="description">Description</Label>
                                         <Textarea
                                             id="description"
-                                            value={courseInfo.description}
-                                            onChange={(e) => setCourseInfo({ ...courseInfo, description: e.target.value })}
+                                            value={courseInfo.Description}
+                                            onChange={(e) => setCourseInfo({ ...courseInfo, Description: e.target.value })}
                                             rows={4}
                                         />
                                     </div>
@@ -218,15 +191,15 @@ const CourseEditor = () => {
                                             <Label htmlFor="category">Category</Label>
                                             <Input
                                                 id="category"
-                                                value={courseInfo.category}
-                                                onChange={(e) => setCourseInfo({ ...courseInfo, category: e.target.value })}
+                                                value={courseInfo.Category}
+                                                onChange={(e) => setCourseInfo({ ...courseInfo, Category: e.target.value })}
                                             />
                                         </div>
                                         <div className="grid gap-2">
                                             <Label htmlFor="level">Level</Label>
                                             <Select
-                                                value={courseInfo.level}
-                                                onValueChange={(val) => setCourseInfo({ ...courseInfo, level: val })}
+                                                value={courseInfo.Level}
+                                                onValueChange={(val) => setCourseInfo({ ...courseInfo, Level: val })}
                                             >
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select level" />
@@ -246,54 +219,38 @@ const CourseEditor = () => {
                                             id="minApplicants"
                                             type="number"
                                             min="0"
-                                            value={courseInfo.minApplicants}
-                                            onChange={(e) => setCourseInfo({ ...courseInfo, minApplicants: parseInt(e.target.value) || 0 })}
+                                            value={courseInfo.MinApplicants}
+                                            onChange={(e) => setCourseInfo({ ...courseInfo, MinApplicants: parseInt(e.target.value) || 0 })}
                                             placeholder="0"
                                             className="max-w-[200px]"
                                         />
-                                        <p className="text-sm text-muted-foreground">Minimum number of students required to start the course.</p>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="startDate">Start Date</Label>
-                                            <Input
-                                                id="startDate"
-                                                type="datetime-local"
-                                                value={courseInfo.startDate}
-                                                onChange={(e) => setCourseInfo({ ...courseInfo, startDate: e.target.value })}
-                                            />
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="endDate">End Date</Label>
-                                            <Input
-                                                id="endDate"
-                                                type="datetime-local"
-                                                value={courseInfo.endDate}
-                                                onChange={(e) => setCourseInfo({ ...courseInfo, endDate: e.target.value })}
-                                            />
-                                        </div>
+                                        <p className="text-sm text-muted-foreground">Minimum number of trainers required to start the course.</p>
                                     </div>
 
                                     <div className="pt-4 border-t">
-                                        <Label className="mb-2 block">AI Syllabus Analysis</Label>
+                                        <Label className="mb-2 block">Syllabus Analysis</Label>
                                         <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center hover:bg-muted/50 transition-colors">
                                             <Upload className="w-8 h-8 text-muted-foreground mb-2" />
                                             {analyzing ? (
                                                 <div className="flex items-center gap-2 text-primary">
                                                     <Loader2 className="w-4 h-4 animate-spin" />
-                                                    <span>Analyzing PDF...</span>
+                                                    <span>Analyzing syllabus...</span>
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <p className="text-sm font-medium">Upload PDF Syllabus</p>
-                                                    <p className="text-xs text-muted-foreground mb-4">AI will analyze topics and suggest a structure</p>
-                                                    <Input
-                                                        type="file"
-                                                        accept=".pdf"
-                                                        className="max-w-xs"
-                                                        onChange={handlePdfUpload}
-                                                    />
+                                                    <p className="text-sm font-medium">Upload Text Syllabus (.txt or .md)</p>
+                                                    <p className="text-xs text-muted-foreground mb-4">A suggested outline is created from the topics; review it before saving</p>
+                                                    <div className="relative">
+                                                        <Input
+                                                            type="file"
+                                                            accept=".txt,.md"
+                                                            className="max-w-xs cursor-pointer"
+                                                            onChange={handlePdfUpload}
+                                                        />
+                                                    </div>
+                                                    {analysisError && (
+                                                        <p className="text-sm text-destructive mt-3">{analysisError}</p>
+                                                    )}
                                                 </>
                                             )}
                                         </div>
@@ -338,55 +295,59 @@ const CourseEditor = () => {
                             </Card>
                         </TabsContent>
 
-                        <TabsContent value="students">
+                        <TabsContent value="trainers">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Enrolled Students</CardTitle>
-                                    <CardDescription>Manage and view students enrolled in this course.</CardDescription>
+                                    <CardTitle>Enrolled Trainers</CardTitle>
+                                    <CardDescription>Manage and view trainers enrolled in this course.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Student</TableHead>
+                                                <TableHead>Trainer</TableHead>
                                                 <TableHead>Enrolled Date</TableHead>
                                                 <TableHead>Progress</TableHead>
                                                 <TableHead>Status</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {[
-                                                { id: 1, name: "Alice Johnson", email: "alice@example.com", progress: 45, enrolledAt: "2024-01-15", avatar: "AJ" },
-                                                { id: 2, name: "Bob Smith", email: "bob@example.com", progress: 72, enrolledAt: "2024-01-10", avatar: "BS" },
-                                                { id: 3, name: "Charlie Brown", email: "charlie@example.com", progress: 12, enrolledAt: "2024-01-20", avatar: "CB" },
-                                                { id: 4, name: "Diana Prince", email: "diana@example.com", progress: 100, enrolledAt: "2023-12-05", avatar: "DP" },
-                                                { id: 5, name: "Edward Norton", email: "edward@example.com", progress: 0, enrolledAt: "2024-01-25", avatar: "EN" },
-                                            ].map((student) => (
-                                                <TableRow key={student.id}>
+                                            {trainersLoading && (
+                                                <TableRow><TableCell colSpan={4} className="text-center py-6"><Loader2 className="w-5 h-5 animate-spin inline text-primary" /></TableCell></TableRow>
+                                            )}
+                                            {!trainersLoading && trainersError && (
+                                                <TableRow><TableCell colSpan={4} className="text-center py-6 text-destructive">{getApiError(trainersError, "Failed to load trainers.")}</TableCell></TableRow>
+                                            )}
+                                            {!trainersLoading && !trainersError && enrolledTrainers.length === 0 && (
+                                                <TableRow><TableCell colSpan={4} className="text-center py-6 text-muted-foreground">No trainers enrolled yet.</TableCell></TableRow>
+                                            )}
+                                            {enrolledTrainers.map((trainer) => (
+                                                <TableRow key={trainer.TrainerId}>
                                                     <TableCell className="flex items-center gap-3">
                                                         <Avatar>
-                                                            <AvatarFallback>{student.avatar}</AvatarFallback>
+                                                            <AvatarImage src={trainer.AvatarUrl || undefined} />
+                                                            <AvatarFallback>{trainer.FullName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}</AvatarFallback>
                                                         </Avatar>
                                                         <div>
-                                                            <p className="font-medium">{student.name}</p>
-                                                            <p className="text-xs text-muted-foreground">{student.email}</p>
+                                                            <p className="font-medium">{trainer.FullName}</p>
+                                                            <p className="text-xs text-muted-foreground">{trainer.Email}</p>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell>{student.enrolledAt}</TableCell>
+                                                    <TableCell>{format(new Date(trainer.EnrolledAt), "MMM d, yyyy")}</TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
                                                             <div className="h-2 w-full max-w-[100px] bg-secondary rounded-full overflow-hidden">
                                                                 <div
                                                                     className="h-full bg-primary"
-                                                                    style={{ width: `${student.progress}%` }}
+                                                                    style={{ width: `${trainer.ProgressPercentage}%` }}
                                                                 />
                                                             </div>
-                                                            <span className="text-xs text-muted-foreground">{student.progress}%</span>
+                                                            <span className="text-xs text-muted-foreground">{Math.round(trainer.ProgressPercentage)}%</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Badge variant={student.progress === 100 ? "default" : "secondary"}>
-                                                            {student.progress === 100 ? "Completed" : "Active"}
+                                                        <Badge variant={trainer.CompletedAt ? "default" : "secondary"}>
+                                                            {trainer.CompletedAt ? "Completed" : "Active"}
                                                         </Badge>
                                                     </TableCell>
                                                 </TableRow>
@@ -405,8 +366,8 @@ const CourseEditor = () => {
                                             <CardTitle>Course Visibility</CardTitle>
                                             <CardDescription>Control how your course is viewed by others.</CardDescription>
                                         </div>
-                                        <Badge variant={settings.isPublished ? "default" : "secondary"}>
-                                            {settings.isPublished ? "Published" : "Draft"}
+                                        <Badge variant={courseInfo.Status === "Published" ? "default" : "secondary"}>
+                                            {courseInfo.Status}
                                         </Badge>
                                     </div>
                                 </CardHeader>
@@ -414,77 +375,17 @@ const CourseEditor = () => {
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-0.5">
                                             <div className="flex items-center gap-2">
-                                                {settings.isPublished ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                                {courseInfo.Status === "Published" ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                                                 <Label className="text-base">Publish Course</Label>
                                             </div>
                                             <p className="text-sm text-muted-foreground">
-                                                Make this course visible to students.
+                                                Make this course visible to trainers.
                                             </p>
                                         </div>
                                         <Switch
-                                            checked={settings.isPublished}
-                                            onCheckedChange={(checked) => setSettings({ ...settings, isPublished: checked })}
+                                            checked={courseInfo.Status === "Published"}
+                                            onCheckedChange={(checked) => setCourseInfo({ ...courseInfo, Status: checked ? "Published" : "Draft" })}
                                         />
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="space-y-0.5">
-                                            <div className="flex items-center gap-2">
-                                                {settings.isPublic ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                                                <Label className="text-base">Public Access</Label>
-                                            </div>
-                                            <p className="text-sm text-muted-foreground">
-                                                Allow anyone to view this course without an invite.
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            checked={settings.isPublic}
-                                            onCheckedChange={(checked) => setSettings({ ...settings, isPublic: checked })}
-                                        />
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Enrollment & Interaction</CardTitle>
-                                    <CardDescription>Manage how students enroll and interact.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="grid gap-2">
-                                        <Label>Enrollment Type</Label>
-                                        <Select
-                                            value={settings.enrollmentType}
-                                            onValueChange={(val) => setSettings({ ...settings, enrollmentType: val })}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="open">Open Enrollment</SelectItem>
-                                                <SelectItem value="application">Application Required</SelectItem>
-                                                <SelectItem value="invite">Invite Only</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div className="flex items-center justify-between pt-2">
-                                        <div className="space-y-0.5">
-                                            <Label className="text-base">Allow Comments</Label>
-                                            <p className="text-sm text-muted-foreground">
-                                                Students can comment on lessons.
-                                            </p>
-                                        </div>
-                                        <Switch
-                                            checked={settings.allowComments}
-                                            onCheckedChange={(checked) => setSettings({ ...settings, allowComments: checked })}
-                                        />
-                                    </div>
-
-                                    <div className="flex justify-end pt-4 border-t">
-                                        <Button onClick={handleSaveSettings}>
-                                            <Save className="w-4 h-4 mr-2" />
-                                            Save Changes
-                                        </Button>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -499,7 +400,7 @@ const CourseEditor = () => {
                                         <AlertTriangle className="h-4 w-4" />
                                         <AlertTitle>Warning</AlertTitle>
                                         <AlertDescription>
-                                            Archiving a course will hide it from students but keep data. Deleting is permanent.
+                                            Archiving a course will hide it from trainers but keep data. Deleting is permanent.
                                         </AlertDescription>
                                     </Alert>
 

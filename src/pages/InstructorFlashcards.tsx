@@ -6,10 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
 const mockDecks = [
-  { id: 1, title: "Machine Learning Key Concepts", course: "ML 101", cards: 45, studentsUsing: 20, avgRetention: 82 },
-  { id: 2, title: "Statistical Methods", course: "Statistics", cards: 30, studentsUsing: 25, avgRetention: 75 },
-  { id: 3, title: "Business Models & Frameworks", course: "Business Strategy", cards: 20, studentsUsing: 18, avgRetention: 88 },
-  { id: 4, title: "Neural Networks Vocabulary", course: "ML 101", cards: 35, studentsUsing: 15, avgRetention: 70 },
+  { id: 1, title: "Machine Learning Key Concepts", course: "ML 101", cards: 45, trainersUsing: 20, avgRetention: 82 },
+  { id: 2, title: "Statistical Methods", course: "Statistics", cards: 30, trainersUsing: 25, avgRetention: 75 },
+  { id: 3, title: "Business Models & Frameworks", course: "Business Strategy", cards: 20, trainersUsing: 18, avgRetention: 88 },
+  { id: 4, title: "Neural Networks Vocabulary", course: "ML 101", cards: 35, trainersUsing: 15, avgRetention: 70 },
 ];
 
 const InstructorFlashcards = () => {
@@ -24,7 +24,7 @@ const InstructorFlashcards = () => {
               </div>
               <h1 className="text-2xl font-bold">Flashcards Manager</h1>
             </div>
-            <p className="text-muted-foreground">Create and assign flashcard decks for your students</p>
+            <p className="text-muted-foreground">Create and assign flashcard decks for your trainers</p>
           </div>
           <div className="flex gap-3">
             <Button variant="outline">
@@ -47,7 +47,7 @@ const InstructorFlashcards = () => {
             <CardContent>
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {deck.studentsUsing} students</span>
+                  <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {deck.trainersUsing} trainers</span>
                   <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {deck.avgRetention}% retention</span>
                 </div>
                 <Progress value={deck.avgRetention} className="h-2" />

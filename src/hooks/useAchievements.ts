@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from './useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { getApiError } from '@/lib/api';
+import { useActivitySummaryQuery, useTrainerStatsQuery } from './useTrainerApi';
 
 export interface Achievement {
   id: string;
@@ -38,29 +39,13 @@ export interface LevelInfo {
   totalXP: number;
 }
 
-const isValidUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
-const MOCK_STATS: AchievementStats = {
-  streak: 12,
-  totalStudyHours: 47.5,
-  lessonsCompleted: 24,
-  quizzesPassed: 8,
-  cardsReviewed: 85,
-  perfectQuizzes: 2,
-  studySessions: 7,
-  coursesEnrolled: 3,
-  avgQuizScore: 76,
-  timeBlocksCreated: 15,
-  totalCards: 85,
-};
-
 const XP_PER_TIER = { bronze: 50, silver: 100, gold: 200, platinum: 500 };
 
 const LEVELS = [
   { level: 1, title: 'Beginner', xpThreshold: 0 },
   { level: 2, title: 'Learner', xpThreshold: 100 },
-  { level: 3, title: 'Active Student', xpThreshold: 250 },
-  { level: 5, title: 'Focused Student', xpThreshold: 500 },
+  { level: 3, title: 'Active Trainer', xpThreshold: 250 },
+  { level: 5, title: 'Focused Trainer', xpThreshold: 500 },
   { level: 7, title: 'Dedicated Scholar', xpThreshold: 900 },
   { level: 10, title: 'Knowledge Seeker', xpThreshold: 1500 },
   { level: 15, title: 'Expert Learner', xpThreshold: 2500 },
@@ -85,82 +70,39 @@ const achievementDefs = [
   { id: 'quiz-ace', icon: '💯', title: 'Quiz Ace', desc: 'Score 100% on a quiz', req: 'Perfect score', tier: 'gold' as const, cat: 'mastery' as const, check: (s: AchievementStats) => s.perfectQuizzes >= 1, progress: (s: AchievementStats) => s.perfectQuizzes >= 1 ? 100 : Math.min(99, s.avgQuizScore) },
   // Productivity
   { id: 'deep-work', icon: '🎯', title: 'Deep Work Master', desc: '5 sessions of 45+ min', req: '5 deep sessions', tier: 'gold' as const, cat: 'productivity' as const, check: (s: AchievementStats) => s.studySessions >= 5, progress: (s: AchievementStats) => Math.min(100, (s.studySessions / 5) * 100) },
-  { id: 'multi-course', icon: '🌟', title: 'Renaissance Student', desc: 'Enroll in 3+ courses', req: '3 courses', tier: 'silver' as const, cat: 'productivity' as const, check: (s: AchievementStats) => s.coursesEnrolled >= 3, progress: (s: AchievementStats) => Math.min(100, (s.coursesEnrolled / 3) * 100) },
+  { id: 'multi-course', icon: '🌟', title: 'Renaissance Trainer', desc: 'Enroll in 3+ courses', req: '3 courses', tier: 'silver' as const, cat: 'productivity' as const, check: (s: AchievementStats) => s.coursesEnrolled >= 3, progress: (s: AchievementStats) => Math.min(100, (s.coursesEnrolled / 3) * 100) },
   { id: 'planner', icon: '📅', title: 'Master Planner', desc: 'Create 10 time blocks', req: '10 blocks', tier: 'bronze' as const, cat: 'productivity' as const, check: (s: AchievementStats) => s.timeBlocksCreated >= 10, progress: (s: AchievementStats) => Math.min(100, (s.timeBlocksCreated / 10) * 100) },
   { id: 'planner-pro', icon: '🗓️', title: 'Scheduling Pro', desc: 'Create 50 time blocks', req: '50 blocks', tier: 'silver' as const, cat: 'productivity' as const, check: (s: AchievementStats) => s.timeBlocksCreated >= 50, progress: (s: AchievementStats) => Math.min(100, (s.timeBlocksCreated / 50) * 100) },
 ];
 
 export const useAchievements = () => {
-  const { user, isMockUser } = useAuth();
-  const [stats, setStats] = useState<AchievementStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const [newlyUnlocked, setNewlyUnlocked] = useState<string[]>([]);
+  const summaryQuery = useActivitySummaryQuery();
+  const statsQuery = useTrainerStatsQuery();
 
-  useEffect(() => {
-    if (!user) return;
-
-    if (isMockUser || !isValidUuid(user.id)) {
-      setStats(MOCK_STATS);
-      setLoading(false);
-      return;
-    }
-
-    const fetchStats = async () => {
-      setLoading(true);
-      try {
-        const [sessionsRes, cardsRes, enrollRes, lessonsRes, quizRes, blocksRes] = await Promise.all([
-          supabase.from('study_sessions').select('*').eq('student_id', user.id),
-          supabase.from('sr_cards').select('*').eq('student_id', user.id),
-          supabase.from('enrollments').select('*').eq('student_id', user.id),
-          supabase.from('lesson_completions').select('*').eq('student_id', user.id),
-          supabase.from('quiz_results').select('*').eq('student_id', user.id),
-          supabase.from('time_blocks').select('*').eq('student_id', user.id),
-        ]);
-
-        const sessions = sessionsRes.data || [];
-        const cards = cardsRes.data || [];
-        const enrollments = enrollRes.data || [];
-        const lessons = lessonsRes.data || [];
-        const quizzes = quizRes.data || [];
-        const blocks = blocksRes.data || [];
-
-        const totalSeconds = sessions.reduce((s, sess) => s + (sess.duration_seconds || 0), 0);
-        const reviewedCards = cards.filter(c => c.last_reviewed).length;
-        const perfectQuizzes = quizzes.filter(q => Number(q.percentage) === 100).length;
-        const avgQuizScore = quizzes.length > 0 ? quizzes.reduce((s, q) => s + Number(q.percentage), 0) / quizzes.length : 0;
-        const deepSessions = sessions.filter(s => (s.duration_seconds || 0) >= 2700).length;
-
-        // Streak
-        const now = new Date();
-        const completionDates = new Set(lessons.map(l => l.completed_at.split('T')[0]));
-        let streak = 0;
-        const d = new Date(now.toISOString().split('T')[0]);
-        while (completionDates.has(d.toISOString().split('T')[0])) {
-          streak++;
-          d.setDate(d.getDate() - 1);
-        }
-
-        setStats({
-          streak,
-          totalStudyHours: Math.round(totalSeconds / 3600 * 10) / 10,
-          lessonsCompleted: lessons.length,
-          quizzesPassed: quizzes.filter(q => q.passed).length,
-          cardsReviewed: reviewedCards,
-          perfectQuizzes,
-          studySessions: deepSessions,
-          coursesEnrolled: enrollments.length,
-          avgQuizScore: Math.round(avgQuizScore),
-          timeBlocksCreated: blocks.length,
-          totalCards: cards.length,
-        });
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+  const summary = summaryQuery.data;
+  const trainer = statsQuery.data;
+  const stats: AchievementStats | null = useMemo(() => {
+    if (!summary || !trainer) return null;
+    return {
+      streak: summary.Streak,
+      totalStudyHours: Math.round((summary.TotalStudySeconds / 3600) * 10) / 10,
+      lessonsCompleted: summary.LessonsCompleted,
+      quizzesPassed: summary.QuizzesPassed,
+      cardsReviewed: summary.CardsReviewed,
+      perfectQuizzes: summary.PerfectQuizzes,
+      studySessions: trainer.DeepWorkSessions,
+      coursesEnrolled: summary.CoursesEnrolled,
+      avgQuizScore: Math.round(trainer.QuizAverage),
+      timeBlocksCreated: summary.TimeBlocksPlanned,
+      totalCards: summary.CardsCreated,
     };
-    fetchStats();
-  }, [user, isMockUser]);
+  }, [summary, trainer]);
+
+  const loading = !!user && (summaryQuery.isLoading || statsQuery.isLoading);
+  const queryError = summaryQuery.error || statsQuery.error;
+  const error = queryError ? getApiError(queryError, 'Failed to load achievements.') : null;
 
   const achievements: Achievement[] = useMemo(() => {
     if (!stats) return [];
@@ -207,13 +149,23 @@ export const useAchievements = () => {
   // Track newly unlocked
   useEffect(() => {
     if (!user) return;
-    const key = `achievements_${user.id}`;
-    const prev = JSON.parse(localStorage.getItem(key) || '[]') as string[];
+    const key = `achievements_${user.Id}`;
+    if (achievements.length === 0) return;
+    let prev: string[] = [];
+    try {
+      prev = JSON.parse(localStorage.getItem(key) || '[]') as string[];
+    } catch {
+      prev = [];
+    }
     const currentUnlocked = achievements.filter(a => a.unlocked).map(a => a.id);
     const newOnes = currentUnlocked.filter(id => !prev.includes(id));
     if (newOnes.length > 0) {
       setNewlyUnlocked(newOnes);
-      localStorage.setItem(key, JSON.stringify(currentUnlocked));
+      try {
+        localStorage.setItem(key, JSON.stringify(currentUnlocked));
+      } catch {
+        // storage unavailable: the toast simply shows again next time
+      }
     }
   }, [achievements, user]);
 
@@ -222,5 +174,5 @@ export const useAchievements = () => {
   const earned = achievements.filter(a => a.unlocked);
   const locked = achievements.filter(a => !a.unlocked);
 
-  return { achievements, earned, locked, loading, stats, newlyUnlocked, dismissNewlyUnlocked, totalXP, levelInfo };
+  return { achievements, earned, locked, loading, error, stats, newlyUnlocked, dismissNewlyUnlocked, totalXP, levelInfo };
 };

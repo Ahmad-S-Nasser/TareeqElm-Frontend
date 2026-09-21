@@ -8,7 +8,8 @@ import {
     mockDecks,
     mockFlashcards,
     getFlashcardsForDeck,
-    FlashcardDeck
+    FlashcardDeck,
+    Flashcard
 } from "@/components/flashcards";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +34,7 @@ import {
 const Flashcards = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [decks, setDecks] = useState<FlashcardDeck[]>(mockDecks);
-    const [flashcards, setFlashcards] = useState<Record<string, any>>(mockFlashcards);
+    const [flashcards, setFlashcards] = useState<Record<string, Flashcard[]>>(mockFlashcards);
     const [studyingDeckId, setStudyingDeckId] = useState<string | null>(null);
     const [showResults, setShowResults] = useState<{ correct: number; total: number } | null>(null);
 
@@ -87,7 +88,7 @@ const Flashcards = () => {
             dueCount: 1,
             color: "from-blue-500 to-cyan-600",
             icon: "BookOpen",
-            lastStudied: null
+            lastStudied: undefined
         };
 
         const newCard = {
@@ -138,7 +139,7 @@ const Flashcards = () => {
             <ApplicantSidebar onCollapse={setSidebarCollapsed} />
             <Header
                 sidebarCollapsed={sidebarCollapsed}
-                userRole="Student"
+                userRole="Trainer"
                 mobileSidebar={<ApplicantSidebarContent />}
             />
 

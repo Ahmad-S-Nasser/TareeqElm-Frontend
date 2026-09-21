@@ -1,4 +1,4 @@
-import { StudentMastery, Topic } from "./types";
+import { TrainerMastery, Topic } from "./types";
 
 export const topics: Topic[] = [
     { id: "t1", name: "Fundamentals", category: "Core" },
@@ -11,10 +11,10 @@ export const topics: Topic[] = [
     { id: "t8", name: "Risk Analysis", category: "Management" },
 ];
 
-export const mockStudentMastery: StudentMastery[] = [
+export const mockTrainerMastery: TrainerMastery[] = [
     {
-        studentId: "s1",
-        studentName: "Alex Johnson",
+        trainerId: "s1",
+        trainerName: "Alex Johnson",
         overallMastery: 78,
         lastActive: new Date("2026-01-03"),
         topicScores: {
@@ -29,8 +29,8 @@ export const mockStudentMastery: StudentMastery[] = [
         },
     },
     {
-        studentId: "s2",
-        studentName: "Maria Garcia",
+        trainerId: "s2",
+        trainerName: "Maria Garcia",
         overallMastery: 85,
         lastActive: new Date("2026-01-03"),
         topicScores: {
@@ -45,8 +45,8 @@ export const mockStudentMastery: StudentMastery[] = [
         },
     },
     {
-        studentId: "s3",
-        studentName: "James Wilson",
+        trainerId: "s3",
+        trainerName: "James Wilson",
         overallMastery: 52,
         lastActive: new Date("2026-01-02"),
         topicScores: {
@@ -61,8 +61,8 @@ export const mockStudentMastery: StudentMastery[] = [
         },
     },
     {
-        studentId: "s4",
-        studentName: "Sarah Chen",
+        trainerId: "s4",
+        trainerName: "Sarah Chen",
         overallMastery: 91,
         lastActive: new Date("2026-01-03"),
         topicScores: {
@@ -77,8 +77,8 @@ export const mockStudentMastery: StudentMastery[] = [
         },
     },
     {
-        studentId: "s5",
-        studentName: "Michael Brown",
+        trainerId: "s5",
+        trainerName: "Michael Brown",
         overallMastery: 38,
         lastActive: new Date("2026-01-01"),
         topicScores: {
@@ -93,8 +93,8 @@ export const mockStudentMastery: StudentMastery[] = [
         },
     },
     {
-        studentId: "s6",
-        studentName: "Emily Davis",
+        trainerId: "s6",
+        trainerName: "Emily Davis",
         overallMastery: 72,
         lastActive: new Date("2026-01-03"),
         topicScores: {

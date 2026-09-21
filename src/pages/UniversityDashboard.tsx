@@ -19,12 +19,9 @@ import {
     Activity,
     Zap,
     BarChart2,
-    Star,
     ChevronRight,
     Brain,
-    AlertTriangle,
-    Lightbulb,
-    Target,
+    Loader2
 } from "lucide-react";
 import {
     Dialog,
@@ -38,18 +35,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import api, { getApiError } from "@/lib/api";
+
+interface DeptSummary { Id: string; Name: string; Head: string | null; CoursesCount: number; TrainersCount: number; Performance: number; Trend: number }
+interface ActivityItem { Event: string; Time: string; Type: string }
+interface DashboardData {
+    Stats: { TotalTrainers: number; ActiveInstructors: number; TotalCourses: number; AvgCompletion: number };
+    Departments: DeptSummary[];
+    RecentActivity: ActivityItem[];
+}
 
 const StatCard = ({
-    title,
-    value,
-    sub,
-    icon: Icon,
-    trend,
-    color,
+    title, value, sub, icon: Icon, trend, color,
 }: {
-    title: string;
-    value: string | number;
-    sub?: string;
+    title: string; value: string | number; sub?: string;
     icon: React.ElementType;
     trend?: { value: number; positive: boolean };
     color: "primary" | "accent" | "emerald" | "amber";
@@ -80,10 +80,7 @@ const StatCard = ({
                     </div>
                 </div>
                 {trend && (
-                    <div className={cn(
-                        "flex items-center gap-1 mt-4 text-xs font-semibold",
-                        trend.positive ? "text-emerald-500" : "text-destructive"
-                    )}>
+                    <div className={cn("flex items-center gap-1 mt-4 text-xs font-semibold", trend.positive ? "text-emerald-500" : "text-destructive")}>
                         {trend.positive ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
                         {trend.value}% vs last month
                     </div>
@@ -96,54 +93,63 @@ const StatCard = ({
 
 const UniversityDashboard = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [newDept, setNewDept] = useState({ name: "", head: "" });
     const navigate = useNavigate();
     const { toast } = useToast();
-    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-    const [newDept, setNewDept] = useState({ name: "", head: "", budget: "" });
+    const queryClient = useQueryClient();
 
-    const stats = {
-        totalStudents: 1250,
-        activeInstructors: 42,
-        totalCourses: 156,
-        avgCompletion: 74,
-    };
+    const { data: dashboardData, isLoading: loading, isError, error } = useQuery({
+        queryKey: ["university-stats"],
+        queryFn: async () => (await api.get<DashboardData>("/University/stats")).data,
+    });
 
-    const [departments, setDepartments] = useState([
-        { name: "Computer Science", head: "Dr. Alan Turing", courses: 45, students: 420, performance: 92, trend: 5 },
-        { name: "Business Administration", head: "Prof. Mary Barra", courses: 38, students: 350, performance: 88, trend: 2 },
-        { name: "Design & Arts", head: "Sarah Chen", courses: 25, students: 180, performance: 95, trend: 8 },
-        { name: "Physics", head: "Dr. Richard Feynman", courses: 18, students: 120, performance: 85, trend: -3 },
-        { name: "Mathematics", head: "Dr. John Nash", courses: 22, students: 180, performance: 78, trend: -1 },
-    ]);
-
-    const recentActivity = [
-        { event: "New enrollment spike", dept: "Computer Science", time: "2h ago", type: "success" },
-        { event: "Course published", dept: "Design & Arts", time: "4h ago", type: "info" },
-        { event: "Low completion rate", dept: "Physics", time: "6h ago", type: "warn" },
-        { event: "New instructor joined", dept: "Business", time: "1d ago", type: "success" },
-    ];
+    const addDepartment = useMutation({
+        mutationFn: async (d: { Name: string; HeadOfDepartment?: string }) => { await api.post("/Departments", d); },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["university-stats"] });
+            queryClient.invalidateQueries({ queryKey: ["university-departments"] });
+            queryClient.invalidateQueries({ queryKey: ["departments"] });
+            setIsAddDialogOpen(false);
+            setNewDept({ name: "", head: "" });
+            toast({ title: "Department created" });
+        },
+        onError: (err: unknown) => toast({ variant: "destructive", title: "Error", description: getApiError(err, "Could not create department") }),
+    });
 
     const handleAddDepartment = () => {
-        if (!newDept.name || !newDept.head) {
-            toast({ variant: "destructive", title: "Missing fields", description: "Name and head are required." });
+        if (!newDept.name.trim()) {
+            toast({ variant: "destructive", title: "Department name is required" });
             return;
         }
-        setDepartments([...departments, {
-            name: newDept.name, head: newDept.head, courses: 0, students: 0, performance: 100, trend: 0
-        }]);
-        setIsAddDialogOpen(false);
-        setNewDept({ name: "", head: "", budget: "" });
-        toast({ title: "Department Added", description: `${newDept.name} added successfully.` });
+        addDepartment.mutate({ Name: newDept.name.trim(), HeadOfDepartment: newDept.head.trim() || undefined });
     };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-background p-6">
+                <p className="text-destructive text-center">{getApiError(error, "Could not load the dashboard.")}</p>
+            </div>
+        );
+    }
+
+    const stats = dashboardData?.Stats || { TotalTrainers: 0, ActiveInstructors: 0, TotalCourses: 0, AvgCompletion: 0 };
+    const departments = dashboardData?.Departments || [];
+    const recentActivity = dashboardData?.RecentActivity || [];
+    const topDept = [...departments].sort((x, y) => y.Performance - x.Performance)[0];
 
     return (
         <div className="min-h-screen bg-background">
             <UniversitySidebar onCollapse={setSidebarCollapsed} />
-            <Header
-                sidebarCollapsed={sidebarCollapsed}
-                userRole="University"
-                mobileSidebar={<UniversitySidebarContent collapsed={false} />}
-            />
+            <Header sidebarCollapsed={sidebarCollapsed} />
 
             <main className={cn(
                 "pt-20 pb-12 px-4 sm:px-6 transition-all duration-300",
@@ -161,11 +167,11 @@ const UniversityDashboard = () => {
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                    <span className="text-xs font-semibold uppercase tracking-widest opacity-80">Live Dashboard</span>
+                                    <span className="text-xs font-semibold uppercase tracking-widest opacity-80">Live Admin Overview</span>
                                 </div>
                                 <h1 className="text-4xl font-black tracking-tight">University Control</h1>
                                 <p className="text-primary-foreground/70 mt-1 text-sm">
-                                    Full campus overview · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                                    Full campus intelligence · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                                 </p>
                             </div>
                             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -188,26 +194,24 @@ const UniversityDashboard = () => {
                                             <Label htmlFor="head">Head of Department</Label>
                                             <Input id="head" placeholder="e.g. Dr. John Nash" value={newDept.head} onChange={(e) => setNewDept({ ...newDept, head: e.target.value })} />
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="budget">Initial Budget ($)</Label>
-                                            <Input id="budget" type="number" placeholder="e.g. 50000" value={newDept.budget} onChange={(e) => setNewDept({ ...newDept, budget: e.target.value })} />
-                                        </div>
                                     </div>
                                     <DialogFooter>
                                         <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-                                        <Button onClick={handleAddDepartment} className="gradient-primary text-white border-0">Add Department</Button>
+                                        <Button onClick={handleAddDepartment} disabled={addDepartment.isPending} className="gradient-primary text-white border-0">
+                                            {addDepartment.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                                            Add Department
+                                        </Button>
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>
                         </div>
 
-                        {/* Mini stats inside hero */}
                         <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/20">
                             {[
                                 { label: "Departments", val: departments.length, icon: Building2 },
-                                { label: "Avg Completion", val: `${stats.avgCompletion}%`, icon: Activity },
-                                { label: "Active Courses", val: stats.totalCourses, icon: BookOpen },
-                                { label: "Satisfaction", val: "4.8 ★", icon: Star },
+                                { label: "Avg Completion", val: `${stats.AvgCompletion}%`, icon: Activity },
+                                { label: "Active Courses", val: stats.TotalCourses, icon: BookOpen },
+                                { label: "Trainers", val: stats.TotalTrainers, icon: GraduationCap },
                             ].map((item) => (
                                 <div key={item.label} className="flex items-center gap-3">
                                     <item.icon className="w-4 h-4 opacity-60 shrink-0" />
@@ -222,24 +226,22 @@ const UniversityDashboard = () => {
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div onClick={() => navigate("/university/students")} className="cursor-pointer">
-                            <StatCard title="Total Students" value={stats.totalStudents} sub="Enrolled this semester" icon={GraduationCap} trend={{ value: 12, positive: true }} color="primary" />
+                        <div onClick={() => navigate("/university/trainers")} className="cursor-pointer">
+                            <StatCard title="Total Trainers" value={stats.TotalTrainers} sub="Enrolled across depts" icon={GraduationCap} color="primary" />
                         </div>
                         <div onClick={() => navigate("/university/instructors")} className="cursor-pointer">
-                            <StatCard title="Instructors" value={stats.activeInstructors} sub="Across all departments" icon={Users} trend={{ value: 5, positive: true }} color="accent" />
+                            <StatCard title="Instructors" value={stats.ActiveInstructors} sub="Active university-wide" icon={Users} color="accent" />
                         </div>
                         <div onClick={() => navigate("/university/courses")} className="cursor-pointer">
-                            <StatCard title="Active Courses" value={stats.totalCourses} sub="Published & running" icon={BookOpen} trend={{ value: 8, positive: true }} color="emerald" />
+                            <StatCard title="Active Courses" value={stats.TotalCourses} sub="Offering this term" icon={BookOpen} color="emerald" />
                         </div>
                         <div onClick={() => navigate("/university/analytics")} className="cursor-pointer">
-                            <StatCard title="Avg Completion" value={`${stats.avgCompletion}%`} sub="Student course completion" icon={TrendingUp} trend={{ value: 3, positive: true }} color="amber" />
+                            <StatCard title="Avg Completion" value={`${stats.AvgCompletion}%`} sub="Global organization track" icon={TrendingUp} color="amber" />
                         </div>
                     </div>
 
                     {/* Main Grid */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                        {/* Department Performance - 2 cols */}
                         <div className="lg:col-span-2 space-y-4">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-lg font-bold flex items-center gap-2">
@@ -251,8 +253,11 @@ const UniversityDashboard = () => {
                                 </Button>
                             </div>
                             <div className="space-y-3">
+                                {departments.length === 0 && (
+                                    <Card className="border-border/50"><CardContent className="p-8 text-center text-sm text-muted-foreground">No departments yet. Use New Department to add one.</CardContent></Card>
+                                )}
                                 {departments.map((dept, i) => (
-                                    <Card key={dept.name} className="border-border/50 hover:border-primary/30 transition-all duration-200 hover:shadow-md group cursor-pointer" onClick={() => navigate("/university/departments")}>
+                                    <Card key={dept.Id} className="border-border/50 hover:border-primary/30 transition-all duration-200 hover:shadow-md group cursor-pointer" onClick={() => navigate("/university/departments")}>
                                         <CardContent className="p-4">
                                             <div className="flex items-center gap-4">
                                                 <div className={cn(
@@ -261,33 +266,32 @@ const UniversityDashboard = () => {
                                                     i % 4 === 1 && "bg-accent/10 text-accent",
                                                     i % 4 === 2 && "bg-emerald-500/10 text-emerald-500",
                                                     i % 4 === 3 && "bg-amber-500/10 text-amber-500",
-                                                    i % 4 === 4 && "bg-rose-500/10 text-rose-500",
                                                 )}>
-                                                    {dept.name.slice(0, 2).toUpperCase()}
+                                                    {dept.Name.slice(0, 2).toUpperCase()}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between mb-1">
-                                                        <p className="font-semibold text-sm truncate">{dept.name}</p>
+                                                        <p className="font-semibold text-sm truncate">{dept.Name}</p>
                                                         <div className="flex items-center gap-2 shrink-0 ml-2">
                                                             <span className={cn(
                                                                 "text-xs font-bold flex items-center gap-0.5",
-                                                                dept.trend > 0 ? "text-emerald-500" : "text-destructive"
+                                                                dept.Trend > 0 ? "text-emerald-500" : "text-destructive"
                                                             )}>
-                                                                {dept.trend > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                                                                {Math.abs(dept.trend)}%
+                                                                {dept.Trend > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                                                {Math.abs(dept.Trend)}%
                                                             </span>
                                                             <Badge variant="outline" className={cn(
                                                                 "text-xs font-bold border",
-                                                                dept.performance >= 90 ? "text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20" :
-                                                                    dept.performance >= 80 ? "text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/20" :
+                                                                dept.Performance >= 90 ? "text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20" :
+                                                                    dept.Performance >= 80 ? "text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/20" :
                                                                         "text-destructive border-destructive/20 bg-destructive/5"
                                                             )}>
-                                                                {dept.performance}%
+                                                                {dept.Performance.toFixed(0)}%
                                                             </Badge>
                                                         </div>
                                                     </div>
-                                                    <p className="text-xs text-muted-foreground mb-2">{dept.head} · {dept.courses} courses · {dept.students} students</p>
-                                                    <Progress value={dept.performance} className="h-1.5" />
+                                                    <p className="text-xs text-muted-foreground mb-2">{dept.Head} · {dept.CoursesCount} courses · {dept.TrainersCount} trainers</p>
+                                                    <Progress value={dept.Performance} className="h-1.5" />
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -296,9 +300,7 @@ const UniversityDashboard = () => {
                             </div>
                         </div>
 
-                        {/* Right column */}
                         <div className="space-y-6">
-                            {/* Quick Stats */}
                             <Card className="border-border/50">
                                 <CardHeader className="pb-3">
                                     <CardTitle className="text-sm font-bold flex items-center gap-2">
@@ -308,10 +310,8 @@ const UniversityDashboard = () => {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     {[
-                                        { label: "Top Dept by Students", val: "Computer Science", sub: "420 students" },
-                                        { label: "Highest Performance", val: "Design & Arts", sub: "95% score" },
-                                        { label: "Most Courses", val: "Computer Science", sub: "45 courses" },
-                                        { label: "New This Month", val: "+48 students", sub: "Across all depts" },
+                                        ...(topDept ? [{ label: "Top Performing Dept", val: topDept.Name, sub: `${topDept.Performance.toFixed(0)}% score` }] : []),
+                                        { label: "Departments", val: String(departments.length), sub: "Registered" },
                                     ].map((item) => (
                                         <div key={item.label} className="flex items-center justify-between py-2 border-b border-border/40 last:border-0">
                                             <div>
@@ -324,39 +324,34 @@ const UniversityDashboard = () => {
                                 </CardContent>
                             </Card>
 
-                            {/* Activity Feed */}
                             <Card className="border-border/50">
                                 <CardHeader className="pb-3">
                                     <CardTitle className="text-sm font-bold flex items-center gap-2">
                                         <Activity className="w-4 h-4 text-primary" />
-                                        Recent Activity
+                                        Live Activity
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
+                                    {recentActivity.length === 0 && <p className="text-sm text-muted-foreground">No recent activity.</p>}
                                     {recentActivity.map((item, i) => (
-                                        <div key={i} className="flex items-start gap-3 group cursor-pointer hover:bg-muted/50 rounded-lg p-1 -m-1 transition-colors" onClick={() => navigate(item.type === "warn" ? "/university/ai-insights" : "/university/analytics")}>
+                                        <div key={i} className="flex items-start gap-3 group cursor-pointer hover:bg-muted/50 rounded-lg p-1 -m-1 transition-colors">
                                             <div className={cn(
                                                 "w-2 h-2 rounded-full mt-1.5 shrink-0",
-                                                item.type === "success" && "bg-emerald-500",
-                                                item.type === "warn" && "bg-amber-500",
-                                                item.type === "info" && "bg-primary",
+                                                item.Type === "success" && "bg-emerald-500",
+                                                item.Type === "warn" && "bg-amber-500",
+                                                item.Type === "info" && "bg-primary",
                                             )} />
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium leading-tight">{item.event}</p>
-                                                <p className="text-xs text-muted-foreground">{item.dept} · {item.time}</p>
+                                                <p className="text-sm font-medium leading-tight">{item.Event}</p>
+                                                <p className="text-xs text-muted-foreground">{item.Time}</p>
                                             </div>
-                                            <ChevronRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
                                         </div>
                                     ))}
-                                    <Button variant="ghost" size="sm" className="w-full text-xs text-muted-foreground hover:text-primary mt-2" onClick={() => navigate("/university/analytics")}>
-                                        View all activity
-                                    </Button>
                                 </CardContent>
                             </Card>
                         </div>
                     </div>
 
-                    {/* AI Academic Insights */}
                     <div className="space-y-4">
                         <div className="flex items-center justify-between">
                             <h2 className="text-lg font-bold flex items-center gap-2">
@@ -366,35 +361,9 @@ const UniversityDashboard = () => {
                                 View All <ChevronRight className="w-3 h-3 ml-1" />
                             </Button>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {[
-                                { title: "High Drop-off in Physics 201", desc: "42% of students drop off after Week 4. Consider supplementary materials.", icon: AlertTriangle, type: "warning" as const },
-                                { title: "Struggling Student Cluster", desc: "18 students across 3 departments show declining grades. Early intervention recommended.", icon: Target, type: "action" as const },
-                                { title: "Optimal Study Patterns", desc: "Students studying 9-11 AM perform 23% better on quizzes. Share this insight.", icon: Lightbulb, type: "info" as const },
-                            ].map((insight) => {
-                                const colors = {
-                                    warning: { bg: "bg-amber-500/10 border-amber-200", text: "text-amber-500" },
-                                    action: { bg: "bg-destructive/10 border-destructive/20", text: "text-destructive" },
-                                    info: { bg: "bg-primary/10 border-primary/20", text: "text-primary" },
-                                };
-                                const c = colors[insight.type];
-                                return (
-                                    <Card key={insight.title} className={cn("border transition-all hover:shadow-md cursor-pointer", c.bg)} onClick={() => navigate("/university/ai-insights")}>
-                                        <CardContent className="p-4">
-                                            <div className="flex items-start gap-3">
-                                                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", c.bg)}>
-                                                    <insight.icon className={cn("w-4 h-4", c.text)} />
-                                                </div>
-                                                <div>
-                                                    <p className="font-bold text-xs mb-1">{insight.title}</p>
-                                                    <p className="text-xs text-muted-foreground line-clamp-2">{insight.desc}</p>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
-                        </div>
+                        <Card className="border-border/50">
+                            <CardContent className="p-8 text-center text-sm text-muted-foreground">Not available yet. Insights will appear here once analysis is available.</CardContent>
+                        </Card>
                     </div>
                 </div>
             </main>

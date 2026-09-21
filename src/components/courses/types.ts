@@ -9,7 +9,7 @@ export interface Course {
     level: CourseLevel;
     instructor: string;
     rating: number;
-    studentsEnrolled: number;
+    trainersEnrolled: number;
     tags: string[];
     image?: string;
     isFeatured?: boolean;

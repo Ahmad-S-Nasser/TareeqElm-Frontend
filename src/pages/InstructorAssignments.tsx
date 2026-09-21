@@ -30,7 +30,7 @@ const InstructorAssignments = () => {
               </div>
               <h1 className="text-2xl font-bold">Assignments</h1>
             </div>
-            <p className="text-muted-foreground">Create, manage, and grade student assignments</p>
+            <p className="text-muted-foreground">Create, manage, and grade trainer assignments</p>
           </div>
           <Button className="gradient-accent text-white shadow-glow-accent">
             <Plus className="w-4 h-4 mr-2" /> Create Assignment

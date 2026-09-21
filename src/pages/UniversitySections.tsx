@@ -2,39 +2,41 @@ import { useState } from "react";
 import { UniversityPageLayout } from "@/components/layout/UniversityPageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Layers, Plus, Users, Clock, BarChart2, Search, Loader2 } from "lucide-react";
+import { Layers, Users, Clock, Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+import api, { getApiError } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
+
+interface Section {
+    Id: string;
+    SectionLabel: string;
+    CourseId: string;
+    CourseTitle: string | null;
+    InstructorId: string | null;
+    InstructorName: string | null;
+    TermId: string | null;
+    TermName: string | null;
+    Capacity: number;
+    Schedule: string | null;
+}
 
 const UniversitySections = () => {
     const [search, setSearch] = useState("");
 
-    const { data: sections = [], isLoading } = useQuery({
+    const { data: sections = [], isLoading, isError, error } = useQuery({
         queryKey: ["course-sections"],
-        queryFn: async () => {
-            const { data, error } = await supabase
-                .from("course_sections")
-                .select("*, courses(title)")
-                .order("created_at", { ascending: false });
-            if (error) throw error;
-            return data;
-        },
+        queryFn: async () => (await api.get<Section[]>("/Sections")).data,
     });
 
-    const filtered = sections.filter((s: any) => {
-        const courseName = s.courses?.title || "";
-        return courseName.toLowerCase().includes(search.toLowerCase()) ||
-            (s.section_label || "").toLowerCase().includes(search.toLowerCase());
-    });
+    const filtered = sections.filter((s) =>
+        (s.CourseTitle || "").toLowerCase().includes(search.toLowerCase()) ||
+        (s.SectionLabel || "").toLowerCase().includes(search.toLowerCase())
+    );
 
-    const grouped = filtered.reduce<Record<string, any[]>>((acc, s: any) => {
-        const name = s.courses?.title || "Unknown Course";
-        if (!acc[name]) acc[name] = [];
-        acc[name].push(s);
+    const grouped = filtered.reduce<Record<string, Section[]>>((acc, s) => {
+        const name = s.CourseTitle || "Unknown Course";
+        (acc[name] ||= []).push(s);
         return acc;
     }, {});
 
@@ -50,7 +52,6 @@ const UniversitySections = () => {
                     </h1>
                     <p className="text-muted-foreground mt-1">Manage course sections, instructors, and class schedules</p>
                 </div>
-                <Button className="gap-2"><Plus className="w-4 h-4" /> New Section</Button>
             </div>
 
             <div className="relative max-w-md">
@@ -61,8 +62,8 @@ const UniversitySections = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                     { label: "Total Sections", value: sections.length, color: "text-primary" },
-                    { label: "Total Enrolled", value: sections.reduce((s: number, c: any) => s + (c.enrolled || 0), 0), color: "text-emerald-500" },
-                    { label: "Avg Capacity Used", value: sections.length > 0 ? `${Math.round(sections.reduce((s: number, c: any) => s + ((c.enrolled || 0) / (c.capacity || 1)) * 100, 0) / sections.length)}%` : "0%", color: "text-amber-500" },
+                    { label: "Total Capacity", value: sections.reduce((sum, c) => sum + c.Capacity, 0), color: "text-emerald-500" },
+                    { label: "Courses", value: new Set(sections.map((c) => c.CourseId)).size, color: "text-amber-500" },
                 ].map(s => (
                     <Card key={s.label} className="border-border/50">
                         <CardContent className="p-5">
@@ -75,42 +76,34 @@ const UniversitySections = () => {
 
             {isLoading ? (
                 <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+            ) : isError ? (
+                <Card className="border-border/50"><CardContent className="p-12 text-center text-destructive">{getApiError(error, "Could not load sections.")}</CardContent></Card>
             ) : Object.keys(grouped).length === 0 ? (
-                <Card className="border-border/50"><CardContent className="p-12 text-center text-muted-foreground">No sections yet. Create one to get started.</CardContent></Card>
+                <Card className="border-border/50"><CardContent className="p-12 text-center text-muted-foreground">No sections yet.</CardContent></Card>
             ) : (
                 Object.entries(grouped).map(([course, secs]) => (
                     <div key={course} className="space-y-3">
                         <h2 className="text-lg font-bold">{course}</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {secs.map((sec: any) => {
-                                const fillPct = sec.capacity > 0 ? Math.round((sec.enrolled / sec.capacity) * 100) : 0;
-                                return (
-                                    <Card key={sec.id} className="border-border/50 hover:shadow-md transition-all">
-                                        <CardHeader className="pb-2">
-                                            <div className="flex items-center justify-between">
-                                                <CardTitle className="text-sm font-bold">{sec.section_label}</CardTitle>
-                                                <Badge variant="outline" className={cn("text-xs",
-                                                    fillPct >= 95 ? "text-destructive border-destructive/20 bg-destructive/5" :
-                                                    fillPct >= 75 ? "text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/20" :
-                                                    "text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20"
-                                                )}>
-                                                    {fillPct}% full
-                                                </Badge>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent className="space-y-3">
-                                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                                {sec.schedule && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{sec.schedule}</span>}
-                                                {sec.room && <span>Room {sec.room}</span>}
-                                            </div>
-                                            <div className="flex items-center justify-between text-xs">
-                                                <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{sec.enrolled}/{sec.capacity}</span>
-                                            </div>
-                                            <Progress value={fillPct} className="h-1.5" />
-                                        </CardContent>
-                                    </Card>
-                                );
-                            })}
+                            {secs.map((sec) => (
+                                <Card key={sec.Id} className="border-border/50 hover:shadow-md transition-all">
+                                    <CardHeader className="pb-2">
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="text-sm font-bold">{sec.SectionLabel}</CardTitle>
+                                            {sec.TermName && <span className="text-xs text-muted-foreground">{sec.TermName}</span>}
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3">
+                                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                            {sec.Schedule && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{sec.Schedule}</span>}
+                                            {sec.InstructorName && <span>{sec.InstructorName}</span>}
+                                        </div>
+                                        <div className="flex items-center justify-between text-xs">
+                                            <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />Capacity {sec.Capacity}</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
                         </div>
                     </div>
                 ))

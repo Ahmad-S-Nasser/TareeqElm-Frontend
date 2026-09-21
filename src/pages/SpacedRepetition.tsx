@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -9,10 +10,9 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Brain, RotateCcw, CheckCircle2, XCircle, Clock, Layers, TrendingUp, Zap, Plus, Loader2, Sparkles, BookOpen, Target, Lightbulb, Wand2 } from "lucide-react";
+import { AlertCircle, Brain, RotateCcw, CheckCircle2, XCircle, Clock, Layers, TrendingUp, Zap, Plus, Loader2, Sparkles, BookOpen, Target, Lightbulb, Wand2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import api, { getApiError } from "@/lib/api";
 import { ReviewModeSelector, type ReviewMode } from "@/components/spaced-repetition/ReviewModeSelector";
 import { MemoryStrengthBadge } from "@/components/spaced-repetition/MemoryStrengthBadge";
 import { ForgettingCurveChart } from "@/components/spaced-repetition/ForgettingCurveChart";
@@ -31,16 +31,29 @@ interface ReviewCard {
 
 type Difficulty = "again" | "hard" | "good" | "easy";
 
-const isValidUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+interface FlashcardDto {
+  Id: string;
+  Topic: string | null;
+  Question: string;
+  Answer: string;
+  EaseFactor: number;
+  IntervalDays: number;
+  Repetitions: number;
+  NextReview: string;
+  LastReviewed: string | null;
+}
 
-const defaultCards: ReviewCard[] = [
-  { id: "d1", question: "What is equivalence partitioning?", answer: "A black-box test technique that divides input data into valid and invalid partitions, then selects representative values from each partition for test cases.", topic: "Test Design", interval: 1, easeFactor: 2.5, repetitions: 0, nextReview: new Date(), lastReviewed: null },
-  { id: "d2", question: "What are the four test levels in the V-model?", answer: "Component testing, Integration testing, System testing, and Acceptance testing.", topic: "Fundamentals", interval: 1, easeFactor: 2.5, repetitions: 0, nextReview: new Date(), lastReviewed: null },
-  { id: "d3", question: "Define boundary value analysis.", answer: "A technique that tests values at the exact boundaries of equivalence partitions (min, min+1, max-1, max) where defects often cluster.", topic: "Test Design", interval: 1, easeFactor: 2.5, repetitions: 0, nextReview: new Date(), lastReviewed: null },
-  { id: "d4", question: "What is the difference between verification and validation?", answer: "Verification: Are we building the product right? Validation: Are we building the right product?", topic: "Fundamentals", interval: 1, easeFactor: 2.5, repetitions: 0, nextReview: new Date(), lastReviewed: null },
-  { id: "d5", question: "What is regression testing?", answer: "Testing performed after code changes to confirm that existing functionality still works correctly.", topic: "Test Management", interval: 1, easeFactor: 2.5, repetitions: 0, nextReview: new Date(), lastReviewed: null },
-  { id: "d6", question: "What is a test oracle?", answer: "A source to determine expected results to compare with the actual result of the software under test.", topic: "Fundamentals", interval: 1, easeFactor: 2.5, repetitions: 0, nextReview: new Date(), lastReviewed: null },
-];
+const toCard = (d: FlashcardDto): ReviewCard => ({
+  id: d.Id,
+  question: d.Question,
+  answer: d.Answer,
+  topic: d.Topic || "General",
+  interval: d.IntervalDays,
+  easeFactor: Number(d.EaseFactor),
+  repetitions: d.Repetitions,
+  nextReview: new Date(d.NextReview),
+  lastReviewed: d.LastReviewed ? new Date(d.LastReviewed) : null,
+});
 
 const difficultyConfig = {
   again: { label: "Again", icon: XCircle, color: "border-destructive/30 text-destructive hover:bg-destructive/10", interval: "1d" },
@@ -51,9 +64,8 @@ const difficultyConfig = {
 
 const SpacedRepetition = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [cards, setCards] = useState<ReviewCard[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [sessionIds, setSessionIds] = useState<string[]>([]);
   const [showAnswer, setShowAnswer] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
   const [sessionStats, setSessionStats] = useState({ reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 });
@@ -61,30 +73,16 @@ const SpacedRepetition = () => {
   const [newCard, setNewCard] = useState({ question: "", answer: "", topic: "General" });
   const [reviewMode, setReviewMode] = useState<ReviewMode>("all-due");
   const [explanation, setExplanation] = useState<string | null>(null);
-  const [isExplaining, setIsExplaining] = useState(false);
-  const [isGeneratingCards, setIsGeneratingCards] = useState(false);
   const [generateTopic, setGenerateTopic] = useState("");
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
-  const { user } = useAuth();
-  const isMock = !user?.id || !isValidUuid(user.id);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const load = async () => {
-      if (isMock) { setCards(defaultCards); setLoading(false); return; }
-      const { data, error } = await supabase.from("sr_cards").select("*").eq("student_id", user!.id).order("next_review");
-      if (error) { console.error(error); setCards(defaultCards); }
-      else if (data.length === 0) { setCards(defaultCards); }
-      else {
-        setCards(data.map((r: any) => ({
-          id: r.id, question: r.question, answer: r.answer, topic: r.topic,
-          interval: r.interval_days, easeFactor: Number(r.ease_factor), repetitions: r.repetitions,
-          nextReview: new Date(r.next_review), lastReviewed: r.last_reviewed ? new Date(r.last_reviewed) : null,
-        })));
-      }
-      setLoading(false);
-    };
-    load();
-  }, [user, isMock]);
+  const cardsQuery = useQuery({
+    queryKey: ["flashcards", "review"],
+    queryFn: async () => (await api.get<FlashcardDto[]>("/Flashcards")).data.map(toCard),
+  });
+  const cards = useMemo(() => cardsQuery.data ?? [], [cardsQuery.data]);
+  const loading = cardsQuery.isLoading;
 
   const dueCards = useMemo(() => cards.filter((c) => c.nextReview <= new Date()), [cards]);
   const weakCards = useMemo(() => cards.filter((c) => c.easeFactor < 2.0 || (c.repetitions < 2 && c.lastReviewed)), [cards]);
@@ -98,7 +96,8 @@ const SpacedRepetition = () => {
     }
   }, [reviewMode, dueCards, weakCards]);
 
-  const currentCard = isReviewing ? getReviewDeck[currentIndex] : null;
+  const reviewDeckSize = sessionIds.length;
+  const currentCard = isReviewing ? cards.find((c) => c.id === sessionIds[currentIndex]) ?? null : null;
 
   const calculateNextInterval = (card: ReviewCard, difficulty: Difficulty) => {
     let { interval, easeFactor, repetitions } = card;
@@ -116,20 +115,27 @@ const SpacedRepetition = () => {
     return `${result.interval}d`;
   };
 
+  const reviewMutation = useMutation({
+    mutationFn: async ({ id, rating }: { id: string; rating: Difficulty }) =>
+      toCard((await api.post<FlashcardDto>(`/Flashcards/${id}/review`, { Rating: rating })).data),
+    onSuccess: (updated) => {
+      // The server owns the scheduling; store its result without refetching the deck mid-session
+      queryClient.setQueryData<ReviewCard[]>(["flashcards", "review"], (prev) => (prev ?? []).map((c) => (c.id === updated.id ? updated : c)));
+    },
+    onError: (err) => toast.error(getApiError(err, "Failed to save review")),
+  });
+
   const handleRate = async (difficulty: Difficulty) => {
-    if (!currentCard) return;
-    const updates = calculateNextInterval(currentCard, difficulty);
-    setCards((prev) => prev.map((c) => (c.id === currentCard.id ? { ...c, ...updates } : c)));
+    if (!currentCard || reviewMutation.isPending) return;
+    try {
+      await reviewMutation.mutateAsync({ id: currentCard.id, rating: difficulty });
+    } catch {
+      return;
+    }
     setSessionStats((prev) => ({ ...prev, reviewed: prev.reviewed + 1, [difficulty]: prev[difficulty] + 1 }));
     setShowAnswer(false);
     setExplanation(null);
-    if (!isMock && isValidUuid(currentCard.id)) {
-      await supabase.from("sr_cards").update({
-        interval_days: updates.interval, ease_factor: updates.easeFactor, repetitions: updates.repetitions,
-        next_review: updates.nextReview.toISOString(), last_reviewed: updates.lastReviewed!.toISOString(),
-      }).eq("id", currentCard.id);
-    }
-    if (currentIndex + 1 >= getReviewDeck.length) {
+    if (currentIndex + 1 >= reviewDeckSize) {
       setIsReviewing(false);
       toast.success(`Session complete! Reviewed ${sessionStats.reviewed + 1} cards.`);
     } else {
@@ -140,87 +146,55 @@ const SpacedRepetition = () => {
   const startSession = () => {
     const deck = getReviewDeck;
     if (deck.length === 0) { toast.info("No cards available for this mode!"); return; }
+    setSessionIds(deck.map((c) => c.id));
     setCurrentIndex(0); setShowAnswer(false); setExplanation(null);
     setSessionStats({ reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 });
     setIsReviewing(true);
   };
 
-  const addCard = async () => {
+  const addMutation = useMutation({
+    mutationFn: async () => (await api.post<FlashcardDto>("/Flashcards", {
+      Question: newCard.question, Answer: newCard.answer, Topic: newCard.topic || "General",
+    })).data,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
+      setNewCard({ question: "", answer: "", topic: "General" });
+      setAddDialogOpen(false);
+      toast.success("Card added!");
+    },
+    onError: (err) => toast.error(getApiError(err, "Failed to save card")),
+  });
+
+  const addCard = () => {
     if (!newCard.question || !newCard.answer) { toast.error("Fill question and answer"); return; }
-    if (isMock) {
-      setCards((p) => [...p, { id: Date.now().toString(), ...newCard, interval: 1, easeFactor: 2.5, repetitions: 0, nextReview: new Date(), lastReviewed: null }]);
-    } else {
-      const { data, error } = await supabase.from("sr_cards").insert({
-        student_id: user!.id, question: newCard.question, answer: newCard.answer, topic: newCard.topic || "General",
-      }).select().single();
-      if (error) { toast.error("Failed to save card"); return; }
-      setCards((p) => [...p, {
-        id: data.id, question: data.question, answer: data.answer, topic: data.topic,
-        interval: data.interval_days, easeFactor: Number(data.ease_factor), repetitions: data.repetitions,
-        nextReview: new Date(data.next_review), lastReviewed: null,
-      }]);
-    }
-    setNewCard({ question: "", answer: "", topic: "General" });
-    setAddDialogOpen(false);
-    toast.success("Card added!");
+    addMutation.mutate();
   };
 
-  // AI Explain Card
-  const explainCard = async () => {
-    if (!currentCard) return;
-    setIsExplaining(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("explain-card", {
-        body: { question: currentCard.question, answer: currentCard.answer, topic: currentCard.topic, type: "explain" },
-      });
-      if (error) throw error;
-      if (data?.error) { toast.error(data.error); return; }
-      setExplanation(data?.explanation || "No explanation available.");
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to get explanation");
-    } finally {
-      setIsExplaining(false);
-    }
-  };
+  // Explain the current card (template-based explanation from the server)
+  const explainMutation = useMutation({
+    mutationFn: async (id: string) => (await api.post<{ Explanation: string; Generator: string }>(`/Flashcards/${id}/explain`)).data,
+    onSuccess: (data) => setExplanation(data.Explanation || "No explanation available."),
+    onError: (err) => toast.error(getApiError(err, "Failed to get explanation")),
+  });
+  const isExplaining = explainMutation.isPending;
+  const explainCard = () => { if (currentCard) explainMutation.mutate(currentCard.id); };
 
-  // AI Generate Cards
-  const generateCards = async () => {
-    if (!generateTopic.trim()) { toast.error("Enter a topic"); return; }
-    setIsGeneratingCards(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("explain-card", {
-        body: { topic: generateTopic, type: "generate-cards" },
-      });
-      if (error) throw error;
-      if (data?.error) { toast.error(data.error); return; }
-      const aiCards = data?.cards || [];
-      if (aiCards.length === 0) { toast.info("No cards generated. Try a different topic."); return; }
-
-      const newCards: ReviewCard[] = [];
-      for (const ac of aiCards) {
-        if (!ac.question || !ac.answer) continue;
-        if (isMock) {
-          newCards.push({ id: `ai-${Date.now()}-${Math.random()}`, question: ac.question, answer: ac.answer, topic: generateTopic, interval: 1, easeFactor: 2.5, repetitions: 0, nextReview: new Date(), lastReviewed: null });
-        } else {
-          const { data: saved, error: saveErr } = await supabase.from("sr_cards").insert({
-            student_id: user!.id, question: ac.question, answer: ac.answer, topic: generateTopic,
-          }).select().single();
-          if (!saveErr && saved) {
-            newCards.push({ id: saved.id, question: saved.question, answer: saved.answer, topic: saved.topic, interval: saved.interval_days, easeFactor: Number(saved.ease_factor), repetitions: saved.repetitions, nextReview: new Date(saved.next_review), lastReviewed: null });
-          }
-        }
-      }
-      setCards(p => [...p, ...newCards]);
+  // Generate cards for a topic (server saves them)
+  const generateMutation = useMutation({
+    mutationFn: async (topic: string) => (await api.post<FlashcardDto[]>("/Flashcards/generate", { Topic: topic, Count: 8 })).data,
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
+      if (created.length === 0) { toast.info("No cards generated. Try a different topic."); return; }
       setGenerateTopic("");
       setGenerateDialogOpen(false);
-      toast.success(`Generated ${newCards.length} flashcards!`);
-    } catch (e) {
-      console.error(e);
-      toast.error("Failed to generate cards");
-    } finally {
-      setIsGeneratingCards(false);
-    }
+      toast.success(`Generated ${created.length} flashcards!`);
+    },
+    onError: (err) => toast.error(getApiError(err, "Failed to generate cards")),
+  });
+  const isGeneratingCards = generateMutation.isPending;
+  const generateCards = () => {
+    if (!generateTopic.trim()) { toast.error("Enter a topic"); return; }
+    generateMutation.mutate(generateTopic.trim());
   };
 
   const masteredCards = cards.filter((c) => c.repetitions >= 3);
@@ -239,10 +213,17 @@ const SpacedRepetition = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <ApplicantSidebar onCollapse={setSidebarCollapsed} />
-      <Header sidebarCollapsed={sidebarCollapsed} userRole="Student" mobileSidebar={<ApplicantSidebarContent onItemClick={() => {}} />} />
+      <Header sidebarCollapsed={sidebarCollapsed} userRole="Trainer" mobileSidebar={<ApplicantSidebarContent onItemClick={() => {}} />} />
 
       <main className={cn("pt-20 pb-10 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64", "ml-0")}>
         <div className="max-w-5xl mx-auto space-y-6">
+          {cardsQuery.isError && (
+            <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertCircle className="w-4 h-4" />
+              <span className="flex-1">{getApiError(cardsQuery.error, "Failed to load flashcards")}</span>
+              <Button size="sm" variant="outline" onClick={() => cardsQuery.refetch()}>Retry</Button>
+            </div>
+          )}
           {/* Hero Header */}
           <div className="rounded-2xl bg-gradient-to-br from-accent/10 via-primary/5 to-background border border-accent/10 p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -284,7 +265,7 @@ const SpacedRepetition = () => {
                       <Input placeholder="Topic (e.g. Test Design)" value={newCard.topic} onChange={(e) => setNewCard({ ...newCard, topic: e.target.value })} />
                       <Textarea placeholder="Question" value={newCard.question} onChange={(e) => setNewCard({ ...newCard, question: e.target.value })} rows={3} />
                       <Textarea placeholder="Answer" value={newCard.answer} onChange={(e) => setNewCard({ ...newCard, answer: e.target.value })} rows={3} />
-                      <Button onClick={addCard} className="w-full">Add Card</Button>
+                      <Button onClick={addCard} className="w-full" disabled={addMutation.isPending}>Add Card</Button>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -334,14 +315,14 @@ const SpacedRepetition = () => {
           {/* Review Session */}
           {isReviewing && currentCard ? (
             <Card className="overflow-hidden">
-              <div className="h-1 bg-gradient-to-r from-primary via-accent to-success" style={{ width: `${((currentIndex + 1) / getReviewDeck.length) * 100}%`, transition: "width 0.3s ease" }} />
+              <div className="h-1 bg-gradient-to-r from-primary via-accent to-success" style={{ width: `${((currentIndex + 1) / reviewDeckSize) * 100}%`, transition: "width 0.3s ease" }} />
               <CardContent className="p-6 sm:p-8 max-w-2xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-xs border-accent/30 text-accent">{currentCard.topic}</Badge>
                     <MemoryStrengthBadge repetitions={currentCard.repetitions} easeFactor={currentCard.easeFactor} />
                   </div>
-                  <span className="text-xs text-muted-foreground font-medium">{currentIndex + 1} / {getReviewDeck.length}</span>
+                  <span className="text-xs text-muted-foreground font-medium">{currentIndex + 1} / {reviewDeckSize}</span>
                 </div>
                 <div className="text-center space-y-6">
                   <div className="py-4">
@@ -362,7 +343,7 @@ const SpacedRepetition = () => {
                       )}
                       {explanation && (
                         <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 text-left">
-                          <p className="text-xs font-semibold text-accent mb-2 flex items-center gap-1.5"><Lightbulb className="w-3.5 h-3.5" /> AI Explanation</p>
+                          <p className="text-xs font-semibold text-accent mb-2 flex items-center gap-1.5"><Lightbulb className="w-3.5 h-3.5" /> Explanation</p>
                           <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{explanation}</p>
                         </div>
                       )}
@@ -425,6 +406,9 @@ const SpacedRepetition = () => {
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <div className="space-y-2">
+                {cards.length === 0 && !cardsQuery.isError && (
+                  <p className="text-sm text-muted-foreground text-center py-6">No flashcards yet. Add a card or use AI Generate to create some from a topic.</p>
+                )}
                 {cards.map((card) => {
                   const isDue = card.nextReview <= new Date();
                   const statusColor = card.repetitions >= 3 ? "bg-accent" : card.repetitions > 0 ? "bg-success" : "bg-muted-foreground";

@@ -44,7 +44,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { useInstructorStudents } from "@/hooks/useInstructorStudents";
+import { useInstructorTrainers } from "@/hooks/useInstructorTrainers";
 
 interface ChatMessage {
     id: string;
@@ -57,7 +57,7 @@ const InstructorAI = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [activeTab, setActiveTab] = useState("chat");
     const { toast } = useToast();
-    const { students: instructorStudents, loading: studentsLoading } = useInstructorStudents();
+    const { trainers: instructorTrainers, loading: trainersLoading } = useInstructorTrainers();
 
     // Chat State
     const [messages, setMessages] = useState<ChatMessage[]>([
@@ -75,7 +75,7 @@ const InstructorAI = () => {
     const [quizTopic, setQuizTopic] = useState("");
     const [quizDifficulty, setQuizDifficulty] = useState("medium");
     const [assignmentMode, setAssignmentMode] = useState<"all" | "select">("all");
-    const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+    const [selectedTrainers, setSelectedTrainers] = useState<string[]>([]);
     const [quizAttachment, setQuizAttachment] = useState<File | null>(null);
     const [generatedQuiz, setGeneratedQuiz] = useState<string | null>(null);
 
@@ -87,12 +87,12 @@ const InstructorAI = () => {
 
     // Insights Calculations
     const insights = useMemo(() => {
-        if (!instructorStudents.length) return null;
+        if (!instructorTrainers.length) return null;
 
-        const atRisk = instructorStudents.filter(s => s.totalProgress < 50).length;
-        const avgProgress = Math.round(instructorStudents.reduce((acc, s) => acc + s.totalProgress, 0) / instructorStudents.length);
+        const atRisk = instructorTrainers.filter(s => s.totalProgress < 50).length;
+        const avgProgress = Math.round(instructorTrainers.reduce((acc, s) => acc + s.totalProgress, 0) / instructorTrainers.length);
 
-        // Mock topic performance based on student data availability
+        // Mock topic performance based on trainer data availability
         // In a real app, we'd aggregate this from a more detailed hook
         const lowestTopic = "State Management";
 
@@ -101,7 +101,7 @@ const InstructorAI = () => {
             avgProgress,
             lowestTopic
         };
-    }, [instructorStudents]);
+    }, [instructorTrainers]);
 
     const handleSendMessage = async () => {
         if (!inputMessage.trim()) return;
@@ -122,7 +122,7 @@ const InstructorAI = () => {
             const response: ChatMessage = {
                 id: crypto.randomUUID(),
                 role: 'assistant',
-                content: `I can certainly help you with "${newMessage.content}". As an AI, I can assist with curriculum design, student engagement strategies, or technical explanations. What specific aspect would you like advice on?`,
+                content: `I can certainly help you with "${newMessage.content}". As an AI, I can assist with curriculum design, trainer engagement strategies, or technical explanations. What specific aspect would you like advice on?`,
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, response]);
@@ -135,8 +135,8 @@ const InstructorAI = () => {
         setIsGenerating(true);
 
         const targetAudience = assignmentMode === 'all'
-            ? 'All Students'
-            : `${selectedStudents.length} Selected Students`;
+            ? 'All Trainers'
+            : `${selectedTrainers.length} Selected Trainers`;
 
         // Mock Generation
         setTimeout(() => {
@@ -203,11 +203,11 @@ const InstructorAI = () => {
         toast({ title: "Copied!", description: "Content copied to clipboard." });
     };
 
-    const handleStudentToggle = (studentId: string) => {
-        setSelectedStudents(prev =>
-            prev.includes(studentId)
-                ? prev.filter(id => id !== studentId)
-                : [...prev, studentId]
+    const handleTrainerToggle = (trainerId: string) => {
+        setSelectedTrainers(prev =>
+            prev.includes(trainerId)
+                ? prev.filter(id => id !== trainerId)
+                : [...prev, trainerId]
         );
     };
 
@@ -356,33 +356,33 @@ const InstructorAI = () => {
                                                 className="flex gap-4"
                                             >
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="all" id="all-students" />
-                                                    <Label htmlFor="all-students">All Students</Label>
+                                                    <RadioGroupItem value="all" id="all-trainers" />
+                                                    <Label htmlFor="all-trainers">All Trainers</Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="select" id="select-students" />
-                                                    <Label htmlFor="select-students">Select Students</Label>
+                                                    <RadioGroupItem value="select" id="select-trainers" />
+                                                    <Label htmlFor="select-trainers">Select Trainers</Label>
                                                 </div>
                                             </RadioGroup>
                                         </div>
 
                                         {assignmentMode === 'select' && (
                                             <div className="border rounded-md p-3 h-40">
-                                                <p className="text-xs text-muted-foreground mb-2">Select students to assign</p>
+                                                <p className="text-xs text-muted-foreground mb-2">Select trainers to assign</p>
                                                 <ScrollArea className="h-32">
                                                     <div className="space-y-2">
-                                                        {instructorStudents.length === 0 ? (
-                                                            <div className="text-sm text-center text-muted-foreground py-4">No students found</div>
+                                                        {instructorTrainers.length === 0 ? (
+                                                            <div className="text-sm text-center text-muted-foreground py-4">No trainers found</div>
                                                         ) : (
-                                                            instructorStudents.map(student => (
-                                                                <div key={student.id} className="flex items-center space-x-2">
+                                                            instructorTrainers.map(trainer => (
+                                                                <div key={trainer.id} className="flex items-center space-x-2">
                                                                     <Checkbox
-                                                                        id={`student-${student.id}`}
-                                                                        checked={selectedStudents.includes(student.id)}
-                                                                        onCheckedChange={() => handleStudentToggle(student.id)}
+                                                                        id={`trainer-${trainer.id}`}
+                                                                        checked={selectedTrainers.includes(trainer.id)}
+                                                                        onCheckedChange={() => handleTrainerToggle(trainer.id)}
                                                                     />
-                                                                    <Label htmlFor={`student-${student.id}`} className="text-sm cursor-pointer">
-                                                                        {student.full_name}
+                                                                    <Label htmlFor={`trainer-${trainer.id}`} className="text-sm cursor-pointer">
+                                                                        {trainer.full_name}
                                                                     </Label>
                                                                 </div>
                                                             ))
@@ -530,11 +530,11 @@ const InstructorAI = () => {
                         <TabsContent value="insights" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Student Performance Analysis</CardTitle>
-                                    <CardDescription>AI-driven insights based on real student data.</CardDescription>
+                                    <CardTitle>Trainer Performance Analysis</CardTitle>
+                                    <CardDescription>AI-driven insights based on real trainer data.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    {studentsLoading ? (
+                                    {trainersLoading ? (
                                         <div className="flex items-center justify-center h-40">
                                             <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
                                         </div>
@@ -553,7 +553,7 @@ const InstructorAI = () => {
                                                 <div className="p-4 border rounded-lg bg-card shadow-sm">
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <AlertTriangle className="w-4 h-4 text-red-600" />
-                                                        <p className="text-sm text-muted-foreground">At Risk Students</p>
+                                                        <p className="text-sm text-muted-foreground">At Risk Trainers</p>
                                                     </div>
                                                     <p className="text-2xl font-bold text-red-600">{insights?.atRisk || 0}</p>
                                                     <p className="text-xs text-muted-foreground">Below 50% Progress</p>
@@ -575,7 +575,7 @@ const InstructorAI = () => {
                                                     <h4 className="font-semibold text-blue-900 dark:text-blue-100">AI Recommendation</h4>
                                                     <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">
                                                         {insights?.atRisk && insights.atRisk > 0
-                                                            ? `There are ${insights.atRisk} students falling behind. Consider scheduling a review session for "${insights?.lowestTopic}" or assigning extra practice quizzes.`
+                                                            ? `There are ${insights.atRisk} trainers falling behind. Consider scheduling a review session for "${insights?.lowestTopic}" or assigning extra practice quizzes.`
                                                             : "The class is performing well! You might challenge them with advanced projects or peer-review sessions."
                                                         }
                                                     </p>
@@ -583,50 +583,50 @@ const InstructorAI = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Student Table */}
+                                            {/* Trainer Table */}
                                             <div className="mt-6">
                                                 <h3 className="font-semibold mb-4 flex items-center gap-2">
-                                                    <Users className="w-4 h-4" /> Student Analysis
+                                                    <Users className="w-4 h-4" /> Trainer Analysis
                                                 </h3>
                                                 <div className="border rounded-md">
                                                     <Table>
                                                         <TableHeader>
                                                             <TableRow>
-                                                                <TableHead>Student</TableHead>
+                                                                <TableHead>Trainer</TableHead>
                                                                 <TableHead>Enrolled Courses</TableHead>
                                                                 <TableHead>Overall Grade/Progress</TableHead>
                                                                 <TableHead>Status</TableHead>
                                                             </TableRow>
                                                         </TableHeader>
                                                         <TableBody>
-                                                            {instructorStudents.map((student) => (
-                                                                <TableRow key={student.id}>
+                                                            {instructorTrainers.map((trainer) => (
+                                                                <TableRow key={trainer.id}>
                                                                     <TableCell className="font-medium">
                                                                         <div className="flex items-center gap-2">
                                                                             <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs">
-                                                                                {student.full_name.charAt(0)}
+                                                                                {trainer.full_name.charAt(0)}
                                                                             </div>
-                                                                            {student.full_name}
+                                                                            {trainer.full_name}
                                                                         </div>
                                                                     </TableCell>
-                                                                    <TableCell>{student.enrolledCoursesCount}</TableCell>
+                                                                    <TableCell>{trainer.enrolledCoursesCount}</TableCell>
                                                                     <TableCell>
                                                                         <div className="flex items-center gap-2">
                                                                             <div className="w-16 h-2 bg-secondary rounded-full overflow-hidden">
                                                                                 <div
                                                                                     className={cn("h-full",
-                                                                                        student.totalProgress >= 70 ? "bg-green-500" :
-                                                                                            student.totalProgress >= 50 ? "bg-yellow-500" : "bg-red-500"
+                                                                                        trainer.totalProgress >= 70 ? "bg-green-500" :
+                                                                                            trainer.totalProgress >= 50 ? "bg-yellow-500" : "bg-red-500"
                                                                                     )}
-                                                                                    style={{ width: `${student.totalProgress}%` }}
+                                                                                    style={{ width: `${trainer.totalProgress}%` }}
                                                                                 />
                                                                             </div>
-                                                                            <span className="text-xs text-muted-foreground">{student.totalProgress}%</span>
+                                                                            <span className="text-xs text-muted-foreground">{trainer.totalProgress}%</span>
                                                                         </div>
                                                                     </TableCell>
                                                                     <TableCell>
-                                                                        <Badge variant={student.totalProgress >= 50 ? "default" : "destructive"}>
-                                                                            {student.totalProgress >= 50 ? "On Track" : "At Risk"}
+                                                                        <Badge variant={trainer.totalProgress >= 50 ? "default" : "destructive"}>
+                                                                            {trainer.totalProgress >= 50 ? "On Track" : "At Risk"}
                                                                         </Badge>
                                                                     </TableCell>
                                                                 </TableRow>

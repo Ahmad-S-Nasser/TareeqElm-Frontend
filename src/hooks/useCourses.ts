@@ -1,73 +1,57 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import api, { getApiError } from '@/lib/api';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
 export interface Course {
-  id: string;
-  instructor_id: string;
-  title: string;
-  description: string | null;
-  category: string | null;
-  level: string;
-  duration_hours: number;
-  image_url: string | null;
-  status: 'draft' | 'published' | 'archived';
-  is_featured: boolean;
-  created_at: string;
-  updated_at: string;
-  start_date?: string | null;
-  end_date?: string | null;
-  attachment_url?: string | null;
+  Id: string;
+  InstructorId: string;
+  Title: string;
+  Description: string | null;
+  Category: string | null;
+  Level: string | null;
+  DurationHours: number | null;
+  LessonsCount: number;
+  ImageUrl: string | null;
+  Status: 'Draft' | 'Published' | 'Archived';
+  IsFeatured: boolean;
+  InstructorName?: string | null;
+  EnrolledCount?: number;
+  CreatedAt: string;
+  UpdatedAt: string;
 }
 
 export interface Enrollment {
-  id: string;
-  student_id: string;
-  course_id: string;
-  enrolled_at: string;
-  completed_at: string | null;
-  progress_percentage: number;
+  Id: string;
+  TrainerId: string;
+  CourseId: string;
+  EnrolledAt: string;
+  CompletedAt: string | null;
+  ProgressPercentage: number;
+}
+
+export interface EnrollmentWithCourse extends Enrollment {
+  Course: Course;
 }
 
 export interface CourseWithEnrollment extends Course {
-  enrollment?: Enrollment;
-  enrollmentCount?: number;
+  Enrollment?: Enrollment;
+  EnrollmentCount?: number;
 }
 
 export const useCourses = () => {
   const [courses, setCourses] = useState<CourseWithEnrollment[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user, role, isMockUser } = useAuth();
+  const { user, role } = useAuth();
   const { toast } = useToast();
 
-  const isValidUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
-  const fetchPublishedCourses = async () => {
+  const fetchPublishedCourses = useCallback(async () => {
     setLoading(true);
     try {
-      const { data: coursesData, error } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('status', 'published');
-
-      if (error) throw error;
-
-      if (user && isValidUuid(user.id)) {
-        const { data: enrollments } = await supabase
-          .from('enrollments')
-          .select('*')
-          .eq('student_id', user.id);
-
-        const coursesWithEnrollment = (coursesData || []).map((course) => ({
-          ...course,
-          enrollment: enrollments?.find((e) => e.course_id === course.id),
-        }));
-
-        setCourses(coursesWithEnrollment);
-      } else {
-        setCourses(coursesData || []);
-      }
+      // The server only returns courses the caller may see; ask it for the published catalog.
+      const response = await api.get('/Courses', { params: { status: 'Published' } });
+      setCourses(response.data as CourseWithEnrollment[]);
     } catch (error) {
       console.error('Error fetching courses:', error);
       toast({
@@ -78,40 +62,16 @@ export const useCourses = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const fetchInstructorCourses = async () => {
-    if (!user || role !== 'instructor') return;
-
-    // Mock users can't query DB
-    if (isMockUser || !isValidUuid(user.id)) {
-      setLoading(false);
-      return;
-    }
+  const fetchInstructorCourses = useCallback(async () => {
+    if (!user || (role !== 'instructor' && role !== 'admin')) return;
 
     setLoading(true);
     try {
-      const { data: coursesData, error } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('instructor_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Fetch enrollment counts for each course
-      const coursesWithCounts = await Promise.all(
-        (coursesData || []).map(async (course) => {
-          const { count } = await supabase
-            .from('enrollments')
-            .select('*', { count: 'exact', head: true })
-            .eq('course_id', course.id);
-
-          return { ...course, enrollmentCount: count || 0 };
-        })
-      );
-
-      setCourses(coursesWithCounts);
+      // The server returns only the caller's own courses (all statuses).
+      const response = await api.get('/Courses/mine');
+      setCourses(response.data as CourseWithEnrollment[]);
     } catch (error) {
       console.error('Error fetching instructor courses:', error);
       toast({
@@ -122,38 +82,29 @@ export const useCourses = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, role, toast]);
 
-  const fetchEnrolledCourses = async () => {
+  const fetchEnrolledCourses = useCallback(async () => {
     if (!user || role !== 'applicant') return;
-    // Mock users can't query DB
-    if (isMockUser || !isValidUuid(user.id)) {
-      setLoading(false);
-      return;
-    }
 
     setLoading(true);
     try {
-      const { data: enrollments, error: enrollError } = await supabase
-        .from('enrollments')
-        .select('*, courses(*)')
-        .eq('student_id', user.id);
+      const response = await api.get('/Enrollments/me');
+      const enrollments = response.data as EnrollmentWithCourse[];
 
-      if (enrollError) throw enrollError;
-
-      const enrolledCourses = (enrollments || []).map((e) => ({
-        ...(e.courses as Course),
-        enrollment: {
-          id: e.id,
-          student_id: e.student_id,
-          course_id: e.course_id,
-          enrolled_at: e.enrolled_at,
-          completed_at: e.completed_at,
-          progress_percentage: e.progress_percentage,
-        },
+      const enrolledCourses = enrollments.map(e => ({
+        ...e.Course,
+        Enrollment: {
+          Id: e.Id,
+          TrainerId: e.TrainerId,
+          CourseId: e.CourseId,
+          EnrolledAt: e.EnrolledAt,
+          CompletedAt: e.CompletedAt,
+          ProgressPercentage: e.ProgressPercentage,
+        }
       }));
 
-      setCourses(enrolledCourses);
+      setCourses(enrolledCourses as CourseWithEnrollment[]);
     } catch (error) {
       console.error('Error fetching enrolled courses:', error);
       toast({
@@ -164,7 +115,7 @@ export const useCourses = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, role, toast]);
 
   const enrollInCourse = async (courseId: string) => {
     if (!user) {
@@ -177,36 +128,25 @@ export const useCourses = () => {
     }
 
     try {
-      console.log("Enrolling user:", user.id, "in course:", courseId);
-
-      const { error } = await supabase.from('enrollments').insert({
-        student_id: user.id,
-        course_id: courseId,
-        progress_percentage: 0,
-      });
-
-      if (error) {
-        console.error("Supabase enrollment error:", error);
-        throw error;
-      }
+      // The server takes the trainer from the sign-in token.
+      await api.post('/Enrollments', { CourseId: courseId });
 
       toast({
         title: 'Enrolled!',
         description: 'You have successfully enrolled in this course',
       });
 
-      // Refresh both published and enrolled courses
-      await Promise.all([
-        fetchPublishedCourses(),
-        fetchEnrolledCourses()
-      ]);
-
+      fetchPublishedCourses();
       return { error: null };
-    } catch (error) {
-      console.error('Enrollment Failed Error:', error);
+    } catch (error: unknown) {
+      // 409 = already enrolled: not a failure from the trainer's point of view.
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        toast({ title: 'Already enrolled', description: 'You are already enrolled in this course.' });
+        return { error: null };
+      }
       toast({
         title: 'Enrollment Failed',
-        description: (error as Error).message || 'An unexpected error occurred during enrollment.',
+        description: getApiError(error, 'An unexpected error occurred during enrollment.'),
         variant: 'destructive',
       });
       return { error: error as Error };
@@ -214,43 +154,20 @@ export const useCourses = () => {
   };
 
   const createCourse = async (courseData: Partial<Course>) => {
-    if (!user || role !== 'instructor') {
-      return { error: new Error('Not authorized'), data: null };
-    }
-
-    // Handle mock user faux-create
-    if (isMockUser || !isValidUuid(user.id)) {
-      toast({
-        title: 'Course Created (Demo)',
-        description: 'Mock course created successfully',
-      });
-      return { error: null, data: { ...courseData, id: 'mock-course-id', status: 'draft', instructor_id: user.id } as Course };
-    }
+    if (!user || role !== 'instructor') return { error: new Error('Not authorized') };
 
     try {
-      const { data, error } = await supabase
-        .from('courses')
-        .insert({
-          instructor_id: user.id,
-          title: courseData.title || 'Untitled Course',
-          description: courseData.description,
-          category: courseData.category,
-          level: courseData.level || 'beginner',
-          duration_hours: courseData.duration_hours || 0,
-          image_url: courseData.image_url,
-          status: 'draft',
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
+      const response = await api.post('/Courses', {
+        ...courseData,
+        InstructorId: user.Id
+      });
+      
       toast({
         title: 'Course Created',
-        description: 'Your new course has been created as a draft',
+        description: 'Your new course has been created successfully',
       });
 
-      return { error: null, data };
+      return { error: null, data: response.data };
     } catch (error) {
       toast({
         title: 'Error',
@@ -262,144 +179,45 @@ export const useCourses = () => {
   };
 
   const updateCourse = async (courseId: string, updates: Partial<Course>) => {
-    if (!user || role !== 'instructor') {
-      return { error: new Error('Not authorized') };
-    }
-
-    if (isMockUser || !isValidUuid(user.id)) {
-      toast({
-        title: 'Course Updated (Demo)',
-        description: 'Mock course updated successfully',
-      });
-      return { error: null };
-    }
-
     try {
-      const { error } = await supabase
-        .from('courses')
-        .update(updates)
-        .eq('id', courseId)
-        .eq('instructor_id', user.id);
-
-      if (error) throw error;
-
+      await api.put(`/Courses/${courseId}`, updates);
       toast({
         title: 'Course Updated',
         description: 'Your changes have been saved',
       });
-
-      await fetchInstructorCourses();
-
       return { error: null };
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update course',
-        variant: 'destructive',
-      });
       return { error: error as Error };
     }
   };
 
-  const publishCourse = async (courseId: string) => {
-    return updateCourse(courseId, { status: 'published' });
-  };
-
-  const archiveCourse = async (courseId: string) => {
-    return updateCourse(courseId, { status: 'archived' });
-  };
+  const publishCourse = async (courseId: string) => updateCourse(courseId, { Status: 'Published' });
+  const archiveCourse = async (courseId: string) => updateCourse(courseId, { Status: 'Archived' });
 
   const deleteCourse = async (courseId: string) => {
-    if (!user || role !== 'instructor') {
-      return { error: new Error('Not authorized') };
-    }
-
-    if (isMockUser || !isValidUuid(user.id)) {
-      toast({
-        title: 'Course Deleted (Demo)',
-        description: 'Mock course deleted successfully',
-      });
-      return { error: null };
-    }
-
     try {
-      const { error } = await supabase
-        .from('courses')
-        .delete()
-        .eq('id', courseId)
-        .eq('instructor_id', user.id);
-
-      if (error) throw error;
-
+      await api.delete(`/Courses/${courseId}`);
       toast({
         title: 'Course Deleted',
         description: 'The course has been permanently deleted',
       });
-
-      await fetchInstructorCourses();
-
       return { error: null };
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete course',
-        variant: 'destructive',
-      });
       return { error: error as Error };
     }
   };
 
-  const getCourseById = async (courseId: string) => {
+  const getCourseById = useCallback(async (courseId: string) => {
     setLoading(true);
-
-    if (isMockUser || !isValidUuid(courseId)) {
-      setLoading(false);
-      return {
-        course: { 
-          id: courseId, 
-          title: "Mock Course", 
-          description: "This is a demo course.", 
-          level: "beginner", 
-          status: "draft", 
-          enrollmentCount: 0 
-        } as any, 
-        error: null 
-      };
-    }
-
     try {
-      const { data, error } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('id', courseId)
-        .single();
-
-      if (error) throw error;
-
-      const { count } = await supabase
-        .from('enrollments')
-        .select('*', { count: 'exact', head: true })
-        .eq('course_id', courseId);
-
-      let enrollment = null;
-      if (user && isValidUuid(user.id)) {
-        const { data: enrollData } = await supabase
-          .from('enrollments')
-          .select('*')
-          .eq('course_id', courseId)
-          .eq('student_id', user.id)
-          .maybeSingle();
-        enrollment = enrollData;
-      }
-
-      return { course: { ...data, enrollmentCount: count || 0, enrollment }, error: null };
+      const response = await api.get(`/Courses/${courseId}`);
+      return { course: response.data, error: null };
     } catch (error) {
-      console.error('Error fetching course:', error);
       return { course: null, error: error as Error };
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return {
     courses,

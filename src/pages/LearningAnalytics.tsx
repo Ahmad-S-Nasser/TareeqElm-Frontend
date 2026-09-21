@@ -1,191 +1,191 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { 
-  BarChart3, TrendingUp, Clock, Target, Brain, Flame, 
-  Calendar, BookOpen, Zap, Award, Activity, Loader2 
+import {
+  BarChart3, TrendingUp, Clock, Target, Brain, Flame,
+  Calendar, BookOpen, Zap, Award, Activity, Loader2, AlertCircle
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { format, subDays, startOfWeek, addDays, differenceInDays, isToday, parseISO } from "date-fns";
+import api, { getApiError } from "@/lib/api";
+import { format, subDays, startOfWeek, addDays } from "date-fns";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis,
-  Tooltip, ResponsiveContainer, Cell, CartesianGrid
+  Tooltip, ResponsiveContainer, CartesianGrid
 } from "recharts";
 import { StudyHeatmap } from "@/components/analytics/StudyHeatmap";
 
-const isValidUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+interface StudySessionDto {
+  Id: string;
+  CourseId: string | null;
+  LessonId: string | null;
+  StartedAt: string;
+  EndedAt: string | null;
+  DurationSeconds: number;
+}
 
-// Generate mock heatmap data
-const generateHeatmapData = () => {
-  const data: { date: string; value: number }[] = [];
-  const today = new Date();
-  for (let i = 364; i >= 0; i--) {
-    const date = subDays(today, i);
-    const dayOfWeek = date.getDay();
-    // More likely to study on weekdays
-    const baseChance = dayOfWeek === 0 || dayOfWeek === 6 ? 0.4 : 0.7;
-    const hasStudy = Math.random() < baseChance;
-    data.push({
-      date: format(date, "yyyy-MM-dd"),
-      value: hasStudy ? Math.floor(Math.random() * 4) + 1 : 0,
-    });
-  }
-  return data;
-};
+interface FlashcardDto {
+  Id: string;
+  Topic: string;
+  EaseFactor: number;
+  Repetitions: number;
+  NextReview: string;
+  LastReviewed: string | null;
+}
+
+interface TimeBlockDto {
+  Id: string;
+  Category: string;
+  Date: string;
+  StartTime: string;
+  EndTime: string;
+}
+
+interface TrainerStatsDto {
+  TotalStudyHours: number;
+  AvgFocusScore: number;
+  Streak: number;
+  FlashcardsDue: number;
+  WeakTopics: string[];
+  BestStudyTime: string;
+  CardsReviewedToday: number;
+  SessionsThisWeek: number;
+  TotalCards: number;
+  RetentionRate: number;
+  DeepWorkSessions: number;
+}
+
+interface ActivitySummaryDto {
+  TotalSessions: number;
+  TotalStudySeconds: number;
+  CardsReviewed: number;
+  DistractionsLogged: number;
+}
+
+const dayKey = (iso: string) => format(new Date(iso), "yyyy-MM-dd");
+
+const QueryError = ({ error, onRetry }: { error: unknown; onRetry: () => void }) => (
+  <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+    <AlertCircle className="w-4 h-4" />
+    <span className="flex-1">{getApiError(error, "Failed to load analytics")}</span>
+    <Button size="sm" variant="outline" onClick={onRetry}>Retry</Button>
+  </div>
+);
+
+const EmptyChart = ({ message }: { message: string }) => (
+  <div className="h-full flex items-center justify-center text-sm text-muted-foreground text-center px-4">{message}</div>
+);
 
 const LearningAnalytics = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
-  const { user } = useAuth();
-  const isMock = !user?.id || !isValidUuid(user.id);
 
-  // Stats
-  const [totalStudyHours, setTotalStudyHours] = useState(0);
-  const [avgFocusScore, setAvgFocusScore] = useState(0);
-  const [currentStreak, setCurrentStreak] = useState(0);
-  const [flashcardRetention, setFlashcardRetention] = useState(0);
-  const [bestStudyTime, setBestStudyTime] = useState("Morning");
-  const [weeklyProductivity, setWeeklyProductivity] = useState<{ day: string; hours: number; focusScore: number }[]>([]);
-  const [heatmapData, setHeatmapData] = useState<{ date: string; value: number }[]>([]);
-  const [retentionTrend, setRetentionTrend] = useState<{ date: string; retention: number }[]>([]);
-  const [focusTrend, setFocusTrend] = useState<{ date: string; score: number }[]>([]);
+  const statsQuery = useQuery({
+    queryKey: ["trainer-stats"],
+    queryFn: async () => (await api.get<TrainerStatsDto>("/Trainers/stats")).data,
+  });
+  const summaryQuery = useQuery({
+    queryKey: ["trainer-activity-summary"],
+    queryFn: async () => (await api.get<ActivitySummaryDto>("/Trainers/activity-summary")).data,
+  });
+  const sessionsQuery = useQuery({
+    queryKey: ["study-sessions", "year"],
+    queryFn: async () => {
+      const from = format(subDays(new Date(), 364), "yyyy-MM-dd");
+      const to = format(addDays(new Date(), 1), "yyyy-MM-dd");
+      return (await api.get<StudySessionDto[]>("/study-sessions", { params: { from, to } })).data;
+    },
+  });
+  const cardsQuery = useQuery({
+    queryKey: ["flashcards", "raw"],
+    queryFn: async () => (await api.get<FlashcardDto[]>("/Flashcards")).data,
+  });
+  const blocksQuery = useQuery({
+    queryKey: ["timeblocks", "analytics-week"],
+    queryFn: async () => {
+      const ws = startOfWeek(new Date(), { weekStartsOn: 1 });
+      return (await api.get<TimeBlockDto[]>("/TimeBlocks", { params: { from: format(ws, "yyyy-MM-dd"), to: format(addDays(ws, 6), "yyyy-MM-dd") } })).data;
+    },
+  });
 
-  useEffect(() => {
-    const loadAnalytics = async () => {
-      if (isMock) {
-        // Generate mock data
-        setTotalStudyHours(47.5);
-        setAvgFocusScore(78);
-        setCurrentStreak(12);
-        setFlashcardRetention(85);
-        setBestStudyTime("Morning (8-11 AM)");
-        setHeatmapData(generateHeatmapData());
+  const queries = [statsQuery, summaryQuery, sessionsQuery, cardsQuery, blocksQuery];
+  const loading = queries.some((q) => q.isLoading);
+  const firstError = queries.find((q) => q.isError);
+  const refetchAll = () => queries.forEach((q) => { if (q.isError) q.refetch(); });
 
-        const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-        setWeeklyProductivity(weekDays.map((day) => ({
-          day,
-          hours: Math.round((Math.random() * 4 + 1) * 10) / 10,
-          focusScore: Math.floor(Math.random() * 30 + 60),
-        })));
+  const stats = statsQuery.data;
+  const sessions = useMemo(() => sessionsQuery.data ?? [], [sessionsQuery.data]);
+  const cards = useMemo(() => cardsQuery.data ?? [], [cardsQuery.data]);
 
-        // Retention trend
-        const retentionData = [];
-        for (let i = 13; i >= 0; i--) {
-          retentionData.push({
-            date: format(subDays(new Date(), i), "MMM d"),
-            retention: Math.floor(Math.random() * 20 + 70),
-          });
-        }
-        setRetentionTrend(retentionData);
+  const totalStudyHours = stats ? Math.round(stats.TotalStudyHours * 10) / 10 : 0;
+  const avgFocusScore = stats ? Math.round(stats.AvgFocusScore) : 0;
+  const currentStreak = stats?.Streak ?? 0;
+  const flashcardRetention = stats ? Math.round(stats.RetentionRate) : 0;
+  const bestStudyTime = stats?.BestStudyTime || "N/A";
 
-        // Focus trend
-        const focusData = [];
-        for (let i = 13; i >= 0; i--) {
-          focusData.push({
-            date: format(subDays(new Date(), i), "MMM d"),
-            score: Math.floor(Math.random() * 25 + 65),
-          });
-        }
-        setFocusTrend(focusData);
+  // Heatmap: sessions per day over the last year (derived from GET /study-sessions)
+  const heatmapData = useMemo(() => {
+    const counts = new Map<string, number>();
+    sessions.forEach((s) => { const k = dayKey(s.StartedAt); counts.set(k, (counts.get(k) ?? 0) + 1); });
+    return Array.from(counts, ([date, value]) => ({ date, value }));
+  }, [sessions]);
 
-        setLoading(false);
-        return;
-      }
+  // Weekly hours: tracked study time per day this week (Mon-Sun)
+  const weeklyProductivity = useMemo(() => {
+    const ws = startOfWeek(new Date(), { weekStartsOn: 1 });
+    return Array.from({ length: 7 }, (_, i) => {
+      const day = addDays(ws, i);
+      const key = format(day, "yyyy-MM-dd");
+      const daySessions = sessions.filter((s) => dayKey(s.StartedAt) === key);
+      const seconds = daySessions.reduce((acc, s) => acc + s.DurationSeconds, 0);
+      return { day: format(day, "EEE"), hours: Math.round((seconds / 3600) * 10) / 10, sessions: daySessions.length };
+    });
+  }, [sessions]);
 
-      // Load real data from database
-      try {
-        // Study sessions
-        const { data: sessions } = await supabase
-          .from("study_sessions")
-          .select("*")
-          .eq("student_id", user!.id)
-          .order("started_at", { ascending: false });
+  // Planned study hours per day this week from time blocks
+  const plannedHours = useMemo(() => {
+    const ws = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+    return Array.from({ length: 7 }, (_, i) => {
+      const key = format(addDays(ws, i), "yyyy-MM-dd");
+      const mins = (blocksQuery.data ?? [])
+        .filter((b) => b.Date.slice(0, 10) === key && b.Category !== "break" && b.Category !== "personal")
+        .reduce((acc, b) => acc + Math.max(0, toMin(b.EndTime) - toMin(b.StartTime)), 0);
+      return { day: format(addDays(ws, i), "EEE"), hours: Math.round((mins / 60) * 10) / 10 };
+    });
+  }, [blocksQuery.data]);
 
-        const totalMinutes = (sessions || []).reduce((acc, s) => acc + (s.duration_seconds || 0), 0) / 60;
-        setTotalStudyHours(Math.round(totalMinutes / 60 * 10) / 10);
+  // Daily study minutes for the last 14 days (focus tab)
+  const dailyMinutesTrend = useMemo(() => {
+    return Array.from({ length: 14 }, (_, i) => {
+      const day = subDays(new Date(), 13 - i);
+      const key = format(day, "yyyy-MM-dd");
+      const seconds = sessions.filter((s) => dayKey(s.StartedAt) === key).reduce((acc, s) => acc + s.DurationSeconds, 0);
+      return { date: format(day, "MMM d"), minutes: Math.round(seconds / 60) };
+    });
+  }, [sessions]);
 
-        // SR cards for retention
-        const { data: cards } = await supabase
-          .from("sr_cards")
-          .select("*")
-          .eq("student_id", user!.id);
+  // Cards reviewed per day for the last 14 days, based on each card's last review date
+  const reviewTrend = useMemo(() => {
+    return Array.from({ length: 14 }, (_, i) => {
+      const day = subDays(new Date(), 13 - i);
+      const key = format(day, "yyyy-MM-dd");
+      const reviewed = cards.filter((c) => c.LastReviewed && dayKey(c.LastReviewed) === key).length;
+      return { date: format(day, "MMM d"), reviewed };
+    });
+  }, [cards]);
 
-        if (cards && cards.length > 0) {
-          const avgEase = cards.reduce((acc, c) => acc + c.ease_factor, 0) / cards.length;
-          setFlashcardRetention(Math.min(100, Math.round(avgEase * 35)));
-        }
-
-        // Time blocks for streak
-        const { data: blocks } = await supabase
-          .from("time_blocks")
-          .select("block_date")
-          .eq("student_id", user!.id)
-          .order("block_date", { ascending: false });
-
-        if (blocks) {
-          const uniqueDates = [...new Set(blocks.map((b) => b.block_date))].sort().reverse();
-          let streak = 0;
-          let checkDate = format(new Date(), "yyyy-MM-dd");
-          for (const d of uniqueDates) {
-            if (d === checkDate) {
-              streak++;
-              checkDate = format(subDays(parseISO(checkDate), 1), "yyyy-MM-dd");
-            } else break;
-          }
-          setCurrentStreak(streak);
-        }
-
-        // Generate heatmap from blocks
-        setHeatmapData(generateHeatmapData());
-
-        // Weekly productivity
-        const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-        const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-        const weeklyData = weekDays.map((day) => {
-          const dateStr = format(day, "yyyy-MM-dd");
-          const dayBlocks = (blocks || []).filter((b) => b.block_date === dateStr);
-          return {
-            day: format(day, "EEE"),
-            hours: Math.round((dayBlocks.length * 1.5) * 10) / 10,
-            focusScore: Math.floor(Math.random() * 30 + 60),
-          };
-        });
-        setWeeklyProductivity(weeklyData);
-
-        setAvgFocusScore(75);
-        setBestStudyTime("Morning (8-11 AM)");
-
-        // Trends
-        const retentionData = [];
-        const focusData = [];
-        for (let i = 13; i >= 0; i--) {
-          retentionData.push({
-            date: format(subDays(new Date(), i), "MMM d"),
-            retention: Math.floor(Math.random() * 20 + 70),
-          });
-          focusData.push({
-            date: format(subDays(new Date(), i), "MMM d"),
-            score: Math.floor(Math.random() * 25 + 65),
-          });
-        }
-        setRetentionTrend(retentionData);
-        setFocusTrend(focusData);
-
-      } catch (err) {
-        console.error(err);
-      }
-      setLoading(false);
-    };
-
-    loadAnalytics();
-  }, [user, isMock]);
+  const weeklyTotalHours = weeklyProductivity.reduce((s, d) => s + d.hours, 0);
+  const bestDay = weeklyProductivity.reduce((best, d) => (d.hours > best.hours ? d : best), weeklyProductivity[0] ?? { day: "", hours: 0, sessions: 0 });
+  const longestSessionMin = sessions.reduce((m, s) => Math.max(m, s.DurationSeconds), 0) / 60;
+  const cardsReviewedWeek = cards.filter((c) => c.LastReviewed && new Date(c.LastReviewed) >= subDays(new Date(), 7)).length;
+  const hasSessions = sessions.length > 0;
+  const hasReviews = reviewTrend.some((d) => d.reviewed > 0);
 
   if (loading) {
     return (
@@ -200,12 +200,13 @@ const LearningAnalytics = () => {
       <ApplicantSidebar onCollapse={setSidebarCollapsed} />
       <Header
         sidebarCollapsed={sidebarCollapsed}
-        userRole="Student"
+        userRole="Trainer"
         mobileSidebar={<ApplicantSidebarContent onItemClick={() => {}} />}
       />
 
       <main className={cn("pt-20 pb-10 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64", "ml-0")}>
         <div className="max-w-7xl mx-auto space-y-6">
+          {firstError && <QueryError error={firstError.error} onRetry={refetchAll} />}
           {/* Header */}
           <div className="rounded-2xl bg-gradient-to-br from-accent/10 via-primary/5 to-background border border-accent/10 p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -276,6 +277,7 @@ const LearningAnalytics = () => {
                 </CardHeader>
                 <CardContent className="overflow-x-auto pb-4">
                   <StudyHeatmap data={heatmapData} />
+                  {!hasSessions && <p className="text-xs text-muted-foreground text-center mt-2">No study sessions recorded yet. Open a lesson to start tracking.</p>}
                 </CardContent>
               </Card>
 
@@ -308,7 +310,7 @@ const LearningAnalytics = () => {
                       </ResponsiveContainer>
                     </div>
                     <p className="text-xs text-muted-foreground text-center mt-2">
-                      Total: {weeklyProductivity.reduce((s, d) => s + d.hours, 0).toFixed(1)}h this week
+                      Total: {weeklyTotalHours.toFixed(1)}h this week
                     </p>
                   </CardContent>
                 </Card>
@@ -317,15 +319,15 @@ const LearningAnalytics = () => {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center gap-2">
                       <Target className="w-4 h-4 text-muted-foreground" />
-                      Weekly Focus Scores
+                      Planned Study Hours
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-48">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={weeklyProductivity} barSize={32}>
+                        <BarChart data={plannedHours} barSize={32}>
                           <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} domain={[0, 100]} width={30} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} unit="h" width={30} />
                           <Tooltip
                             cursor={{ fill: "hsl(var(--muted) / 0.3)", radius: 8 }}
                             contentStyle={{
@@ -335,16 +337,12 @@ const LearningAnalytics = () => {
                               fontSize: "12px",
                             }}
                           />
-                          <Bar dataKey="focusScore" radius={[8, 8, 4, 4]}>
-                            {weeklyProductivity.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.focusScore >= 80 ? "hsl(var(--success))" : entry.focusScore >= 60 ? "hsl(var(--accent))" : "hsl(var(--warning))"} />
-                            ))}
-                          </Bar>
+                          <Bar dataKey="hours" radius={[8, 8, 4, 4]} fill="hsl(var(--accent))" />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
                     <p className="text-xs text-muted-foreground text-center mt-2">
-                      Average: {Math.round(weeklyProductivity.reduce((s, d) => s + d.focusScore, 0) / 7)}%
+                      Planned this week: {plannedHours.reduce((s, d) => s + d.hours, 0).toFixed(1)}h (from your time blocks)
                     </p>
                   </CardContent>
                 </Card>
@@ -358,10 +356,14 @@ const LearningAnalytics = () => {
                     Weekly Insights
                   </h3>
                   <ul className="text-sm text-muted-foreground space-y-2">
-                    <li>• Your most productive day this week was <strong className="text-foreground">Tuesday</strong> with 4.2h of study time.</li>
-                    <li>• Focus scores improve by <strong className="text-foreground">15%</strong> during morning sessions (8-11 AM).</li>
-                    <li>• You've completed <strong className="text-foreground">{Math.floor(totalStudyHours / 2)}</strong> Pomodoro cycles this week.</li>
-                    <li>• Flashcard retention is up <strong className="text-success">5%</strong> compared to last week.</li>
+                    {bestDay.hours > 0 ? (
+                      <li>• Your most productive day this week was <strong className="text-foreground">{bestDay.day}</strong> with {bestDay.hours}h of study time.</li>
+                    ) : (
+                      <li>• No study time tracked yet this week.</li>
+                    )}
+                    {stats && stats.BestStudyTime && <li>• Your best study time is <strong className="text-foreground">{stats.BestStudyTime}</strong>.</li>}
+                    <li>• You've had <strong className="text-foreground">{stats?.SessionsThisWeek ?? 0}</strong> study sessions this week.</li>
+                    <li>• You've reviewed <strong className="text-foreground">{cardsReviewedWeek}</strong> flashcards in the last 7 days.</li>
                   </ul>
                 </CardContent>
               </Card>
@@ -372,33 +374,37 @@ const LearningAnalytics = () => {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Target className="w-4 h-4 text-muted-foreground" />
-                    Focus Score Trend (Last 2 Weeks)
+                    Daily Study Minutes (Last 2 Weeks)
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={focusTrend}>
-                        <defs>
-                          <linearGradient id="focusGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} domain={[0, 100]} width={30} />
-                        <Tooltip
-                          contentStyle={{
-                            background: "hsl(var(--card))",
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "0.75rem",
-                            fontSize: "12px",
-                          }}
-                        />
-                        <Area type="monotone" dataKey="score" stroke="hsl(var(--accent))" strokeWidth={2} fill="url(#focusGradient)" />
-                      </AreaChart>
-                    </ResponsiveContainer>
+                    {hasSessions ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={dailyMinutesTrend}>
+                          <defs>
+                            <linearGradient id="focusGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} unit="m" width={35} />
+                          <Tooltip
+                            contentStyle={{
+                              background: "hsl(var(--card))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "0.75rem",
+                              fontSize: "12px",
+                            }}
+                          />
+                          <Area type="monotone" dataKey="minutes" stroke="hsl(var(--accent))" strokeWidth={2} fill="url(#focusGradient)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <EmptyChart message="No study sessions yet. Your daily study time will appear here." />
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -413,16 +419,16 @@ const LearningAnalytics = () => {
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-success">92%</p>
-                    <p className="text-sm text-muted-foreground mt-1">Best Focus Score</p>
-                    <p className="text-xs text-muted-foreground mt-1">Achieved on Tuesday</p>
+                    <p className="text-3xl font-bold text-success">{Math.round(longestSessionMin)}m</p>
+                    <p className="text-sm text-muted-foreground mt-1">Longest Session</p>
+                    <p className="text-xs text-muted-foreground mt-1">Last 12 months</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-primary">+8%</p>
-                    <p className="text-sm text-muted-foreground mt-1">Improvement</p>
-                    <p className="text-xs text-muted-foreground mt-1">vs last week</p>
+                    <p className="text-3xl font-bold text-primary">{stats?.DeepWorkSessions ?? 0}</p>
+                    <p className="text-sm text-muted-foreground mt-1">Deep Work Sessions</p>
+                    <p className="text-xs text-muted-foreground mt-1">{summaryQuery.data?.DistractionsLogged ?? 0} distractions logged</p>
                   </CardContent>
                 </Card>
               </div>
@@ -433,16 +439,17 @@ const LearningAnalytics = () => {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Brain className="w-4 h-4 text-muted-foreground" />
-                    Flashcard Retention Trend
+                    Cards Reviewed (Last 2 Weeks)
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="h-64">
+                    {hasReviews ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={retentionTrend}>
+                      <LineChart data={reviewTrend}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} domain={[0, 100]} width={30} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} width={30} />
                         <Tooltip
                           contentStyle={{
                             background: "hsl(var(--card))",
@@ -451,9 +458,12 @@ const LearningAnalytics = () => {
                             fontSize: "12px",
                           }}
                         />
-                        <Line type="monotone" dataKey="retention" stroke="hsl(var(--success))" strokeWidth={2} dot={{ fill: "hsl(var(--success))", strokeWidth: 0, r: 3 }} />
+                        <Line type="monotone" dataKey="reviewed" stroke="hsl(var(--success))" strokeWidth={2} dot={{ fill: "hsl(var(--success))", strokeWidth: 0, r: 3 }} />
                       </LineChart>
                     </ResponsiveContainer>
+                    ) : (
+                      <EmptyChart message="No flashcard reviews yet. Review some cards to see your activity here. Counts are based on each card's most recent review." />
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -468,16 +478,16 @@ const LearningAnalytics = () => {
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-primary">247</p>
+                    <p className="text-3xl font-bold text-primary">{stats?.CardsReviewedToday ?? 0}</p>
                     <p className="text-sm text-muted-foreground mt-1">Cards Reviewed</p>
-                    <p className="text-xs text-muted-foreground mt-1">This week</p>
+                    <p className="text-xs text-muted-foreground mt-1">Today</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-warning-foreground">32</p>
+                    <p className="text-3xl font-bold text-warning-foreground">{stats?.FlashcardsDue ?? 0}</p>
                     <p className="text-sm text-muted-foreground mt-1">Due for Review</p>
-                    <p className="text-xs text-muted-foreground mt-1">Today</p>
+                    <p className="text-xs text-muted-foreground mt-1">Now</p>
                   </CardContent>
                 </Card>
               </div>
@@ -490,8 +500,11 @@ const LearningAnalytics = () => {
                   </h3>
                   <ul className="text-sm text-muted-foreground space-y-2">
                     <li>• Review cards marked "Hard" more frequently to strengthen weak memories.</li>
-                    <li>• Your retention peaks after <strong className="text-foreground">3 review cycles</strong> for most topics.</li>
-                    <li>• Consider adding more cards for <strong className="text-foreground">Test Design</strong> — it's a weak area.</li>
+                    {stats && stats.WeakTopics.length > 0 ? (
+                      <li>• Consider adding more cards for <strong className="text-foreground">{stats.WeakTopics.join(", ")}</strong> — {stats.WeakTopics.length === 1 ? "it's a weak area" : "these are weak areas"}.</li>
+                    ) : (
+                      <li>• No weak topics detected yet. Keep reviewing to build up your data.</li>
+                    )}
                   </ul>
                 </CardContent>
               </Card>

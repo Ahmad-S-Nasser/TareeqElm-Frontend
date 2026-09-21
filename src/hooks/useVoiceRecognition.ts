@@ -1,12 +1,43 @@
 import { useState, useCallback, useRef } from 'react';
 import { useToast } from './use-toast';
 
+// Minimal Web Speech API typings (not yet part of lib.dom).
+interface SpeechRecognitionAlternativeLike {
+    transcript: string;
+}
+interface SpeechRecognitionResultLike {
+    length: number;
+    [index: number]: SpeechRecognitionAlternativeLike;
+}
+interface SpeechRecognitionEventLike {
+    results: { length: number; [index: number]: SpeechRecognitionResultLike };
+}
+interface SpeechRecognitionErrorEventLike {
+    error: string;
+}
+interface SpeechRecognitionLike {
+    continuous: boolean;
+    interimResults: boolean;
+    lang: string;
+    onstart: (() => void) | null;
+    onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+    onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
+    onend: (() => void) | null;
+    start: () => void;
+    stop: () => void;
+}
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike;
+type SpeechWindow = Window & {
+    SpeechRecognition?: SpeechRecognitionConstructor;
+    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+};
+
 export const useVoiceRecognition = () => {
     const [isListening, setIsListening] = useState(false);
     const [transcript, setTranscript] = useState('');
     const [volume, setVolume] = useState(0);
     const [error, setError] = useState<string | null>(null);
-    const recognitionRef = useRef<any>(null);
+    const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
     const transcriptRef = useRef('');
     const audioContextRef = useRef<AudioContext | null>(null);
     const analyserRef = useRef<AnalyserNode | null>(null);
@@ -46,7 +77,7 @@ export const useVoiceRecognition = () => {
     }, []);
 
     const startListening = useCallback((onResult?: (text: string) => void) => {
-        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const SpeechRecognition = (window as SpeechWindow).SpeechRecognition || (window as SpeechWindow).webkitSpeechRecognition;
 
         if (!SpeechRecognition) {
             toast({
@@ -107,7 +138,7 @@ export const useVoiceRecognition = () => {
                 console.warn("Visual volume pulse disabled (Microphone likely used by Speech Engine only)", err);
             });
 
-        recognition.onresult = (event: any) => {
+        recognition.onresult = (event: SpeechRecognitionEventLike) => {
             resetSilenceTimer();
             let fullTranscript = '';
             for (let i = 0; i < event.results.length; ++i) {
@@ -120,7 +151,7 @@ export const useVoiceRecognition = () => {
             }
         };
 
-        recognition.onerror = (event: any) => {
+        recognition.onerror = (event: SpeechRecognitionErrorEventLike) => {
             console.error("Speech Recognition Error Event:", event.error, event);
             setError(event.error);
             setIsListening(false);

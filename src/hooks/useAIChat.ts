@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
+import api, { getApiError } from '@/lib/api';
+import { useTrainerStatsQuery } from './useTrainerApi';
 
 export interface ChatMessage {
     id: string;
@@ -19,7 +21,7 @@ export const useAIChat = () => {
     // Load history from localStorage on mount
     useEffect(() => {
         if (user) {
-            const savedChat = localStorage.getItem(`chat_history_${user.id}`);
+            const savedChat = localStorage.getItem(`chat_history_${user.Id}`);
             if (savedChat) {
                 try {
                     setMessages(JSON.parse(savedChat));
@@ -42,12 +44,14 @@ export const useAIChat = () => {
     // Save history to localStorage whenever it changes
     useEffect(() => {
         if (user && messages.length > 0) {
-            localStorage.setItem(`chat_history_${user.id}`, JSON.stringify(messages));
+            localStorage.setItem(`chat_history_${user.Id}`, JSON.stringify(messages));
         }
     }, [messages, user]);
 
+    const { data: trainerData } = useTrainerStatsQuery();
+
     const sendMessage = useCallback(async (content: string, tab: string = "chat") => {
-        if (!content.trim()) return;
+        if (!content.trim() || isLoading) return;
 
         const userMessage: ChatMessage = {
             id: crypto.randomUUID(),
@@ -57,40 +61,35 @@ export const useAIChat = () => {
             tab
         };
 
-        setMessages(prev => [...prev, userMessage]);
+        const history = [...messages, userMessage];
+        setMessages(history);
         setIsLoading(true);
 
-        // Simulate AI thinking and response
-        setTimeout(() => {
-            let response = "";
-
-            if (tab === "quiz") {
-                response = `That's a good answer! Let's check: based on the ISTQB principles, the correct answer for "${content}" would be B. Here's why...`;
-            } else if (tab === "study") {
-                response = `I've updated your study plan for "${content}". I recommend 30 minutes of theory followed by a 15-minute practice quiz. Shall I add this to your calendar?`;
-            } else {
-                const responses = [
-                    `That's a great question about "${content}". In the context of QA, this usually refers to...`,
-                    `I can certainly help you with that. Would you like a detailed breakdown or a quick summary?`,
-                    `Interesting point! According to the ISTQB syllabus, this concept is crucial for...`,
-                    `Let me look that up for you. Based on your current progress, I recommend focusing on...`,
-                    `I've analyzed your question. Here's a practice scenario to help you understand it better.`
-                ];
-                response = responses[Math.floor(Math.random() * responses.length)];
-            }
+        try {
+            const response = await api.post<{ Content: string }>('/AI/coach', {
+                Messages: history.map(m => ({ Role: m.role, Content: m.content })),
+                TrainerData: trainerData ?? null,
+                Mode: tab
+            });
 
             const assistantMessage: ChatMessage = {
                 id: crypto.randomUUID(),
                 role: 'assistant',
-                content: response,
+                content: response.data.Content,
                 timestamp: new Date().toISOString(),
                 tab
             };
-
             setMessages(prev => [...prev, assistantMessage]);
+        } catch (error) {
+            toast({
+                title: "AI Tutor Error",
+                description: getApiError(error, "Failed to get a response from the AI Tutor."),
+                variant: "destructive"
+            });
+        } finally {
             setIsLoading(false);
-        }, 1500);
-    }, []);
+        }
+    }, [messages, isLoading, trainerData, toast]);
 
     const clearHistory = useCallback(() => {
         setMessages([
@@ -102,7 +101,7 @@ export const useAIChat = () => {
             }
         ]);
         if (user) {
-            localStorage.removeItem(`chat_history_${user.id}`);
+            localStorage.removeItem(`chat_history_${user.Id}`);
         }
     }, [user]);
 

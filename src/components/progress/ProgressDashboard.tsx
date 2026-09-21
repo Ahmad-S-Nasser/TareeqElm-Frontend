@@ -17,7 +17,7 @@ interface ProgressDashboardProps {
 }
 
 export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
-  const { stats, quizResults, lessonCompletions, loading } = useProgress();
+  const { stats, quizResults, loading, error } = useProgress();
 
   if (loading) {
     return (
@@ -31,7 +31,14 @@ export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
   }
 
   const recentQuizzes = quizResults.slice(0, 5);
-  const recentCompletions = lessonCompletions.slice(0, 5);
+
+  if (error) {
+    return (
+      <div className={className}>
+        <p className="text-sm text-destructive text-center py-6">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className={className}>
@@ -114,16 +121,16 @@ export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
             ) : (
               <div className="space-y-3">
                 {recentQuizzes.map((result) => (
-                  <div key={result.id} className="flex items-center justify-between">
+                  <div key={result.Id} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                          result.passed
+                          result.Passed
                             ? "bg-success/10 text-success"
                             : "bg-destructive/10 text-destructive"
                         }`}
                       >
-                        {result.passed ? (
+                        {result.Passed ? (
                           <Trophy className="w-4 h-4" />
                         ) : (
                           <Target className="w-4 h-4" />
@@ -131,18 +138,18 @@ export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
                       </div>
                       <div>
                         <p className="text-sm font-medium">
-                          {Math.round(Number(result.percentage))}% Score
+                          {Math.round(Number(result.Percentage))}% Score
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(result.completed_at), "MMM d, h:mm a")}
+                          {format(new Date(result.TakenAt), "MMM d, h:mm a")}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Progress
-                        value={Number(result.percentage)}
+                        value={Number(result.Percentage)}
                         className={`w-16 h-2 ${
-                          result.passed ? "" : "[&>div]:bg-destructive"
+                          result.Passed ? "" : "[&>div]:bg-destructive"
                         }`}
                       />
                     </div>

@@ -23,4 +23,19 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    // shadcn/ui primitives intentionally co-export variants/helpers with components.
+    files: ["src/components/ui/**/*.{ts,tsx}"],
+    rules: { "react-refresh/only-export-components": "off" },
+  },
+  {
+    // Test helpers export utilities alongside components; fast refresh does not apply to tests.
+    files: ["src/test/**/*.{ts,tsx}", "**/*.test.{ts,tsx}"],
+    rules: { "react-refresh/only-export-components": "off" },
+  },
+  {
+    // The auth module deliberately exposes the provider component and its hook together.
+    files: ["src/hooks/useAuth.tsx"],
+    rules: { "react-refresh/only-export-components": "off" },
+  },
 );

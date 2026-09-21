@@ -1,97 +1,145 @@
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useRef, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Course } from '@/components/courses/types';
+import api, { getApiError } from '@/lib/api';
+
+export type LessonType = 'Reading' | 'Video' | 'Quiz' | 'Assignment' | 'Interactive';
+// Older UI code (ChapterList) still creates lowercase values; they are normalised to LessonType when saving.
+export type LegacyLessonType = 'video' | 'text' | 'quiz';
 
 export interface Chapter {
-    id: string;
-    title: string;
-    lessons: Lesson[];
+    Id: string;
+    Title: string;
+    Description?: string | null;
+    OrderIndex?: number;
+    Lessons: Lesson[];
 }
 
 export interface Lesson {
-    id: string;
-    title: string;
-    type: 'video' | 'text' | 'quiz';
-    content?: string;
-    videoUrl?: string; // Can be a URL or a path in storage
-    duration?: number;
+    Id: string;
+    Title: string;
+    LessonType: LessonType | LegacyLessonType;
+    Content?: string | null;
+    VideoUrl?: string | null;
+    DurationMinutes?: number | null;
+    OrderIndex?: number;
 }
 
-export const useCourseEditor = (courseId?: string) => {
+interface UploadResponse {
+    Url: string;
+    FileType: string;
+    SizeBytes: number;
+    Name: string;
+}
+
+interface AnalyzedLesson {
+    Title: string;
+    LessonType?: string;
+    Content?: string | null;
+}
+
+interface AnalyzedChapter {
+    Title: string;
+    Lessons?: AnalyzedLesson[];
+}
+
+const CANONICAL_TYPES: LessonType[] = ['Reading', 'Video', 'Quiz', 'Assignment', 'Interactive'];
+
+export const normalizeLessonType = (type: string | undefined | null): LessonType => {
+    const found = CANONICAL_TYPES.find((t) => t.toLowerCase() === (type ?? '').toLowerCase());
+    if (found) return found;
+    return 'Reading'; // 'text' and anything unknown
+};
+
+/** Origin of the API (base URL without the trailing /api), used to display uploaded files. */
+export const getApiOrigin = (): string => (api.defaults.baseURL ?? '').replace(/\/api\/?$/, '');
+
+export const useCourseEditor = (_courseId?: string) => {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const [analyzing, setAnalyzing] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [analysisError, setAnalysisError] = useState<string | null>(null);
+    // Ids that exist on the server (from the last fetch/save). Only these are sent back so they update in place.
+    const knownIds = useRef<Set<string>>(new Set());
 
-    // Mock AI Analysis of PDF
-    const analyzeSyllabus = async (file: File) => {
+    const rememberIds = (chapters: Chapter[]) => {
+        const ids = new Set<string>();
+        chapters.forEach((c) => {
+            ids.add(c.Id);
+            c.Lessons?.forEach((l) => ids.add(l.Id));
+        });
+        knownIds.current = ids;
+    };
+
+    const analyzeSyllabus = async (file: File): Promise<Chapter[] | null> => {
+        setAnalysisError(null);
+        if (!/\.(txt|md)$/i.test(file.name)) {
+            const message = 'Only .txt and .md syllabus files can be analysed.';
+            setAnalysisError(message);
+            toast({ title: 'Unsupported file', description: message, variant: 'destructive' });
+            return null;
+        }
         setAnalyzing(true);
         try {
-            // simulate delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const formData = new FormData();
+            formData.append('file', file);
 
-            console.log("Analyzing file:", file.name);
-
-            // Mock result
-            const suggestedStructure = [
-                {
-                    title: "Introduction",
-                    lessons: [
-                        { title: "Course Overview", type: "video" },
-                        { title: "Key Concepts", type: "text" }
-                    ]
-                },
-                {
-                    title: "Core Fundamentals",
-                    lessons: [
-                        { title: "Deep Dive", type: "video" }
-                    ]
-                }
-            ];
-
-            toast({
-                title: "Analysis Complete",
-                description: "AI has generated a suggested course structure.",
+            const response = await api.post<AnalyzedChapter[]>('/AI/analyze-syllabus', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
 
-            return suggestedStructure;
+            const chapters: Chapter[] = (response.data ?? []).map((ch) => ({
+                Id: crypto.randomUUID(),
+                Title: ch.Title,
+                Lessons: (ch.Lessons ?? []).map((l) => ({
+                    Id: crypto.randomUUID(),
+                    Title: l.Title,
+                    LessonType: normalizeLessonType(l.LessonType),
+                    Content: l.Content ?? '',
+                })),
+            }));
+
+            if (chapters.length === 0) {
+                const message = 'No chapters could be found in that file.';
+                setAnalysisError(message);
+                toast({ title: 'Nothing found', description: message, variant: 'destructive' });
+                return null;
+            }
+
+            toast({
+                title: 'Analysis Complete',
+                description: 'A suggested course structure was created from your syllabus. Review it before saving.',
+            });
+            return chapters;
         } catch (error) {
-            toast({
-                title: "Analysis Failed",
-                description: "Could not analyze the PDF.",
-                variant: "destructive"
-            });
+            const message = getApiError(error, 'The syllabus could not be analysed.');
+            console.error('Analysis failed:', error);
+            setAnalysisError(message);
+            toast({ title: 'Analysis Failed', description: message, variant: 'destructive' });
             return null;
         } finally {
             setAnalyzing(false);
         }
     };
 
-    const uploadMedia = async (file: File, path: string) => {
+    const uploadMedia = async (file: File, _path?: string): Promise<string | null> => {
         setUploading(true);
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
-            const filePath = `${path}/${fileName}`;
+            const formData = new FormData();
+            formData.append('file', file);
 
-            const { error: uploadError } = await supabase.storage
-                .from('course-content')
-                .upload(filePath, file);
+            const response = await api.post<UploadResponse>('/Courses/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
 
-            if (uploadError) throw uploadError;
-
-            const { data } = supabase.storage
-                .from('course-content')
-                .getPublicUrl(filePath);
-
-            return data.publicUrl;
+            const url = response.data.Url;
+            return /^https?:\/\//i.test(url) ? url : `${getApiOrigin()}${url}`;
         } catch (error) {
             console.error('Upload error:', error);
             toast({
-                title: "Upload Failed",
-                description: (error as Error).message,
-                variant: "destructive"
+                title: 'Upload Failed',
+                description: getApiError(error, 'Could not upload the file.'),
+                variant: 'destructive',
             });
             return null;
         } finally {
@@ -99,136 +147,78 @@ export const useCourseEditor = (courseId?: string) => {
         }
     };
 
-    const saveCurriculum = async (courseId: string, chapters: Chapter[]) => {
+    const loadCurriculum = useCallback(async (courseId: string): Promise<Chapter[]> => {
+        const response = await api.get<Chapter[]>(`/Courses/${courseId}/curriculum`);
+        const chapters = response.data ?? [];
+        rememberIds(chapters);
+        return chapters;
+    }, []);
+
+    /** Saves the curriculum and returns the saved chapters (with server ids), or null when it failed. */
+    const saveCurriculum = async (courseId: string, chapters: Chapter[]): Promise<Chapter[] | null> => {
         setLoading(true);
         try {
-            // 1. Delete existing chapters and lessons for this course to replace them
-            // In a real app, you might want a more sophisticated sync, but this is a common "full save" pattern
-            const { data: existingChapters } = await supabase
-                .from('chapters')
-                .select('id')
-                .eq('course_id', courseId);
+            const curriculumData = chapters.map((chapter) => ({
+                ...(knownIds.current.has(chapter.Id) ? { Id: chapter.Id } : {}),
+                Title: chapter.Title,
+                Description: chapter.Description ?? undefined,
+                Lessons: chapter.Lessons.map((lesson) => ({
+                    ...(knownIds.current.has(lesson.Id) ? { Id: lesson.Id } : {}),
+                    Title: lesson.Title,
+                    LessonType: normalizeLessonType(lesson.LessonType),
+                    Content: lesson.Content || undefined,
+                    VideoUrl: lesson.VideoUrl || undefined,
+                    DurationMinutes: lesson.DurationMinutes ?? undefined,
+                })),
+            }));
 
-            if (existingChapters && existingChapters.length > 0) {
-                const chapterIds = existingChapters.map(c => c.id);
-                // Delete lessons first (foreign key)
-                await supabase.from('lessons').delete().in('chapter_id', chapterIds);
-                // Delete chapters
-                await supabase.from('chapters').delete().eq('course_id', courseId);
-            }
-
-            // 2. Insert new chapters and lessons
-            for (let i = 0; i < chapters.length; i++) {
-                const chapter = chapters[i];
-                const { data: newChapter, error: chapterError } = await supabase
-                    .from('chapters')
-                    .insert({
-                        course_id: courseId,
-                        title: chapter.title,
-                        order_index: i
-                    })
-                    .select()
-                    .single();
-
-                if (chapterError) throw chapterError;
-
-                if (chapter.lessons.length > 0) {
-                    const lessonsToInsert = chapter.lessons.map((lesson, j) => ({
-                        chapter_id: newChapter.id,
-                        title: lesson.title,
-                        lesson_type: (lesson.type === 'video' ? 'video' : (lesson.type === 'text' ? 'reading' : 'quiz')) as any,
-                        content: lesson.content,
-                        video_url: lesson.videoUrl,
-                        order_index: j
-                    }));
-
-                    const { error: lessonsError } = await supabase
-                        .from('lessons')
-                        .insert(lessonsToInsert);
-
-                    if (lessonsError) throw lessonsError;
-                }
-            }
+            await api.post(`/Courses/${courseId}/curriculum`, curriculumData);
+            const saved = await loadCurriculum(courseId);
 
             toast({
-                title: "Curriculum Saved",
-                description: "Your course structure has been updated successfully.",
+                title: 'Curriculum Saved',
+                description: 'Your course structure has been updated successfully.',
             });
-            return true;
+            return saved;
         } catch (error) {
             console.error('Save curriculum error:', error);
             toast({
-                title: "Save Failed",
-                description: (error as Error).message,
-                variant: "destructive"
+                title: 'Save Failed',
+                description: getApiError(error, 'Could not save course curriculum.'),
+                variant: 'destructive',
             });
-            return false;
+            return null;
         } finally {
             setLoading(false);
         }
     };
 
-    const isValidUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
-    const fetchCurriculum = async (courseId: string) => {
-        if (!isValidUuid(courseId)) {
-            return [];
-        }
+    const fetchCurriculum = useCallback(async (courseId: string): Promise<Chapter[]> => {
+        if (!courseId) return [];
         setLoading(true);
         try {
-            const { data: chaptersData, error: chaptersError } = await supabase
-                .from('chapters')
-                .select('*')
-                .eq('course_id', courseId)
-                .order('order_index');
-
-            if (chaptersError) throw chaptersError;
-
-            const chaptersWithLessons = await Promise.all(
-                (chaptersData || []).map(async (chapter) => {
-                    const { data: lessonsData, error: lessonsError } = await supabase
-                        .from('lessons')
-                        .select('*')
-                        .eq('chapter_id', chapter.id)
-                        .order('order_index');
-
-                    if (lessonsError) throw lessonsError;
-
-                    return {
-                        id: chapter.id,
-                        title: chapter.title,
-                        lessons: (lessonsData || []).map(l => ({
-                            id: l.id,
-                            title: l.title,
-                            type: (l.lesson_type === 'reading' ? 'text' : (l.lesson_type === 'video' ? 'video' : 'quiz')) as any,
-                            content: l.content || "",
-                            videoUrl: l.video_url || ""
-                        }))
-                    };
-                })
-            );
-
-            return chaptersWithLessons;
+            return await loadCurriculum(courseId);
         } catch (error) {
             console.error('Fetch curriculum error:', error);
             toast({
-                title: "Fetch Failed",
-                description: "Could not load course curriculum.",
-                variant: "destructive"
+                title: 'Fetch Failed',
+                description: getApiError(error, 'Could not load course curriculum.'),
+                variant: 'destructive',
             });
             return [];
         } finally {
             setLoading(false);
         }
-    };
+    }, [loadCurriculum, toast]);
 
     return {
         loading,
         analyzing,
         uploading,
+        analysisError,
         analyzeSyllabus,
         uploadMedia,
         saveCurriculum,
-        fetchCurriculum
+        fetchCurriculum,
     };
 };

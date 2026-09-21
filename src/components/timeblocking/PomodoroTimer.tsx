@@ -42,13 +42,15 @@ export const PomodoroTimer = ({ activeBlockTitle, onSessionComplete }: PomodoroT
     }
   }, [activeBlockTitle]);
 
+  const hasTimeLeft = timeLeft > 0;
+
   useEffect(() => {
     clearTimer();
-    if (isRunning && timeLeft > 0) {
+    if (isRunning && hasTimeLeft) {
       intervalRef.current = setInterval(() => setTimeLeft((t) => t - 1), 1000);
     }
     return clearTimer;
-  }, [isRunning, clearTimer]);
+  }, [isRunning, hasTimeLeft, clearTimer]);
 
   useEffect(() => {
     if (timeLeft <= 0 && isRunning) {

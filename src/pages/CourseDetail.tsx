@@ -1,111 +1,135 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApplicantSidebar } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
-import { mockCourses, categoryLabels, levelLabels } from "@/components/courses";
-import { getCourseWithChapters, CourseWithChapters } from "@/components/courses/courseChapters";
+import { Chapter, Lesson, LessonType } from "@/components/courses/courseChapters";
 import { ChapterAccordion } from "@/components/courses/ChapterAccordion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import api, { getApiError } from "@/lib/api";
 import { useCourses } from "@/hooks/useCourses";
-import { useCourseEditor } from "@/hooks/useCourseEditor";
+import { useProgress } from "@/hooks/useProgress";
 import { Loader2 } from "lucide-react";
 import {
     ArrowLeft,
     Clock,
     BookOpen,
-    Star,
     Users,
-    CheckCircle,
     Play,
-    Target,
     AlertCircle,
-    Upload,
-    CalendarDays,
-    Paperclip,
-    GraduationCap
+    GraduationCap,
+    Lock,
+    ClipboardCheck
 } from "lucide-react";
+
+interface LessonDto {
+    Id: string;
+    Title: string;
+    LessonType: string;
+    Content: string | null;
+    VideoUrl: string | null;
+    OrderIndex: number;
+    DurationMinutes: number | null;
+}
+
+interface ChapterDto {
+    Id: string;
+    Title: string;
+    Description: string | null;
+    OrderIndex: number;
+    Lessons: LessonDto[];
+}
+
+interface CourseDetailDto {
+    Id: string;
+    Title: string;
+    Description: string | null;
+    Category: string | null;
+    Level: string | null;
+    InstructorName: string | null;
+    LessonsCount: number;
+    EnrolledCount: number;
+    DurationHours: number | null;
+    ContentUnlocked: boolean;
+    Chapters: ChapterDto[];
+}
+
+const LESSON_TYPE_MAP: Record<string, LessonType> = {
+    video: "video",
+    reading: "reading",
+    quiz: "quiz",
+    assignment: "exercise",
+    interactive: "exercise",
+};
+
+const formatMinutes = (minutes: number) =>
+    minutes >= 60 ? `${Math.floor(minutes / 60)}h${minutes % 60 ? ` ${minutes % 60}m` : ""}` : `${minutes} min`;
 
 const CourseDetail = () => {
     const { courseId } = useParams<{ courseId: string }>();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [openChapterId, setOpenChapterId] = useState<string | null>(null);
-    const [courseData, setCourseData] = useState<CourseWithChapters | null>(null);
-    const [loading, setLoading] = useState(true);
     const [enrolling, setEnrolling] = useState(false);
 
-    const { getCourseById, enrollInCourse } = useCourses();
-    const { fetchCurriculum } = useCourseEditor();
+    const { enrollInCourse } = useCourses();
+    const { courseProgress, courseProgressLoading } = useProgress(courseId);
 
-    useEffect(() => {
-        const loadCourse = async () => {
-            if (!courseId) return;
-            setLoading(true);
-
-            // 1. Try mock data first (for legacy compatibility)
-            const mock = getCourseWithChapters(courseId, mockCourses);
-            if (mock) {
-                setCourseData(mock);
-                setLoading(false);
-                return;
+    const courseQuery = useQuery({
+        queryKey: ["course-detail", courseId],
+        queryFn: async () => {
+            try {
+                return (await api.get<CourseDetailDto>(`/Courses/${courseId}`)).data;
+            } catch (e) {
+                if ((e as { response?: { status?: number } })?.response?.status === 404) return null;
+                throw e;
             }
+        },
+        enabled: !!courseId,
+    });
 
-            // 2. Try Supabase
-            const { course, error } = await getCourseById(courseId);
-            if (course) {
-                const curriculum = await fetchCurriculum(courseId);
+    const detail = courseQuery.data;
+    const loading = courseQuery.isLoading || courseProgressLoading;
+    const enrolled = !!courseProgress;
+    const contentUnlocked = detail?.ContentUnlocked !== false;
+    const completedIds = useMemo(() => new Set(courseProgress?.CompletedLessonIds ?? []), [courseProgress]);
 
-                // Map DB structure to CourseWithChapters format
-                const mappedChapters = (curriculum || []).map((ch, idx) => ({
-                    id: ch.id,
-                    courseId: courseId,
-                    number: idx + 1,
-                    title: ch.title,
-                    description: "", // Not in DB
-                    duration: "45 min", // Mock
-                    isCompleted: false, // Need enrollment data for this
-                    isLocked: false,
-                    lessons: ch.lessons.map((l, lIdx) => ({
-                        id: l.id,
-                        chapterId: ch.id,
-                        number: lIdx + 1,
-                        title: l.title,
-                        type: l.type,
-                        duration: "10 min",
-                        isCompleted: false,
-                        isLocked: false,
-                        content: l.content
-                    }))
-                }));
-
-                setCourseData({
-                    id: course.id,
-                    title: course.title,
-                    description: course.description || "",
-                    category: (course.category || "certification") as any,
-                    level: (course.level || "beginner") as any,
-                    duration: `${course.duration_hours || 10} hours`,
-                    lessons: mappedChapters.reduce((sum, ch) => sum + ch.lessons.length, 0),
-                    instructor: "Instructor", // Need to join with profiles
-                    rating: 4.5,
-                    studentsEnrolled: (course as any).enrollmentCount || 0,
-                    progress: (course as any).enrollment?.progress_percentage || 0,
-                    enrolled: !!(course as any).enrollment,
-                    tags: [],
-                    chapters: mappedChapters,
-                    objectives: ["Master the course content", "Complete all practical exercises"],
-                    prerequisites: ["None required"],
-                    attachmentUrl: course.attachment_url || undefined
-                });
-            }
-            setLoading(false);
-        };
-
-        loadCourse();
-    }, [courseId]);
+    const chapters = useMemo<Chapter[]>(() => {
+        if (!detail) return [];
+        return [...(detail.Chapters ?? [])]
+            .sort((a, b) => a.OrderIndex - b.OrderIndex)
+            .map((ch) => {
+                const lessons: Lesson[] = [...(ch.Lessons ?? [])]
+                    .sort((a, b) => a.OrderIndex - b.OrderIndex)
+                    .map((l, i) => ({
+                        Id: l.Id,
+                        ChapterId: ch.Id,
+                        Number: i + 1,
+                        Title: l.Title,
+                        Type: LESSON_TYPE_MAP[l.LessonType?.toLowerCase()] ?? "reading",
+                        Duration: l.DurationMinutes ? formatMinutes(l.DurationMinutes) : "",
+                        IsCompleted: completedIds.has(l.Id),
+                        IsLocked: !contentUnlocked,
+                        Content: l.Content ?? undefined,
+                    }));
+                const minutes = (ch.Lessons ?? []).reduce((sum, l) => sum + (l.DurationMinutes ?? 0), 0);
+                return {
+                    Id: ch.Id,
+                    CourseId: detail.Id,
+                    Number: ch.OrderIndex + 1,
+                    Title: ch.Title,
+                    Description: ch.Description || "",
+                    Duration: minutes > 0 ? formatMinutes(minutes) : "",
+                    IsCompleted: lessons.length > 0 && lessons.every((l) => l.IsCompleted),
+                    IsLocked: !contentUnlocked,
+                    Lessons: lessons,
+                };
+            });
+    }, [detail, completedIds, contentUnlocked]);
 
     if (loading) {
         return (
@@ -115,7 +139,20 @@ const CourseDetail = () => {
         );
     }
 
-    if (!courseData) {
+    if (courseQuery.error) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="text-center">
+                    <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
+                    <h2 className="text-xl font-semibold mb-2">Could not load this course</h2>
+                    <p className="text-muted-foreground mb-4">{getApiError(courseQuery.error, "Failed to load the course.")}</p>
+                    <Button onClick={() => courseQuery.refetch()}>Try again</Button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!detail) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="text-center">
@@ -131,25 +168,27 @@ const CourseDetail = () => {
         );
     }
 
-    const course = courseData;
-    const totalLessons = course.chapters.reduce((sum, ch) => sum + ch.lessons.length, 0);
-    const completedLessons = course.chapters.reduce(
-        (sum, ch) => sum + ch.lessons.filter(l => l.isCompleted).length,
+    const course = detail;
+    const totalLessons = course.LessonsCount || chapters.reduce((sum, ch) => sum + ch.Lessons.length, 0);
+    const completedLessons = chapters.reduce(
+        (sum, ch) => sum + ch.Lessons.filter(l => l.IsCompleted).length,
         0
     );
-    const completedChapters = course.chapters.filter(ch => ch.isCompleted).length;
+    const completedChapters = chapters.filter(ch => ch.IsCompleted).length;
+    const progressPercent = Math.round(courseProgress?.ProgressPercentage ?? 0);
 
     const handleChapterToggle = (chapterId: string) => {
         setOpenChapterId(prev => prev === chapterId ? null : chapterId);
     };
 
     const handleLessonClick = (lessonId: string) => {
-        // In a real app, this would navigate to the lesson viewer
-        console.log("Opening lesson:", lessonId);
+        if (!contentUnlocked) return;
+        navigate(`/courses/${course.Id}/lessons/${lessonId}`);
     };
 
-    const getLevelColor = (level: string) => {
-        switch (level) {
+    const getLevelColor = (level: string | null) => {
+        const l = level?.toLowerCase();
+        switch (l) {
             case "beginner": return "bg-success/10 text-success border-success/20";
             case "intermediate": return "bg-warning/10 text-warning border-warning/20";
             case "advanced": return "bg-destructive/10 text-destructive border-destructive/20";
@@ -159,37 +198,26 @@ const CourseDetail = () => {
 
     // Find the next incomplete lesson
     const getNextLesson = () => {
-        for (const chapter of course.chapters) {
-            if (chapter.isLocked) continue;
-            const nextLesson = chapter.lessons.find(l => !l.isCompleted && !l.isLocked);
-            if (nextLesson) return { chapter, lesson: nextLesson };
+        for (const chapter of chapters) {
+            if (chapter.IsLocked) continue;
+            const next = chapter.Lessons.find(l => !l.IsCompleted && !l.IsLocked);
+            if (next) return { chapter, lesson: next };
         }
         return null;
     };
 
     const nextLesson = getNextLesson();
 
-    // Check if this is a mock course (non-UUID id)
-    const isMockCourse = courseId ? !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(courseId) : false;
-
     const handleEnroll = async () => {
         if (!courseId) return;
-        if (isMockCourse) {
-            // For mock courses, just update local state
-            setCourseData(prev => prev ? { ...prev, enrolled: true, progress: 0 } : null);
-            return;
-        }
         setEnrolling(true);
         const { error } = await enrollInCourse(courseId);
         if (!error) {
-            const { course } = await getCourseById(courseId);
-            if (course) {
-                setCourseData(prev => prev ? {
-                    ...prev,
-                    enrolled: true,
-                    progress: (course as any).enrollment?.progress_percentage || 0
-                } : null);
-            }
+            await Promise.all([
+                courseQuery.refetch(),
+                queryClient.invalidateQueries({ queryKey: ["course-progress"] }),
+                queryClient.invalidateQueries({ queryKey: ["enrollments-me"] }),
+            ]);
         }
         setEnrolling(false);
     };
@@ -197,7 +225,7 @@ const CourseDetail = () => {
     return (
         <div className="min-h-screen bg-background">
             <ApplicantSidebar onCollapse={setSidebarCollapsed} />
-            <Header sidebarCollapsed={sidebarCollapsed} userRole="Student" />
+            <Header sidebarCollapsed={sidebarCollapsed} />
 
             <main
                 className={cn(
@@ -221,59 +249,45 @@ const CourseDetail = () => {
                         {/* Banner */}
                         <div className={cn(
                             "h-48 relative",
-                            course.category === "certification" && "gradient-primary",
-                            course.category === "automation" && "gradient-accent",
-                            course.category === "agile" && "gradient-success",
-                            course.category === "testing-techniques" && "bg-gradient-to-br from-amber-500 to-orange-600",
-                            course.category === "tools" && "bg-gradient-to-br from-cyan-500 to-blue-600",
-                            course.category === "soft-skills" && "bg-gradient-to-br from-pink-500 to-rose-600",
+                            course.Category?.toLowerCase() === "certification" && "gradient-primary",
+                            course.Category?.toLowerCase() === "automation" && "gradient-accent",
+                            course.Category?.toLowerCase() === "agile" && "gradient-success",
+                            course.Category?.toLowerCase() === "testing-techniques" && "bg-gradient-to-br from-amber-500 to-orange-600",
+                            course.Category?.toLowerCase() === "tools" && "bg-gradient-to-br from-cyan-500 to-blue-600",
+                            course.Category?.toLowerCase() === "soft-skills" && "bg-gradient-to-br from-pink-500 to-rose-600",
                         )}>
                             <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
                             <div className="absolute bottom-4 left-6 right-6">
                                 <div className="flex flex-wrap gap-2 mb-3">
                                     <Badge className="bg-white/20 text-white border-0">
-                                        {categoryLabels[course.category]}
+                                        {course.Category}
                                     </Badge>
-                                    <Badge variant="outline" className={cn("border-white/30 text-white", getLevelColor(course.level))}>
-                                        {levelLabels[course.level]}
+                                    <Badge variant="outline" className={cn("border-white/30 text-white", getLevelColor(course.Level))}>
+                                        {course.Level}
                                     </Badge>
                                 </div>
-                                <h1 className="text-3xl font-bold text-white">{course.title}</h1>
+                                <h1 className="text-3xl font-bold text-white">{course.Title}</h1>
                             </div>
                         </div>
 
                         {/* Course Info */}
                         <div className="p-6">
-                            <p className="text-muted-foreground mb-6">{course.description}</p>
+                            <p className="text-muted-foreground mb-6">{course.Description}</p>
 
                             {/* Stats Row */}
                             <div className="flex flex-wrap items-center gap-6 mb-6">
-                                <div className="flex items-center gap-2">
-                                    <Star className="w-5 h-5 fill-warning text-warning" />
-                                    <span className="font-semibold">{course.rating}</span>
-                                    <span className="text-muted-foreground text-sm">rating</span>
-                                </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Users className="w-5 h-5" />
-                                    <span>{course.studentsEnrolled.toLocaleString()} students</span>
+                                    <span>{(course.EnrolledCount ?? 0).toLocaleString()} trainers</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Clock className="w-5 h-5" />
-                                    <span>{course.duration}</span>
+                                    <span>{course.DurationHours ?? 0} hours</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <BookOpen className="w-5 h-5" />
                                     <span>{totalLessons} lessons</span>
                                 </div>
-                                {course.startDate && (
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                        <CalendarDays className="w-5 h-5" />
-                                        <span>
-                                            {new Date(course.startDate).toLocaleDateString()}
-                                            {course.endDate ? ` - ${new Date(course.endDate).toLocaleDateString()}` : ''}
-                                        </span>
-                                    </div>
-                                )}
                             </div>
 
                             {/* Progress Section */}
@@ -284,28 +298,28 @@ const CourseDetail = () => {
                                         {completedLessons} of {totalLessons} lessons completed
                                     </span>
                                 </div>
-                                <Progress value={course.progress} className="h-3 mb-2" />
+                                <Progress value={progressPercent} className="h-3 mb-2" />
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-muted-foreground">
-                                        {completedChapters} of {course.chapters.length} chapters done
+                                        {completedChapters} of {chapters.length} chapters done
                                     </span>
-                                    <span className="font-semibold text-primary">{course.progress}%</span>
+                                    <span className="font-semibold text-primary">{progressPercent}%</span>
                                 </div>
                             </div>
 
                             {/* Action Buttons */}
                             <div className="flex items-center gap-4">
-                                {course.enrolled ? (
+                                {enrolled ? (
                                     nextLesson && (
                                         <Button
                                             size="lg"
                                             className="gap-2"
                                             onClick={() => {
-                                                navigate(`/courses/${course.id}/lessons/${nextLesson.lesson.id}`);
+                                                navigate(`/courses/${course.Id}/lessons/${nextLesson.lesson.Id}`);
                                             }}
                                         >
                                             <Play className="w-5 h-5" />
-                                            Continue: {nextLesson.lesson.title}
+                                            Continue: {nextLesson.lesson.Title}
                                         </Button>
                                     )
                                 ) : (
@@ -323,9 +337,22 @@ const CourseDetail = () => {
                                         Enroll Now
                                     </Button>
                                 )}
+                                {enrolled && (
+                                    <Button
+                                        size="lg"
+                                        variant="outline"
+                                        className="gap-2"
+                                        onClick={() => navigate(`/quizzes?courseId=${course.Id}`)}
+                                    >
+                                        <ClipboardCheck className="w-5 h-5" />
+                                        Quizzes
+                                    </Button>
+                                )}
                                 <span className="text-sm text-muted-foreground">
-                                    {course.enrolled ? (
-                                        nextLesson ? `Chapter ${nextLesson.chapter.number} • ${nextLesson.lesson.duration}` : "Course completed"
+                                    {enrolled ? (
+                                        nextLesson
+                                            ? `Chapter ${nextLesson.chapter.Number}${nextLesson.lesson.Duration ? ` • ${nextLesson.lesson.Duration}` : ""}`
+                                            : chapters.length === 0 ? "No lessons published yet" : "Course completed"
                                     ) : (
                                         "Enroll to start learning"
                                     )}
@@ -340,12 +367,33 @@ const CourseDetail = () => {
                         <div className="lg:col-span-2 space-y-4">
                             <h2 className="text-xl font-semibold">Course Content</h2>
                             <div className="space-y-3">
-                                {course.chapters.map((chapter) => (
+                                {!contentUnlocked && (
+                                    <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                                            <Lock className="w-5 h-5 text-primary" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-medium">Enroll to unlock this course</p>
+                                            <p className="text-sm text-muted-foreground">Lesson content and videos are available once you are enrolled.</p>
+                                        </div>
+                                        <Button onClick={handleEnroll} disabled={enrolling} className="gap-2">
+                                            {enrolling ? <Loader2 className="w-4 h-4 animate-spin" /> : <GraduationCap className="w-4 h-4" />}
+                                            Enroll Now
+                                        </Button>
+                                    </div>
+                                )}
+                                {chapters.length === 0 && (
+                                    <div className="rounded-2xl border border-border/50 bg-card p-8 text-center text-muted-foreground">
+                                        <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                        <p>The instructor has not added any lessons yet.</p>
+                                    </div>
+                                )}
+                                {chapters.map((chapter) => (
                                     <ChapterAccordion
-                                        key={chapter.id}
+                                        key={chapter.Id}
                                         chapter={chapter}
-                                        isOpen={openChapterId === chapter.id}
-                                        onToggle={() => handleChapterToggle(chapter.id)}
+                                        isOpen={openChapterId === chapter.Id}
+                                        onToggle={() => handleChapterToggle(chapter.Id)}
                                         onLessonClick={handleLessonClick}
                                     />
                                 ))}
@@ -354,84 +402,19 @@ const CourseDetail = () => {
 
                         {/* Sidebar */}
                         <div className="space-y-4">
-                            {/* Objectives */}
-                            <div className="rounded-2xl bg-card border border-border/50 shadow-soft p-5">
-                                <h3 className="font-semibold flex items-center gap-2 mb-4">
-                                    <Target className="w-5 h-5 text-primary" />
-                                    Learning Objectives
-                                </h3>
-                                <ul className="space-y-3">
-                                    {course.objectives.map((objective, i) => (
-                                        <li key={i} className="flex items-start gap-3 text-sm">
-                                            <CheckCircle className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                                            <span className="text-muted-foreground">{objective}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            {/* Prerequisites */}
-                            <div className="rounded-2xl bg-card border border-border/50 shadow-soft p-5">
-                                <h3 className="font-semibold flex items-center gap-2 mb-4">
-                                    <AlertCircle className="w-5 h-5 text-warning" />
-                                    Prerequisites
-                                </h3>
-                                <ul className="space-y-2">
-                                    {course.prerequisites.map((prereq, i) => (
-                                        <li key={i} className="text-sm text-muted-foreground">
-                                            • {prereq}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
                             {/* Instructor */}
                             <div className="rounded-2xl bg-card border border-border/50 shadow-soft p-5">
                                 <h3 className="font-semibold mb-4">Instructor</h3>
                                 <div className="flex items-center gap-3">
                                     <div className="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-white font-bold">
-                                        {course.instructor.split(" ").map(n => n[0]).join("")}
+                                        {(course.InstructorName || "Instructor").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="font-medium">{course.instructor}</p>
+                                        <p className="font-medium">{course.InstructorName || "Instructor"}</p>
                                         <p className="text-sm text-muted-foreground">Course Instructor</p>
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Upload Syllabus CTA */}
-                            <div className="rounded-2xl bg-primary/5 border border-primary/20 p-5">
-                                <h3 className="font-semibold flex items-center gap-2 mb-2">
-                                    <Upload className="w-5 h-5 text-primary" />
-                                    Add Your Own Course
-                                </h3>
-                                <p className="text-sm text-muted-foreground mb-4">
-                                    Upload a syllabus to create a personalized study plan.
-                                </p>
-                                <Button
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={() => navigate("/syllabus-upload")}
-                                >
-                                    Upload Syllabus
-                                </Button>
-                            </div>
-
-                            {course.attachmentUrl && (
-                                <div className="rounded-2xl bg-card border border-border/50 shadow-soft p-5">
-                                    <h3 className="font-semibold flex items-center gap-2 mb-4">
-                                        <Paperclip className="w-5 h-5 text-primary" />
-                                        Course Material
-                                    </h3>
-                                    <Button
-                                        variant="outline"
-                                        className="w-full"
-                                        onClick={() => window.open(course.attachmentUrl, '_blank')}
-                                    >
-                                        Download Attachment
-                                    </Button>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>

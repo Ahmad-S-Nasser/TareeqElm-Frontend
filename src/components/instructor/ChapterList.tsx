@@ -1,13 +1,24 @@
 import { useState } from "react";
-import { Chapter, Lesson } from "@/hooks/useCourseEditor";
+import { Chapter, Lesson, LessonType, LegacyLessonType, normalizeLessonType } from "@/hooks/useCourseEditor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Edit2, GripVertical, Video, FileText, CheckSquare, Upload } from "lucide-react";
+import { Plus, Trash2, Edit2, GripVertical, Video, FileText, CheckSquare, ClipboardList, MousePointerClick, Upload } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+
+// Accepts both API values ('Video', 'Reading', ...) and older lowercase ones.
+const LessonTypeIcon = ({ type }: { type: LessonType | LegacyLessonType }) => {
+    switch (normalizeLessonType(type)) {
+        case 'Video': return <Video className="w-4 h-4 text-blue-500" />;
+        case 'Quiz': return <CheckSquare className="w-4 h-4 text-green-500" />;
+        case 'Assignment': return <ClipboardList className="w-4 h-4 text-purple-500" />;
+        case 'Interactive': return <MousePointerClick className="w-4 h-4 text-pink-500" />;
+        default: return <FileText className="w-4 h-4 text-orange-500" />;
+    }
+};
 
 interface ChapterListProps {
     chapters: Chapter[];
@@ -22,9 +33,9 @@ export const ChapterList = ({ chapters, onUpdateChapters, onUploadMedia }: Chapt
     // Lesson Form State
     const [activeChapterId, setActiveChapterId] = useState<string | null>(null);
     const [isAddLessonOpen, setIsAddLessonOpen] = useState(false);
-    const [newLesson, setNewLesson] = useState<{ title: string, type: 'video' | 'text' | 'quiz', content: string, videoUrl: string }>({
+    const [newLesson, setNewLesson] = useState<{ title: string, type: LessonType, content: string, videoUrl: string }>({
         title: "",
-        type: "video",
+        type: "Video",
         content: "",
         videoUrl: ""
     });
@@ -33,9 +44,9 @@ export const ChapterList = ({ chapters, onUpdateChapters, onUploadMedia }: Chapt
     const handleAddChapter = () => {
         if (!newChapterTitle) return;
         const newChapter: Chapter = {
-            id: crypto.randomUUID(),
-            title: newChapterTitle,
-            lessons: []
+            Id: crypto.randomUUID(),
+            Title: newChapterTitle,
+            Lessons: []
         };
         onUpdateChapters([...chapters, newChapter]);
         setNewChapterTitle("");
@@ -43,22 +54,22 @@ export const ChapterList = ({ chapters, onUpdateChapters, onUploadMedia }: Chapt
     };
 
     const handleDeleteChapter = (id: string) => {
-        onUpdateChapters(chapters.filter(c => c.id !== id));
+        onUpdateChapters(chapters.filter(c => c.Id !== id));
     };
 
     const handleAddLesson = () => {
         if (!activeChapterId || !newLesson.title) return;
 
         const updatedChapters = chapters.map(ch => {
-            if (ch.id === activeChapterId) {
+            if (ch.Id === activeChapterId) {
                 return {
                     ...ch,
-                    lessons: [...ch.lessons, {
-                        id: crypto.randomUUID(),
-                        title: newLesson.title,
-                        type: newLesson.type,
-                        content: newLesson.content,
-                        videoUrl: newLesson.videoUrl
+                    Lessons: [...ch.Lessons, {
+                        Id: crypto.randomUUID(),
+                        Title: newLesson.title,
+                        LessonType: newLesson.type,
+                        Content: newLesson.content,
+                        VideoUrl: newLesson.videoUrl
                     }]
                 };
             }
@@ -66,7 +77,7 @@ export const ChapterList = ({ chapters, onUpdateChapters, onUploadMedia }: Chapt
         });
 
         onUpdateChapters(updatedChapters);
-        setNewLesson({ title: "", type: "video", content: "", videoUrl: "" });
+        setNewLesson({ title: "", type: "Video", content: "", videoUrl: "" });
         setIsAddLessonOpen(false);
     };
 
@@ -112,31 +123,29 @@ export const ChapterList = ({ chapters, onUpdateChapters, onUploadMedia }: Chapt
 
             <Accordion type="single" collapsible className="w-full space-y-4">
                 {chapters.map((chapter) => (
-                    <AccordionItem key={chapter.id} value={chapter.id} className="border rounded-lg px-4">
+                    <AccordionItem key={chapter.Id} value={chapter.Id} className="border rounded-lg px-4">
                         <div className="flex items-center py-4">
                             <GripVertical className="w-4 h-4 text-muted-foreground mr-2 cursor-move" />
                             <AccordionTrigger className="hover:no-underline py-0 flex-1">
-                                <span className="font-medium text-left">{chapter.title}</span>
-                                <span className="ml-2 text-xs text-muted-foreground">({chapter.lessons.length} lessons)</span>
+                                <span className="font-medium text-left">{chapter.Title}</span>
+                                <span className="ml-2 text-xs text-muted-foreground">({chapter.Lessons.length} lessons)</span>
                             </AccordionTrigger>
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 className="ml-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                onClick={(e) => { e.stopPropagation(); handleDeleteChapter(chapter.id); }}
+                                onClick={(e) => { e.stopPropagation(); handleDeleteChapter(chapter.Id); }}
                             >
                                 <Trash2 className="w-4 h-4" />
                             </Button>
                         </div>
                         <AccordionContent className="pt-0 pb-4">
                             <div className="space-y-2 pl-6">
-                                {chapter.lessons.map(lesson => (
-                                    <div key={lesson.id} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+                                {chapter.Lessons.map(lesson => (
+                                    <div key={lesson.Id} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
                                         <div className="flex items-center gap-3">
-                                            {lesson.type === 'video' && <Video className="w-4 h-4 text-blue-500" />}
-                                            {lesson.type === 'text' && <FileText className="w-4 h-4 text-orange-500" />}
-                                            {lesson.type === 'quiz' && <CheckSquare className="w-4 h-4 text-green-500" />}
-                                            <span className="text-sm">{lesson.title}</span>
+                                            <LessonTypeIcon type={lesson.LessonType} />
+                                            <span className="text-sm">{lesson.Title}</span>
                                         </div>
                                         <Button variant="ghost" size="icon" className="h-6 w-6">
                                             <Edit2 className="w-3 h-3" />
@@ -145,7 +154,7 @@ export const ChapterList = ({ chapters, onUpdateChapters, onUploadMedia }: Chapt
                                 ))}
 
                                 <Dialog open={isAddLessonOpen} onOpenChange={(open) => {
-                                    if (open) setActiveChapterId(chapter.id);
+                                    if (open) setActiveChapterId(chapter.Id);
                                     setIsAddLessonOpen(open);
                                 }}>
                                     <DialogTrigger asChild>
@@ -156,7 +165,7 @@ export const ChapterList = ({ chapters, onUpdateChapters, onUploadMedia }: Chapt
                                     </DialogTrigger>
                                     <DialogContent className="max-w-2xl">
                                         <DialogHeader>
-                                            <DialogTitle>Add Lesson to "{chapter.title}"</DialogTitle>
+                                            <DialogTitle>Add Lesson to "{chapter.Title}"</DialogTitle>
                                         </DialogHeader>
                                         <div className="grid gap-4 py-4">
                                             <div className="grid gap-2">
@@ -172,20 +181,22 @@ export const ChapterList = ({ chapters, onUpdateChapters, onUploadMedia }: Chapt
                                                 <Label>Type</Label>
                                                 <Select
                                                     value={newLesson.type}
-                                                    onValueChange={(val: any) => setNewLesson({ ...newLesson, type: val })}
+                                                    onValueChange={(val) => setNewLesson({ ...newLesson, type: normalizeLessonType(val) })}
                                                 >
                                                     <SelectTrigger>
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="video">Video</SelectItem>
-                                                        <SelectItem value="text">Article / Text</SelectItem>
-                                                        <SelectItem value="quiz">Quiz</SelectItem>
+                                                        <SelectItem value="Video">Video</SelectItem>
+                                                        <SelectItem value="Reading">Article / Text</SelectItem>
+                                                        <SelectItem value="Quiz">Quiz</SelectItem>
+                                                        <SelectItem value="Assignment">Assignment</SelectItem>
+                                                        <SelectItem value="Interactive">Interactive</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
 
-                                            {newLesson.type === 'video' && (
+                                            {newLesson.type === 'Video' && (
                                                 <div className="grid gap-2">
                                                     <Label>Video Source</Label>
                                                     <div className="flex gap-2">

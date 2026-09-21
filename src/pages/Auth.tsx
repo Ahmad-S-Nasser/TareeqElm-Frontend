@@ -1,27 +1,31 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap, User, BookOpen, Loader2, Eye, EyeOff, Building2, Shield } from "lucide-react";
+import { GraduationCap, Loader2, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-
-type AuthMode = "signin" | "signup";
-type AppRole = "applicant" | "instructor" | "university" | "admin";
+import { getAuthModeFromRoute, getReturnPath, type AuthMode } from "@/lib/authRoute";
 
 const emailSchema = z.string().email("Please enter a valid email address");
-const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
+const passwordSchema = z.string().min(8, "Password must be at least 8 characters");
 
 const Auth = () => {
-  const [mode, setMode] = useState<AuthMode>("signin");
+  const location = useLocation();
+  const [mode, setMode] = useState<AuthMode>(() => getAuthModeFromRoute(location.pathname, location.search));
+
+  // Follow route changes (e.g. /login -> /signup) without remounting.
+  useEffect(() => {
+    setMode(getAuthModeFromRoute(location.pathname, location.search));
+  }, [location.pathname, location.search]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [selectedRole, setSelectedRole] = useState<AppRole>("applicant");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
@@ -65,7 +69,7 @@ const Auth = () => {
           toast({
             variant: "destructive",
             title: "Sign in failed",
-            description: error.message === "Invalid login credentials"
+            description: error.message === "Invalid credentials"
               ? "Invalid email or password. Please try again."
               : error.message,
           });
@@ -75,25 +79,25 @@ const Auth = () => {
           title: "Welcome back!",
           description: "You have successfully signed in.",
         });
-        navigate("/");
+        // "/" resolves to the user's own dashboard; RoleGuard bounces disallowed targets there too.
+        navigate(getReturnPath(location.state) ?? "/", { replace: true });
       } else {
-        const { error } = await signUp(email, password, selectedRole, fullName);
+        const { error } = await signUp(email, password, fullName);
         if (error) {
-          const message = error.message.includes("already registered")
-            ? "This email is already registered. Please sign in instead."
-            : error.message;
           toast({
             variant: "destructive",
             title: "Sign up failed",
-            description: message,
+            description: error.message === "Registration failed"
+              ? "We couldn't create this account. If you already have one, try signing in."
+              : error.message,
           });
           return;
         }
         toast({
           title: "Account created!",
-          description: "Welcome to Nafea. Let's start learning!",
+          description: "Welcome to TareeqElm. Let's start learning!",
         });
-        navigate("/");
+        navigate(getReturnPath(location.state) ?? "/", { replace: true });
       }
     } finally {
       setIsLoading(false);
@@ -108,7 +112,7 @@ const Auth = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-primary shadow-glow-primary mb-4">
             <GraduationCap className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold">Nafea</h1>
+          <h1 className="text-2xl font-bold">TareeqElm</h1>
           <p className="text-muted-foreground">Smart Learning Platform</p>
         </div>
 
@@ -124,25 +128,25 @@ const Auth = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
 
-              {/* ── Test Accounts (sign-in only) ── */}
-              {mode === "signin" && (
+              {/* ── Test Accounts (sign-in only, development builds only) ── */}
+              {import.meta.env.DEV && mode === "signin" && (
                 <div className="rounded-xl border border-border/50 bg-muted/30 p-3 space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                    Quick Test Login
+                    Quick Test Login (dev only)
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { label: "Student", email: "student@demo.com", icon: "👨‍🎓", color: "hover:bg-primary/10 hover:text-primary hover:border-primary/40" },
-                      { label: "Instructor", email: "instructor@demo.com", icon: "👨‍🏫", color: "hover:bg-accent/10 hover:text-accent-foreground hover:border-accent/40" },
-                      { label: "University", email: "university@demo.com", icon: "🏛️", color: "hover:bg-indigo-500/10 hover:text-indigo-600 hover:border-indigo-400/40" },
-                      { label: "Admin", email: "admin@demo.com", icon: "🛡️", color: "hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-400/40" },
+                      { label: "Trainer", email: "trainer@tareeqelm.com", password: "Trainer@123", icon: "👨‍🎓", color: "hover:bg-primary/10 hover:text-primary hover:border-primary/40" },
+                      { label: "Instructor", email: "instructor@tareeqelm.com", password: "Instructor@123", icon: "👨‍🏫", color: "hover:bg-accent/10 hover:text-accent-foreground hover:border-accent/40" },
+                      { label: "University", email: "university@tareeqelm.com", password: "University@123", icon: "🏛️", color: "hover:bg-indigo-500/10 hover:text-indigo-600 hover:border-indigo-400/40" },
+                      { label: "Admin", email: "admin@tareeqelm.com", password: "Admin@123", icon: "🛡️", color: "hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-400/40" },
                     ].map((acct) => (
                       <button
                         key={acct.label}
                         type="button"
                         onClick={() => {
                           setEmail(acct.email);
-                          setPassword("demo1234");
+                          setPassword(acct.password);
                           setErrors({});
                         }}
                         className={cn(
@@ -156,95 +160,15 @@ const Auth = () => {
                     ))}
                   </div>
                   <p className="text-[11px] text-muted-foreground text-center">
-                    Password: <span className="font-mono font-semibold">demo1234</span>
+                    Seeded development accounts — click to fill the form.
                   </p>
                 </div>
               )}
 
               {mode === "signup" && (
                 <>
-                  {/* Role Selection */}
-                  <div className="space-y-2">
-                    <Label>I am a...</Label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedRole("applicant")}
-                        className={cn(
-                          "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
-                          selectedRole === "applicant"
-                            ? "border-primary bg-primary/5 shadow-soft"
-                            : "border-border/50 hover:border-primary/50"
-                        )}
-                      >
-                        <div className={cn(
-                          "w-12 h-12 rounded-xl flex items-center justify-center",
-                          selectedRole === "applicant" ? "gradient-primary" : "bg-muted"
-                        )}>
-                          <User className={cn(
-                            "w-6 h-6",
-                            selectedRole === "applicant" ? "text-primary-foreground" : "text-muted-foreground"
-                          )} />
-                        </div>
-                        <div className="text-center">
-                          <p className="font-medium text-sm">Student</p>
-                          <p className="text-xs text-muted-foreground">Learn</p>
-                        </div>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setSelectedRole("instructor")}
-                        className={cn(
-                          "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
-                          selectedRole === "instructor"
-                            ? "border-accent bg-accent/5 shadow-soft"
-                            : "border-border/50 hover:border-accent/50"
-                        )}
-                      >
-                        <div className={cn(
-                          "w-12 h-12 rounded-xl flex items-center justify-center",
-                          selectedRole === "instructor" ? "gradient-accent" : "bg-muted"
-                        )}>
-                          <BookOpen className={cn(
-                            "w-6 h-6",
-                            selectedRole === "instructor" ? "text-white" : "text-muted-foreground"
-                          )} />
-                        </div>
-                        <div className="text-center">
-                          <p className="font-medium text-sm">Instructor</p>
-                          <p className="text-xs text-muted-foreground">Teach</p>
-                        </div>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setSelectedRole("university")}
-                        className={cn(
-                          "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all",
-                          selectedRole === "university"
-                            ? "border-primary bg-primary/5 shadow-soft"
-                            : "border-border/50 hover:border-primary/50"
-                        )}
-                      >
-                        <div className={cn(
-                          "w-12 h-12 rounded-xl flex items-center justify-center",
-                          selectedRole === "university" ? "bg-primary text-primary-foreground" : "bg-muted"
-                        )}>
-                          <Building2 className={cn(
-                            "w-6 h-6",
-                            selectedRole === "university" ? "text-primary-foreground" : "text-muted-foreground"
-                          )} />
-                        </div>
-                        <div className="text-center">
-                          <p className="font-medium text-sm">University</p>
-                          <p className="text-xs text-muted-foreground">Manage</p>
-                        </div>
-                      </button>
-
-                      {/* Admin signup removed - admin accounts are created by system administrators */}
-                    </div>
-                  </div>
+                  {/* Self-signup always creates a Trainer account.
+                      Instructor, University and Admin accounts are provisioned by administrators. */}
 
                   {/* Full Name */}
                   <div className="space-y-2">

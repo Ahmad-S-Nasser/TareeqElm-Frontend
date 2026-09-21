@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -11,16 +12,15 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarWidget } from "@/components/ui/calendar";
-import { Plus, Trash2, Clock, CalendarDays, Loader2, ChevronLeft, ChevronRight, LayoutGrid, Calendar, Copy, GripVertical, Flame, BarChart3, Bell, Sparkles, Wand2 } from "lucide-react";
+import { AlertCircle, Plus, Trash2, Clock, CalendarDays, Loader2, ChevronLeft, ChevronRight, LayoutGrid, Calendar, Copy, GripVertical, Flame, BarChart3, Bell, Sparkles, Wand2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import api, { getApiError } from "@/lib/api";
 import { PomodoroTimer } from "@/components/timeblocking/PomodoroTimer";
 import { AchievementBadges } from "@/components/timeblocking/AchievementBadges";
 import { EnergyLevelSelector, type EnergyLevel } from "@/components/timeblocking/EnergyLevelSelector";
 import { FocusScoreCard } from "@/components/timeblocking/FocusScoreCard";
 import { DistractionTracker } from "@/components/timeblocking/DistractionTracker";
-import { format, addDays, subDays, startOfWeek, isToday, isSameDay } from "date-fns";
+import { format, addDays, startOfWeek, isToday, isSameDay } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from "recharts";
 
 type BlockCategory = "study" | "break" | "review" | "practice" | "personal";
@@ -34,7 +34,29 @@ interface TimeBlock {
   date: string;
 }
 
-const isValidUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+interface TimeBlockDto {
+  Id: string;
+  Title: string;
+  Category: BlockCategory;
+  Date: string;
+  StartTime: string;
+  EndTime: string;
+}
+
+interface EnrollmentDto {
+  Course?: { Title?: string } | null;
+}
+
+const toBlock = (d: TimeBlockDto): TimeBlock => ({
+  id: d.Id,
+  title: d.Title,
+  startTime: d.StartTime.slice(0, 5),
+  endTime: d.EndTime.slice(0, 5),
+  category: d.Category,
+  date: d.Date.slice(0, 10),
+});
+
+const sortBlocks = (list: TimeBlock[]) => [...list].sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
 
 const categoryConfig: Record<BlockCategory, { label: string; bg: string; border: string; text: string; dot: string }> = {
   study: { label: "Study", bg: "bg-primary/10", border: "border-primary/25", text: "text-primary", dot: "bg-primary" },
@@ -46,21 +68,8 @@ const categoryConfig: Record<BlockCategory, { label: string; bg: string; border:
 
 const hours = Array.from({ length: 16 }, (_, i) => `${(i + 6).toString().padStart(2, "0")}:00`);
 
-const defaultBlocks: TimeBlock[] = [
-  { id: "d1", title: "Morning Review – Flashcards", startTime: "07:00", endTime: "07:30", category: "review", date: new Date().toISOString().split("T")[0] },
-  { id: "d2", title: "Deep Study – Test Design", startTime: "08:00", endTime: "09:30", category: "study", date: new Date().toISOString().split("T")[0] },
-  { id: "d3", title: "Break & Walk", startTime: "09:30", endTime: "10:00", category: "break", date: new Date().toISOString().split("T")[0] },
-  { id: "d4", title: "Practice Questions", startTime: "10:00", endTime: "11:00", category: "practice", date: new Date().toISOString().split("T")[0] },
-  { id: "d5", title: "Lunch Break", startTime: "12:00", endTime: "13:00", category: "personal", date: new Date().toISOString().split("T")[0] },
-  { id: "d6", title: "AI Tutor Session", startTime: "14:00", endTime: "15:00", category: "study", date: new Date().toISOString().split("T")[0] },
-  { id: "d7", title: "Mock Exam Practice", startTime: "15:30", endTime: "17:00", category: "practice", date: new Date().toISOString().split("T")[0] },
-  { id: "d8", title: "Evening Review", startTime: "19:00", endTime: "19:30", category: "review", date: new Date().toISOString().split("T")[0] },
-];
-
 const TimeBlocking = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [blocks, setBlocks] = useState<TimeBlock[]>([]);
-  const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [copyDialogOpen, setCopyDialogOpen] = useState(false);
   const [copyTargetDate, setCopyTargetDate] = useState<Date | undefined>(undefined);
@@ -69,151 +78,106 @@ const TimeBlocking = () => {
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
   const [newBlock, setNewBlock] = useState({ title: "", startTime: "08:00", endTime: "09:00", category: "study" as BlockCategory });
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
-  const [streak, setStreak] = useState(0);
   const [energyLevel, setEnergyLevel] = useState<EnergyLevel>("morning");
-  const [isGenerating, setIsGenerating] = useState(false);
   const [completedPomodoros, setCompletedPomodoros] = useState(0);
-  const { user } = useAuth();
-  const isMock = !user?.id || !isValidUuid(user.id);
+  const queryClient = useQueryClient();
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  useEffect(() => {
-    const load = async () => {
-      if (isMock) { setBlocks(defaultBlocks); setLoading(false); return; }
-      const rangeStart = format(weekStart, "yyyy-MM-dd");
-      const rangeEnd = format(addDays(weekStart, 6), "yyyy-MM-dd");
-      const { data, error } = await supabase
-        .from("time_blocks").select("*").eq("student_id", user!.id)
-        .gte("block_date", rangeStart).lte("block_date", rangeEnd).order("start_time");
-      if (error) { console.error(error); setBlocks(defaultBlocks); }
-      else if (data.length === 0) { setBlocks(defaultBlocks); }
-      else { setBlocks(data.map((r: any) => ({ id: r.id, title: r.title, startTime: r.start_time, endTime: r.end_time, category: r.category as BlockCategory, date: r.block_date }))); }
-      setLoading(false);
-    };
-    load();
-  }, [user, isMock, weekStart.toISOString()]);
+  const weekStartStr = format(weekStart, "yyyy-MM-dd");
+  const weekEndStr = format(addDays(weekStart, 6), "yyyy-MM-dd");
 
-  // Calculate streak
-  useEffect(() => {
-    const calcStreak = async () => {
-      if (isMock) { setStreak(5); return; }
-      const today = new Date();
-      const lookback = format(subDays(today, 60), "yyyy-MM-dd");
-      const { data, error } = await supabase
-        .from("time_blocks").select("block_date").eq("student_id", user!.id)
-        .gte("block_date", lookback).order("block_date", { ascending: false });
-      if (error || !data) { setStreak(0); return; }
-      const uniqueDates = [...new Set(data.map((r: any) => r.block_date))].sort().reverse();
-      let count = 0;
-      let checkDate = format(today, "yyyy-MM-dd");
-      for (const d of uniqueDates) {
-        if (d === checkDate) {
-          count++;
-          checkDate = format(subDays(new Date(checkDate + "T12:00:00"), 1), "yyyy-MM-dd");
-        } else if (d < checkDate) { break; }
-      }
-      setStreak(count);
-    };
-    calcStreak();
-  }, [blocks, user, isMock]);
+  const blocksQuery = useQuery({
+    queryKey: ["timeblocks", weekStartStr, weekEndStr],
+    queryFn: async () => {
+      const { data } = await api.get<TimeBlockDto[]>("/TimeBlocks", { params: { from: weekStartStr, to: weekEndStr } });
+      return sortBlocks(data.map(toBlock));
+    },
+  });
+  const blocks = useMemo(() => blocksQuery.data ?? [], [blocksQuery.data]);
+  const loading = blocksQuery.isLoading;
+
+  const streakQuery = useQuery({
+    queryKey: ["timeblocks-streak"],
+    queryFn: async () => (await api.get<{ Streak: number }>("/TimeBlocks/streak")).data.Streak,
+  });
+  const streak = streakQuery.data ?? 0;
+
+  const coursesQuery = useQuery({
+    queryKey: ["enrollments-me"],
+    queryFn: async () => (await api.get<EnrollmentDto[]>("/Enrollments/me")).data,
+  });
+
+  const invalidateBlocks = () => {
+    queryClient.invalidateQueries({ queryKey: ["timeblocks"] });
+    queryClient.invalidateQueries({ queryKey: ["timeblocks-streak"] });
+  };
 
   const blocksForDate = useCallback((dateStr: string) => blocks.filter((b) => b.date === dateStr), [blocks]);
   const todayBlocks = blocksForDate(selectedDateStr);
 
-  const addBlock = async () => {
+  const addMutation = useMutation({
+    mutationFn: async () => (await api.post<TimeBlockDto>("/TimeBlocks", {
+      Title: newBlock.title, Category: newBlock.category, Date: selectedDateStr, StartTime: newBlock.startTime, EndTime: newBlock.endTime,
+    })).data,
+    onSuccess: () => {
+      invalidateBlocks();
+      setNewBlock({ title: "", startTime: "08:00", endTime: "09:00", category: "study" });
+      setDialogOpen(false);
+      toast.success("Time block added!");
+    },
+    onError: (err) => toast.error(getApiError(err, "Failed to save time block")),
+  });
+
+  const addBlock = () => {
     if (!newBlock.title || !newBlock.startTime || !newBlock.endTime) { toast.error("Fill all fields"); return; }
-    const dateStr = selectedDateStr;
-    if (isMock) {
-      const block: TimeBlock = { id: Date.now().toString(), ...newBlock, date: dateStr };
-      setBlocks((p) => [...p, block].sort((a, b) => a.startTime.localeCompare(b.startTime)));
-    } else {
-      const { data, error } = await supabase.from("time_blocks").insert({
-        student_id: user!.id, title: newBlock.title, start_time: newBlock.startTime, end_time: newBlock.endTime, category: newBlock.category, block_date: dateStr,
-      }).select().single();
-      if (error) { toast.error("Failed to save"); return; }
-      setBlocks((p) => [...p, { id: data.id, title: data.title, startTime: data.start_time, endTime: data.end_time, category: data.category as BlockCategory, date: data.block_date }].sort((a, b) => a.startTime.localeCompare(b.startTime)));
-    }
-    setNewBlock({ title: "", startTime: "08:00", endTime: "09:00", category: "study" });
-    setDialogOpen(false);
-    toast.success("Time block added!");
+    if (newBlock.endTime <= newBlock.startTime) { toast.error("End time must be after start time"); return; }
+    addMutation.mutate();
   };
 
-  const removeBlock = async (id: string) => {
-    setBlocks((p) => p.filter((b) => b.id !== id));
-    if (!isMock && isValidUuid(id)) { await supabase.from("time_blocks").delete().eq("id", id); }
-    toast.success("Block removed");
-  };
+  const removeMutation = useMutation({
+    mutationFn: async (id: string) => { await api.delete(`/TimeBlocks/${id}`); },
+    onSuccess: () => { invalidateBlocks(); toast.success("Block removed"); },
+    onError: (err) => toast.error(getApiError(err, "Failed to remove block")),
+  });
+  const removeBlock = (id: string) => removeMutation.mutate(id);
 
-  const duplicateDay = async () => {
+  const copyMutation = useMutation({
+    mutationFn: async (targetStr: string) => (await api.post<TimeBlockDto[]>("/TimeBlocks/copy", { SourceDate: selectedDateStr, TargetDate: targetStr })).data,
+    onSuccess: (copied) => {
+      invalidateBlocks();
+      toast.success(`Copied ${copied.length} blocks${copyTargetDate ? ` to ${format(copyTargetDate, "MMM d")}` : ""}`);
+      setCopyDialogOpen(false);
+      setCopyTargetDate(undefined);
+    },
+    onError: (err) => toast.error(getApiError(err, "Failed to copy blocks")),
+  });
+
+  const duplicateDay = () => {
     if (!copyTargetDate) { toast.error("Select a target date"); return; }
     const targetStr = format(copyTargetDate, "yyyy-MM-dd");
     if (targetStr === selectedDateStr) { toast.error("Choose a different date"); return; }
-    const source = todayBlocks;
-    if (source.length === 0) { toast.error("No blocks to copy"); return; }
-    const newBlocks: TimeBlock[] = [];
-    for (const b of source) {
-      if (isMock) {
-        newBlocks.push({ ...b, id: `${Date.now()}-${Math.random()}`, date: targetStr });
-      } else {
-        const { data, error } = await supabase.from("time_blocks").insert({
-          student_id: user!.id, title: b.title, start_time: b.startTime, end_time: b.endTime, category: b.category, block_date: targetStr,
-        }).select().single();
-        if (!error && data) {
-          newBlocks.push({ id: data.id, title: data.title, startTime: data.start_time, endTime: data.end_time, category: data.category as BlockCategory, date: data.block_date });
-        }
-      }
-    }
-    setBlocks((p) => [...p, ...newBlocks]);
-    setCopyDialogOpen(false);
-    setCopyTargetDate(undefined);
-    toast.success(`Copied ${newBlocks.length} blocks to ${format(copyTargetDate, "MMM d")}`);
+    if (todayBlocks.length === 0) { toast.error("No blocks to copy"); return; }
+    copyMutation.mutate(targetStr);
   };
 
-  // AI Schedule Generator
-  const generateAISchedule = async () => {
-    setIsGenerating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-schedule", {
-        body: {
-          energyLevel,
-          courses: ["Test Design", "Fundamentals", "Test Management"],
-          existingBlocks: todayBlocks.map(b => ({ title: b.title, startTime: b.startTime, endTime: b.endTime })),
-          date: selectedDateStr,
-        },
-      });
-      if (error) throw error;
-      if (data?.error) { toast.error(data.error); return; }
-      
-      const aiBlocks = data?.blocks || [];
-      if (aiBlocks.length === 0) { toast.info("AI couldn't generate blocks. Try again."); return; }
-
-      const newBlocks: TimeBlock[] = [];
-      for (const ab of aiBlocks) {
-        if (!ab.title || !ab.startTime || !ab.endTime) continue;
-        const category = (["study", "break", "review", "practice", "personal"].includes(ab.category) ? ab.category : "study") as BlockCategory;
-        if (isMock) {
-          newBlocks.push({ id: `ai-${Date.now()}-${Math.random()}`, title: ab.title, startTime: ab.startTime, endTime: ab.endTime, category, date: selectedDateStr });
-        } else {
-          const { data: saved, error: saveErr } = await supabase.from("time_blocks").insert({
-            student_id: user!.id, title: ab.title, start_time: ab.startTime, end_time: ab.endTime, category, block_date: selectedDateStr,
-          }).select().single();
-          if (!saveErr && saved) {
-            newBlocks.push({ id: saved.id, title: saved.title, startTime: saved.start_time, endTime: saved.end_time, category: saved.category as BlockCategory, date: saved.block_date });
-          }
-        }
-      }
-      setBlocks(p => [...p.filter(b => b.date !== selectedDateStr), ...newBlocks].sort((a, b) => a.startTime.localeCompare(b.startTime)));
-      toast.success(`AI generated ${newBlocks.length} optimized blocks!`);
-    } catch (e: any) {
-      console.error(e);
-      toast.error("Failed to generate schedule. Please try again.");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  // Schedule generator (the server replaces the selected day's blocks)
+  const generateMutation = useMutation({
+    mutationFn: async () => {
+      const courses = (coursesQuery.data ?? []).map((e) => e.Course?.Title).filter((t): t is string => !!t);
+      return (await api.post<TimeBlockDto[]>("/TimeBlocks/generate", { Date: selectedDateStr, EnergyLevel: energyLevel, Courses: courses })).data;
+    },
+    onSuccess: (created) => {
+      invalidateBlocks();
+      if (created.length === 0) toast.info("No blocks were generated. Try again.");
+      else toast.success(`Generated ${created.length} blocks for ${format(selectedDate, "MMM d")}!`);
+    },
+    onError: (err) => toast.error(getApiError(err, "Failed to generate schedule")),
+  });
+  const isGenerating = generateMutation.isPending;
+  const generateAISchedule = () => generateMutation.mutate();
 
   const handleDragStart = (blockId: string) => setDraggedBlockId(blockId);
   const handleDragOver = (e: React.DragEvent) => e.preventDefault();
@@ -221,18 +185,19 @@ const TimeBlocking = () => {
     if (!draggedBlockId || draggedBlockId === targetBlockId) { setDraggedBlockId(null); return; }
     const draggedBlock = blocks.find((b) => b.id === draggedBlockId);
     const targetBlock = blocks.find((b) => b.id === targetBlockId);
-    if (!draggedBlock || !targetBlock) { setDraggedBlockId(null); return; }
-    setBlocks((prev) => prev.map((b) => {
-      if (b.id === draggedBlockId) return { ...b, startTime: targetBlock.startTime, endTime: targetBlock.endTime };
-      if (b.id === targetBlockId) return { ...b, startTime: draggedBlock.startTime, endTime: draggedBlock.endTime };
-      return b;
-    }).sort((a, b) => a.startTime.localeCompare(b.startTime)));
-    if (!isMock) {
-      if (isValidUuid(draggedBlockId)) await supabase.from("time_blocks").update({ start_time: targetBlock.startTime, end_time: targetBlock.endTime }).eq("id", draggedBlockId);
-      if (isValidUuid(targetBlockId)) await supabase.from("time_blocks").update({ start_time: draggedBlock.startTime, end_time: draggedBlock.endTime }).eq("id", targetBlockId);
-    }
     setDraggedBlockId(null);
-    toast.success("Blocks swapped!");
+    if (!draggedBlock || !targetBlock) return;
+    try {
+      await Promise.all([
+        api.put(`/TimeBlocks/${draggedBlock.id}`, { StartTime: targetBlock.startTime, EndTime: targetBlock.endTime }),
+        api.put(`/TimeBlocks/${targetBlock.id}`, { StartTime: draggedBlock.startTime, EndTime: draggedBlock.endTime }),
+      ]);
+      toast.success("Blocks swapped!");
+    } catch (err) {
+      toast.error(getApiError(err, "Failed to swap blocks"));
+    } finally {
+      invalidateBlocks();
+    }
   };
 
   // Detect current active block
@@ -311,10 +276,17 @@ const TimeBlocking = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <ApplicantSidebar onCollapse={setSidebarCollapsed} />
-      <Header sidebarCollapsed={sidebarCollapsed} userRole="Student" mobileSidebar={<ApplicantSidebarContent onItemClick={() => {}} />} />
+      <Header sidebarCollapsed={sidebarCollapsed} userRole="Trainer" mobileSidebar={<ApplicantSidebarContent onItemClick={() => {}} />} />
 
       <main className={cn("pt-20 pb-10 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64", "ml-0")}>
         <div className="max-w-7xl mx-auto space-y-6">
+          {blocksQuery.isError && (
+            <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              <AlertCircle className="w-4 h-4" />
+              <span className="flex-1">{getApiError(blocksQuery.error, "Failed to load time blocks")}</span>
+              <Button size="sm" variant="outline" onClick={() => blocksQuery.refetch()}>Retry</Button>
+            </div>
+          )}
           {/* Hero Header */}
           <div className="rounded-2xl bg-gradient-to-br from-primary/10 via-accent/5 to-background border border-primary/10 p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -528,6 +500,9 @@ const TimeBlocking = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
+                {todayBlocks.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center pb-4">No blocks for this day yet. Add one or use AI Schedule.</p>
+                )}
                 <DayTimeline
                   blocks={todayBlocks}
                   activeBlock={activeBlock}

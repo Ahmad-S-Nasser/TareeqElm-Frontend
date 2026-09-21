@@ -1,41 +1,53 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState, useEffect, useRef } from 'react';
+import api, { getApiError } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
+import { StudySessionContext } from './studySessionContext';
 
-interface StudySessionContextType {
-    activeLessonId: string | null;
-    isTracking: boolean;
-    sessionDuration: number;
-    startSession: (courseId: string, lessonId: string) => Promise<void>;
-    endSession: () => Promise<void>;
-    pauseSession: () => void;
-    resumeSession: () => void;
+interface StudySessionDto {
+    Id: string;
+    CourseId: string | null;
+    LessonId: string | null;
+    StartedAt: string;
+    EndedAt: string | null;
+    DurationSeconds: number;
 }
-
-const StudySessionContext = createContext<StudySessionContextType | undefined>(undefined);
 
 export const StudySessionProvider = ({ children }: { children: React.ReactNode }) => {
     const { user } = useAuth();
     const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
-    const [activeCourseId, setActiveCourseId] = useState<string | null>(null);
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [isTracking, setIsTracking] = useState(false);
     const [sessionDuration, setSessionDuration] = useState(0); // in seconds
 
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const lastSyncRef = useRef<Date>(new Date());
+    const lastSyncRef = useRef<number>(Date.now());
+    const durationRef = useRef(0);
+    const sessionIdRef = useRef<string | null>(null);
+    const activeLessonRef = useRef<string | null>(null);
+
+    // Send a heartbeat (and optionally close the session). Time tracking never touches lesson completion.
+    const syncProgress = async (end = false) => {
+        const id = sessionIdRef.current;
+        if (!id) return;
+        try {
+            await api.put(`/study-sessions/${id}`, { DurationSeconds: durationRef.current, End: end });
+        } catch (err) {
+            console.error("Study session sync error:", getApiError(err, 'Failed to sync study session'));
+        }
+    };
 
     // Timer effect
     useEffect(() => {
         if (isTracking) {
             timerRef.current = setInterval(() => {
-                setSessionDuration(prev => prev + 1);
+                durationRef.current += 1;
+                setSessionDuration(durationRef.current);
 
-                // Auto-save every minute
-                const now = new Date();
-                if (now.getTime() - lastSyncRef.current.getTime() > 60000) {
-                    syncProgress();
+                // Heartbeat every minute
+                const now = Date.now();
+                if (now - lastSyncRef.current > 60000) {
                     lastSyncRef.current = now;
+                    void syncProgress();
                 }
             }, 1000);
         } else if (timerRef.current) {
@@ -47,90 +59,45 @@ export const StudySessionProvider = ({ children }: { children: React.ReactNode }
         };
     }, [isTracking, sessionId]);
 
+    const endSession = async () => {
+        if (!sessionIdRef.current) return;
+
+        setIsTracking(false);
+        await syncProgress(true);
+
+        sessionIdRef.current = null;
+        activeLessonRef.current = null;
+        durationRef.current = 0;
+        setSessionId(null);
+        setActiveLessonId(null);
+        setSessionDuration(0);
+    };
+
     const startSession = async (courseId: string, lessonId: string) => {
         if (!user) return;
 
+        // Already tracking this lesson
+        if (sessionIdRef.current && activeLessonRef.current === lessonId) return;
+
         // If different lesson, stop previous
-        if (sessionId && (activeLessonId !== lessonId)) {
+        if (sessionIdRef.current) {
             await endSession();
         }
 
-        // Start new session
         try {
-            const { data, error } = await supabase
-                .from('study_sessions')
-                .insert({
-                    student_id: user.id,
-                    course_id: courseId,
-                    lesson_id: lessonId,
-                    started_at: new Date().toISOString()
-                })
-                .select()
-                .single();
+            const { data } = await api.post<StudySessionDto>('/study-sessions', { CourseId: courseId, LessonId: lessonId });
 
-            if (error) throw error;
-
-            setSessionId(data.id);
-            setActiveCourseId(courseId);
+            sessionIdRef.current = data.Id;
+            activeLessonRef.current = lessonId;
+            durationRef.current = 0;
+            setSessionId(data.Id);
             setActiveLessonId(lessonId);
             setIsTracking(true);
             setSessionDuration(0);
-            lastSyncRef.current = new Date();
+            lastSyncRef.current = Date.now();
         } catch (err) {
-            console.error("Failed to start session:", err);
+            console.error("Failed to start session:", getApiError(err, 'Failed to start study session'));
         }
-    };
-
-    const syncProgress = async () => {
-        if (!sessionId || !user || !activeLessonId) return;
-
-        try {
-            // Update session duration
-            await supabase
-                .from('study_sessions')
-                .update({ duration_seconds: sessionDuration })
-                .eq('id', sessionId);
-
-            // Upsert lesson completion record with cumulative time
-            // Note: In a real app we'd fetch previous time first or use an RPC increment.
-            // For now we just track this session's time in the completion record roughly.
-
-            await supabase
-                .from('lesson_completions')
-                .upsert({
-                    student_id: user.id,
-                    lesson_id: activeLessonId,
-                    time_spent_seconds: sessionDuration, // This is simplified. Should add to existing.
-                    completed_at: new Date().toISOString() // Updates 'last active' effectively
-                }, { onConflict: 'student_id,lesson_id' });
-
-        } catch (err) {
-            console.error("Sync error:", err);
-        }
-    };
-
-    const endSession = async () => {
-        if (!sessionId) return;
-
-        setIsTracking(false);
-        await syncProgress();
-
-        try {
-            await supabase
-                .from('study_sessions')
-                .update({
-                    ended_at: new Date().toISOString(),
-                    duration_seconds: sessionDuration
-                })
-                .eq('id', sessionId);
-        } catch (err) {
-            console.error("Failed to end session:", err);
-        }
-
-        setSessionId(null);
-        setActiveLessonId(null);
-        setActiveCourseId(null);
-        setSessionDuration(0);
     };
 
     const pauseSession = () => setIsTracking(false);
@@ -149,12 +116,4 @@ export const StudySessionProvider = ({ children }: { children: React.ReactNode }
             {children}
         </StudySessionContext.Provider>
     );
-};
-
-export const useStudySession = () => {
-    const context = useContext(StudySessionContext);
-    if (context === undefined) {
-        throw new Error('useStudySession must be used within a StudySessionProvider');
-    }
-    return context;
 };

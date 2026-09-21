@@ -12,9 +12,18 @@ import {
 import { Calendar, Plus, Edit2, Archive, CheckCircle2, Clock, Users, BookOpen, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import api, { getApiError } from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/hooks/useAuth";
+
+interface AcademicTerm {
+    Id: string;
+    Name: string;
+    Type: "fall" | "spring" | "summer";
+    Year: number;
+    StartDate: string;
+    EndDate: string;
+    Status: "active" | "upcoming" | "archived";
+}
 
 const typeColors = {
     fall: "bg-amber-500/10 text-amber-600 border-amber-200",
@@ -34,22 +43,17 @@ const UniversityAcademicTerms = () => {
     const { toast } = useToast();
     const queryClient = useQueryClient();
 
-    const { data: terms = [], isLoading } = useQuery({
+    const { data: terms = [], isLoading, isError, error } = useQuery({
         queryKey: ["academic-terms"],
         queryFn: async () => {
-            const { data, error } = await supabase
-                .from("academic_terms")
-                .select("*")
-                .order("start_date", { ascending: false });
-            if (error) throw error;
-            return data;
+            const { data } = await api.get<AcademicTerm[]>("/academic-terms");
+            return [...data].sort((x, y) => new Date(y.StartDate).getTime() - new Date(x.StartDate).getTime());
         },
     });
 
     const createMutation = useMutation({
-        mutationFn: async (term: { name: string; type: string; year: number; start_date: string; end_date: string }) => {
-            const { error } = await supabase.from("academic_terms").insert(term);
-            if (error) throw error;
+        mutationFn: async (term: { Name: string; Type: string; Year: number; StartDate: string; EndDate: string }) => {
+            await api.post("/academic-terms", term);
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["academic-terms"] });
@@ -57,18 +61,18 @@ const UniversityAcademicTerms = () => {
             setNewTerm({ name: "", type: "fall", year: "2026", startDate: "", endDate: "" });
             toast({ title: "Term Created" });
         },
-        onError: (err: any) => toast({ variant: "destructive", title: "Error", description: err.message }),
+        onError: (err: unknown) => toast({ variant: "destructive", title: "Error", description: getApiError(err, "Could not create term") }),
     });
 
     const updateStatusMutation = useMutation({
         mutationFn: async ({ id, status }: { id: string; status: string }) => {
-            const { error } = await supabase.from("academic_terms").update({ status }).eq("id", id);
-            if (error) throw error;
+            await api.put(`/academic-terms/${id}/status`, { Status: status });
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["academic-terms"] });
             toast({ title: "Term Updated" });
         },
+        onError: (err: unknown) => toast({ variant: "destructive", title: "Error", description: getApiError(err, "Could not update term") }),
     });
 
     const handleCreate = () => {
@@ -77,8 +81,8 @@ const UniversityAcademicTerms = () => {
             return;
         }
         createMutation.mutate({
-            name: newTerm.name, type: newTerm.type, year: parseInt(newTerm.year),
-            start_date: newTerm.startDate, end_date: newTerm.endDate,
+            Name: newTerm.name, Type: newTerm.type, Year: parseInt(newTerm.year),
+            StartDate: newTerm.startDate, EndDate: newTerm.endDate,
         });
     };
 
@@ -149,9 +153,9 @@ const UniversityAcademicTerms = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                    { label: "Active Terms", value: terms.filter((t: any) => t.status === "active").length, icon: CheckCircle2, color: "text-emerald-500" },
-                    { label: "Upcoming", value: terms.filter((t: any) => t.status === "upcoming").length, icon: Clock, color: "text-primary" },
-                    { label: "Archived", value: terms.filter((t: any) => t.status === "archived").length, icon: Archive, color: "text-muted-foreground" },
+                    { label: "Active Terms", value: terms.filter((t) => t.Status === "active").length, icon: CheckCircle2, color: "text-emerald-500" },
+                    { label: "Upcoming", value: terms.filter((t) => t.Status === "upcoming").length, icon: Clock, color: "text-primary" },
+                    { label: "Archived", value: terms.filter((t) => t.Status === "archived").length, icon: Archive, color: "text-muted-foreground" },
                 ].map(s => (
                     <Card key={s.label} className="border-border/50">
                         <CardContent className="p-5 flex items-center gap-4">
@@ -167,22 +171,24 @@ const UniversityAcademicTerms = () => {
 
             {isLoading ? (
                 <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+            ) : isError ? (
+                <Card className="border-border/50"><CardContent className="p-12 text-center text-destructive">{getApiError(error, "Could not load academic terms.")}</CardContent></Card>
             ) : terms.length === 0 ? (
                 <Card className="border-border/50"><CardContent className="p-12 text-center text-muted-foreground">No academic terms yet. Create one to get started.</CardContent></Card>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {terms.map((term: any) => {
-                        const sc = statusConfig[term.status as keyof typeof statusConfig] || statusConfig.upcoming;
-                        const tc = typeColors[term.type as keyof typeof typeColors] || typeColors.fall;
+                    {terms.map((term) => {
+                        const sc = statusConfig[term.Status as keyof typeof statusConfig] || statusConfig.upcoming;
+                        const tc = typeColors[term.Type as keyof typeof typeColors] || typeColors.fall;
                         return (
-                            <Card key={term.id} className="border-border/50 hover:shadow-md transition-all">
+                            <Card key={term.Id} className="border-border/50 hover:shadow-md transition-all">
                                 <CardHeader className="pb-3">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <Badge variant="outline" className={cn("text-xs font-semibold", tc)}>
-                                                {term.type.charAt(0).toUpperCase() + term.type.slice(1)}
+                                                {term.Type.charAt(0).toUpperCase() + term.Type.slice(1)}
                                             </Badge>
-                                            <CardTitle className="text-base">{term.name}</CardTitle>
+                                            <CardTitle className="text-base">{term.Name}</CardTitle>
                                         </div>
                                         <Badge variant="outline" className={cn("text-xs", sc.badge)}>
                                             <div className={cn("w-1.5 h-1.5 rounded-full mr-1.5", sc.color)} />
@@ -192,16 +198,16 @@ const UniversityAcademicTerms = () => {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <p className="text-sm text-muted-foreground">
-                                        {new Date(term.start_date).toLocaleDateString()} — {new Date(term.end_date).toLocaleDateString()}
+                                        {new Date(term.StartDate).toLocaleDateString()} — {new Date(term.EndDate).toLocaleDateString()}
                                     </p>
                                     <div className="flex gap-2">
                                         <Button variant="outline" size="sm" className="flex-1 gap-1.5"><Edit2 className="w-3.5 h-3.5" /> Edit</Button>
-                                        {term.status === "active" ? (
-                                            <Button variant="outline" size="sm" className="flex-1 gap-1.5 text-muted-foreground" onClick={() => updateStatusMutation.mutate({ id: term.id, status: "archived" })}>
+                                        {term.Status === "active" ? (
+                                            <Button variant="outline" size="sm" className="flex-1 gap-1.5 text-muted-foreground" onClick={() => updateStatusMutation.mutate({ id: term.Id, status: "archived" })}>
                                                 <Archive className="w-3.5 h-3.5" /> Archive
                                             </Button>
-                                        ) : term.status === "upcoming" ? (
-                                            <Button variant="outline" size="sm" className="flex-1 gap-1.5 text-emerald-600" onClick={() => updateStatusMutation.mutate({ id: term.id, status: "active" })}>
+                                        ) : term.Status === "upcoming" ? (
+                                            <Button variant="outline" size="sm" className="flex-1 gap-1.5 text-emerald-600" onClick={() => updateStatusMutation.mutate({ id: term.Id, status: "active" })}>
                                                 <CheckCircle2 className="w-3.5 h-3.5" /> Activate
                                             </Button>
                                         ) : null}

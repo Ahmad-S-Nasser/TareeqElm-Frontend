@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -6,14 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Plus, Phone, MessageSquare, Coffee, Users, Zap, TrendingUp } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import api, { getApiError } from "@/lib/api";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { format, subDays, startOfWeek, addDays } from "date-fns";
-
-const isValidUuid = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+import { format, startOfWeek, addDays } from "date-fns";
 
 const distractionTypes = [
   { value: "phone", label: "Phone/Social Media", icon: Phone, color: "bg-destructive" },
@@ -23,12 +21,13 @@ const distractionTypes = [
   { value: "other", label: "Other", icon: Zap, color: "bg-muted-foreground" },
 ];
 
-interface Distraction {
-  id: string;
-  distraction_type: string;
-  description: string | null;
-  duration_seconds: number;
-  logged_at: string;
+interface DistractionDto {
+  Id: string;
+  SessionId: string | null;
+  Type: string;
+  Description: string | null;
+  DurationSeconds: number;
+  LoggedAt: string;
 }
 
 interface DistractionTrackerProps {
@@ -37,120 +36,63 @@ interface DistractionTrackerProps {
 
 export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [distractions, setDistractions] = useState<Distraction[]>([]);
-  const [weeklyData, setWeeklyData] = useState<{ day: string; count: number }[]>([]);
   const [newDistraction, setNewDistraction] = useState({
     type: "phone",
     description: "",
     duration: 5,
   });
-  const { user } = useAuth();
-  const isMock = !user?.id || !isValidUuid(user.id);
+  const queryClient = useQueryClient();
 
-  // Mock data for demo
-  const mockDistractions: Distraction[] = [
-    { id: "m1", distraction_type: "phone", description: "Checked Instagram", duration_seconds: 300, logged_at: new Date().toISOString() },
-    { id: "m2", distraction_type: "messages", description: "Replied to friend", duration_seconds: 180, logged_at: new Date(Date.now() - 3600000).toISOString() },
-    { id: "m3", distraction_type: "break", description: "Got coffee", duration_seconds: 600, logged_at: new Date(Date.now() - 7200000).toISOString() },
-  ];
+  const weekStart = useMemo(() => startOfWeek(new Date(), { weekStartsOn: 1 }), []);
+  const weekStartStr = format(weekStart, "yyyy-MM-dd");
+  const weekEndStr = format(addDays(weekStart, 6), "yyyy-MM-dd");
 
-  const mockWeeklyData = [
-    { day: "Mon", count: 3 },
-    { day: "Tue", count: 5 },
-    { day: "Wed", count: 2 },
-    { day: "Thu", count: 4 },
-    { day: "Fri", count: 1 },
-    { day: "Sat", count: 2 },
-    { day: "Sun", count: 3 },
-  ];
+  const distractionsQuery = useQuery({
+    queryKey: ["distractions", weekStartStr, weekEndStr],
+    queryFn: async () => {
+      const { data } = await api.get<DistractionDto[]>("/distractions", { params: { from: weekStartStr, to: weekEndStr } });
+      return data;
+    },
+  });
+  const distractions = useMemo(() => distractionsQuery.data ?? [], [distractionsQuery.data]);
 
-  useEffect(() => {
-    const loadDistractions = async () => {
-      if (isMock) {
-        setDistractions(mockDistractions);
-        setWeeklyData(mockWeeklyData);
-        return;
-      }
+  // Weekly chart computed from the returned list
+  const weeklyData = useMemo(() => {
+    const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+    return weekDays.map((day) => {
+      const dateStr = format(day, "yyyy-MM-dd");
+      const count = distractions.filter((d) => format(new Date(d.LoggedAt), "yyyy-MM-dd") === dateStr).length;
+      return { day: format(day, "EEE"), count };
+    });
+  }, [distractions, weekStart]);
 
-      const today = new Date();
-      const weekStart = startOfWeek(today, { weekStartsOn: 1 });
-      const weekEnd = addDays(weekStart, 6);
-
-      const { data, error } = await supabase
-        .from("distractions")
-        .select("*")
-        .eq("student_id", user!.id)
-        .gte("logged_at", format(weekStart, "yyyy-MM-dd"))
-        .order("logged_at", { ascending: false });
-
-      if (error) {
-        console.error(error);
-        setDistractions(mockDistractions);
-        setWeeklyData(mockWeeklyData);
-        return;
-      }
-
-      setDistractions(data || []);
-
-      // Calculate weekly data
-      const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-      const weekly = weekDays.map((day) => {
-        const dateStr = format(day, "yyyy-MM-dd");
-        const count = (data || []).filter((d: Distraction) => 
-          format(new Date(d.logged_at), "yyyy-MM-dd") === dateStr
-        ).length;
-        return { day: format(day, "EEE"), count };
-      });
-      setWeeklyData(weekly);
-    };
-
-    loadDistractions();
-  }, [user, isMock]);
-
-  const logDistraction = async () => {
-    if (isMock) {
-      const newD: Distraction = {
-        id: Date.now().toString(),
-        distraction_type: newDistraction.type,
-        description: newDistraction.description || null,
-        duration_seconds: newDistraction.duration * 60,
-        logged_at: new Date().toISOString(),
-      };
-      setDistractions((prev) => [newD, ...prev]);
-      toast.success("Distraction logged");
+  const logMutation = useMutation({
+    mutationFn: async () => (await api.post<DistractionDto>("/distractions", {
+      Type: newDistraction.type,
+      Description: newDistraction.description || undefined,
+      DurationSeconds: newDistraction.duration * 60,
+      SessionId: sessionId || undefined,
+    })).data,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["distractions"] });
+      toast.success("Distraction logged — stay focused! 💪");
       setDialogOpen(false);
       setNewDistraction({ type: "phone", description: "", duration: 5 });
-      return;
-    }
+    },
+    onError: (err) => toast.error(getApiError(err, "Failed to log distraction")),
+  });
 
-    const { data, error } = await supabase.from("distractions").insert({
-      student_id: user!.id,
-      session_id: sessionId || null,
-      distraction_type: newDistraction.type,
-      description: newDistraction.description || null,
-      duration_seconds: newDistraction.duration * 60,
-    }).select().single();
-
-    if (error) {
-      toast.error("Failed to log distraction");
-      return;
-    }
-
-    setDistractions((prev) => [data, ...prev]);
-    toast.success("Distraction logged — stay focused! 💪");
-    setDialogOpen(false);
-    setNewDistraction({ type: "phone", description: "", duration: 5 });
-  };
+  const logDistraction = () => logMutation.mutate();
 
   const todayDistractions = distractions.filter((d) => 
-    format(new Date(d.logged_at), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")
+    format(new Date(d.LoggedAt), "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")
   );
 
-  const totalTimeLost = todayDistractions.reduce((acc, d) => acc + d.duration_seconds, 0);
+  const totalTimeLost = todayDistractions.reduce((acc, d) => acc + d.DurationSeconds, 0);
 
   // Calculate most common distraction type
   const typeCounts = todayDistractions.reduce((acc, d) => {
-    acc[d.distraction_type] = (acc[d.distraction_type] || 0) + 1;
+    acc[d.Type] = (acc[d.Type] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
@@ -212,7 +154,7 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
                     onChange={(e) => setNewDistraction({ ...newDistraction, duration: parseInt(e.target.value) || 5 })}
                   />
                 </div>
-                <Button onClick={logDistraction} className="w-full">
+                <Button onClick={logDistraction} className="w-full" disabled={logMutation.isPending}>
                   Log Distraction
                 </Button>
               </div>
@@ -221,6 +163,13 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {distractionsQuery.isError && (
+          <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">
+            <AlertCircle className="w-3.5 h-3.5" />
+            <span className="flex-1">{getApiError(distractionsQuery.error, "Failed to load distractions")}</span>
+            <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => distractionsQuery.refetch()}>Retry</Button>
+          </div>
+        )}
         {/* Today's Stats */}
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl bg-destructive/10 border border-destructive/20 p-3 text-center">
@@ -288,15 +237,15 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
             <p className="text-xs text-muted-foreground mb-2">Recent</p>
             <div className="space-y-1.5 max-h-32 overflow-y-auto">
               {todayDistractions.slice(0, 5).map((d) => {
-                const typeInfo = distractionTypes.find((t) => t.value === d.distraction_type);
+                const typeInfo = distractionTypes.find((t) => t.value === d.Type);
                 return (
-                  <div key={d.id} className="flex items-center gap-2 text-sm p-2 rounded-lg bg-muted/50">
+                  <div key={d.Id} className="flex items-center gap-2 text-sm p-2 rounded-lg bg-muted/50">
                     {typeInfo && <typeInfo.icon className="w-3.5 h-3.5 text-muted-foreground" />}
                     <span className="flex-1 truncate text-xs">
-                      {d.description || typeInfo?.label || "Distraction"}
+                      {d.Description || typeInfo?.label || "Distraction"}
                     </span>
                     <Badge variant="outline" className="text-[10px]">
-                      {Math.round(d.duration_seconds / 60)}m
+                      {Math.round(d.DurationSeconds / 60)}m
                     </Badge>
                   </div>
                 );
@@ -305,7 +254,7 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
           </div>
         )}
 
-        {todayDistractions.length === 0 && (
+        {!distractionsQuery.isLoading && !distractionsQuery.isError && todayDistractions.length === 0 && (
           <div className="text-center py-4 text-muted-foreground">
             <p className="text-sm">No distractions logged today</p>
             <p className="text-xs mt-1">Great focus! Keep it up 🎯</p>

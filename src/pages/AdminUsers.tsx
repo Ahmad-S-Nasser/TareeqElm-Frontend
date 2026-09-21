@@ -1,89 +1,173 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { AdminSidebar, AdminSidebarContent } from "@/components/layout/AdminSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter,
-    DialogHeader, DialogTitle, DialogTrigger,
+    DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-    Users, Plus, Upload, Mail, Search, Filter, MoreHorizontal,
-    UserCheck, UserX, Building2, Shield,
+    Users, Plus, Search, Filter, Pencil, UserCheck, UserX, Building2, Shield, Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import api, { getApiError } from "@/lib/api";
 
-type User = {
-    id: number; name: string; email: string;
-    team: string; department: string; role: string; status: "Active" | "Invited" | "Inactive";
+type UserRole = "Admin" | "Instructor" | "University" | "Trainer";
+const ROLES: UserRole[] = ["Admin", "Instructor", "University", "Trainer"];
+const PAGE_SIZE = 20;
+const NO_DEPARTMENT = "none";
+
+interface ManagedUser {
+    Id: string;
+    FullName: string;
+    Email: string;
+    Role: string;
+    IsActive: boolean;
+    DepartmentId: string | null;
+    AvatarUrl: string | null;
+    CreatedAt: string;
+}
+interface DepartmentOption { Id: string; Name: string }
+interface UsersPage { items: ManagedUser[]; total: number }
+
+const fetchUsers = async (params: Record<string, string | number | boolean | undefined>): Promise<UsersPage> => {
+    const res = await api.get<ManagedUser[]>("/admin/users", { params });
+    const total = Number(res.headers["x-total-count"] ?? res.data.length);
+    return { items: res.data, total };
 };
-
-const initialUsers: User[] = [
-    { id: 1, name: "Sarah Johnson", email: "sarah@acme.com", team: "Marketing", department: "Sales & Marketing", role: "Employee", status: "Active" },
-    { id: 2, name: "David Park", email: "david@acme.com", team: "Engineering", department: "Technology", role: "Manager", status: "Active" },
-    { id: 3, name: "Lena Müller", email: "lena@acme.com", team: "Design", department: "Product", role: "Employee", status: "Active" },
-    { id: 4, name: "Carlos Rivera", email: "carlos@acme.com", team: "Operations", department: "Operations", role: "Employee", status: "Invited" },
-    { id: 5, name: "Aisha Nwosu", email: "aisha@acme.com", team: "Finance", department: "Finance", role: "Manager", status: "Active" },
-    { id: 6, name: "Tom Chen", email: "tom@acme.com", team: "Engineering", department: "Technology", role: "Employee", status: "Inactive" },
-];
 
 const AdminUsers = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [users, setUsers] = useState<User[]>(initialUsers);
     const [search, setSearch] = useState("");
-    const [filterDept, setFilterDept] = useState("all");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [filterRole, setFilterRole] = useState("all");
+    const [page, setPage] = useState(1);
     const [isAddOpen, setIsAddOpen] = useState(false);
-    const [newUser, setNewUser] = useState({ name: "", email: "", team: "", department: "", role: "Employee" });
+    const [newUser, setNewUser] = useState({ fullName: "", email: "", password: "", role: "Trainer" as UserRole, departmentId: NO_DEPARTMENT });
+    const [editing, setEditing] = useState<ManagedUser | null>(null);
+    const [edit, setEdit] = useState({ role: "Trainer" as string, isActive: true, departmentId: NO_DEPARTMENT, newPassword: "" });
     const { toast } = useToast();
+    const { user: me } = useAuth();
+    const queryClient = useQueryClient();
 
-    const departments = ["all", "Sales & Marketing", "Technology", "Product", "Operations", "Finance"];
+    useEffect(() => {
+        const t = setTimeout(() => { setDebouncedSearch(search.trim()); setPage(1); }, 300);
+        return () => clearTimeout(t);
+    }, [search]);
 
-    const filtered = users.filter((u) => {
-        const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
-        const matchDept = filterDept === "all" || u.department === filterDept;
-        return matchSearch && matchDept;
+    const roleParam = filterRole === "all" ? undefined : filterRole;
+
+    const { data, isLoading, isError, error, isFetching } = useQuery({
+        queryKey: ["admin-users", debouncedSearch, roleParam, page],
+        queryFn: () => fetchUsers({ search: debouncedSearch || undefined, role: roleParam, page, pageSize: PAGE_SIZE }),
+        placeholderData: keepPreviousData,
+    });
+
+    const { data: totalAll } = useQuery({
+        queryKey: ["admin-users-count", "all"],
+        queryFn: async () => (await fetchUsers({ page: 1, pageSize: 1 })).total,
+    });
+    const { data: totalActive } = useQuery({
+        queryKey: ["admin-users-count", "active"],
+        queryFn: async () => (await fetchUsers({ active: true, page: 1, pageSize: 1 })).total,
+    });
+    const { data: totalInactive } = useQuery({
+        queryKey: ["admin-users-count", "inactive"],
+        queryFn: async () => (await fetchUsers({ active: false, page: 1, pageSize: 1 })).total,
+    });
+
+    const { data: departments = [] } = useQuery({
+        queryKey: ["departments"],
+        queryFn: async () => (await api.get<DepartmentOption[]>("/Departments")).data,
+    });
+
+    const users = data?.items ?? [];
+    const total = data?.total ?? 0;
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const deptName = (id: string | null) => departments.find((d) => d.Id === id)?.Name;
+
+    const invalidate = () => {
+        queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+        queryClient.invalidateQueries({ queryKey: ["admin-users-count"] });
+    };
+
+    const createMutation = useMutation({
+        mutationFn: async () => {
+            await api.post("/admin/users", {
+                FullName: newUser.fullName.trim(),
+                Email: newUser.email.trim(),
+                Password: newUser.password,
+                Role: newUser.role,
+                DepartmentId: newUser.departmentId === NO_DEPARTMENT ? undefined : newUser.departmentId,
+            });
+        },
+        onSuccess: () => {
+            invalidate();
+            setIsAddOpen(false);
+            setNewUser({ fullName: "", email: "", password: "", role: "Trainer", departmentId: NO_DEPARTMENT });
+            toast({ title: "User created", description: "The user can now sign in with the password you set." });
+        },
+        onError: (err: unknown) => toast({ variant: "destructive", title: "Could not create user", description: getApiError(err, "Could not create user.") }),
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: async () => {
+            if (!editing) return;
+            const body: Record<string, unknown> = {
+                Role: edit.role,
+                IsActive: edit.isActive,
+                DepartmentId: edit.departmentId === NO_DEPARTMENT ? "" : edit.departmentId,
+            };
+            if (edit.newPassword) body.NewPassword = edit.newPassword;
+            await api.put(`/admin/users/${editing.Id}`, body);
+        },
+        onSuccess: () => {
+            invalidate();
+            setEditing(null);
+            toast({ title: "User updated" });
+        },
+        onError: (err: unknown) => toast({ variant: "destructive", title: "Could not update user", description: getApiError(err, "Could not update user.") }),
     });
 
     const handleAddUser = () => {
-        if (!newUser.name || !newUser.email) {
+        if (!newUser.fullName.trim() || !newUser.email.trim()) {
             toast({ variant: "destructive", title: "Missing fields", description: "Name and email are required." });
             return;
         }
-        setUsers([...users, { id: Date.now(), ...newUser, status: "Invited" } as User]);
-        setIsAddOpen(false);
-        setNewUser({ name: "", email: "", team: "", department: "", role: "Employee" });
-        toast({ title: "User Added", description: `${newUser.name} has been added and invited.` });
+        if (newUser.password.length < 8) {
+            toast({ variant: "destructive", title: "Password too short", description: "Use at least 8 characters." });
+            return;
+        }
+        createMutation.mutate();
     };
 
-    const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        toast({ title: "CSV Imported", description: `${file.name} uploaded. Processing users…` });
-        // Mock: add 3 fake users
-        setUsers(prev => [
-            ...prev,
-            { id: Date.now() + 1, name: "Alice Mercer", email: "alice@acme.com", team: "Marketing", department: "Sales & Marketing", role: "Employee", status: "Invited" },
-            { id: Date.now() + 2, name: "Ben Luca", email: "ben@acme.com", team: "Engineering", department: "Technology", role: "Employee", status: "Invited" },
-        ]);
+    const openEdit = (u: ManagedUser) => {
+        setEditing(u);
+        setEdit({ role: u.Role, isActive: u.IsActive, departmentId: u.DepartmentId ?? NO_DEPARTMENT, newPassword: "" });
     };
 
-    const handleSendInvite = () => {
-        const link = `${window.location.origin}/auth?invite=acme-corp`;
-        navigator.clipboard.writeText(link);
-        toast({ title: "Invite Link Copied!", description: "Share it with your employees to join." });
+    const handleSaveEdit = () => {
+        if (edit.newPassword && edit.newPassword.length < 8) {
+            toast({ variant: "destructive", title: "Password too short", description: "Use at least 8 characters." });
+            return;
+        }
+        updateMutation.mutate();
     };
 
-    const statusColor = (s: string) =>
-        s === "Active" ? "text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20" :
-            s === "Invited" ? "text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/20" :
-                "text-muted-foreground border-border bg-muted";
+    const statusColor = (active: boolean) =>
+        active ? "text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20" : "text-muted-foreground border-border bg-muted";
+
+    const isSelf = editing?.Id === me?.Id;
 
     return (
         <div className="min-h-screen bg-background">
@@ -96,71 +180,19 @@ const AdminUsers = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h1 className="text-3xl font-black">User Management</h1>
-                            <p className="text-muted-foreground text-sm mt-1">Add, invite, and organise your employees</p>
+                            <p className="text-muted-foreground text-sm mt-1">Create users, assign roles, and manage access</p>
                         </div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <label htmlFor="csv-upload">
-                                <Button variant="outline" className="cursor-pointer" asChild>
-                                    <span><Upload className="w-4 h-4 mr-2" /> Upload CSV</span>
-                                </Button>
-                            </label>
-                            <input id="csv-upload" type="file" accept=".csv,.xlsx" className="hidden" onChange={handleCSVUpload} />
-                            <Button variant="outline" onClick={handleSendInvite}>
-                                <Mail className="w-4 h-4 mr-2" /> Send Invite Link
-                            </Button>
-                            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-                                <DialogTrigger asChild>
-                                    <Button className="bg-rose-500 hover:bg-rose-600 text-white border-0">
-                                        <Plus className="w-4 h-4 mr-2" /> Add User
-                                    </Button>
-                                </DialogTrigger>
-                                <DialogContent className="sm:max-w-[440px]">
-                                    <DialogHeader>
-                                        <DialogTitle>Add New User</DialogTitle>
-                                        <DialogDescription>Manually add an employee to your organisation.</DialogDescription>
-                                    </DialogHeader>
-                                    <div className="space-y-4 py-4">
-                                        {[
-                                            { id: "name", label: "Full Name", placeholder: "Jane Smith", key: "name" },
-                                            { id: "email", label: "Email", placeholder: "jane@company.com", key: "email" },
-                                            { id: "team", label: "Team", placeholder: "e.g. Engineering", key: "team" },
-                                            { id: "department", label: "Department", placeholder: "e.g. Technology", key: "department" },
-                                        ].map((f) => (
-                                            <div key={f.id} className="space-y-2">
-                                                <Label htmlFor={f.id}>{f.label}</Label>
-                                                <Input id={f.id} placeholder={f.placeholder}
-                                                    value={newUser[f.key as keyof typeof newUser]}
-                                                    onChange={(e) => setNewUser({ ...newUser, [f.key]: e.target.value })} />
-                                            </div>
-                                        ))}
-                                        <div className="space-y-2">
-                                            <Label>Role</Label>
-                                            <Select value={newUser.role} onValueChange={(v) => setNewUser({ ...newUser, role: v })}>
-                                                <SelectTrigger><SelectValue /></SelectTrigger>
-                                                <SelectContent>
-                                                    {["Employee", "Manager", "HR Admin"].map((r) => (
-                                                        <SelectItem key={r} value={r}>{r}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </div>
-                                    <DialogFooter>
-                                        <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-                                        <Button onClick={handleAddUser} className="bg-rose-500 hover:bg-rose-600 text-white border-0">Add User</Button>
-                                    </DialogFooter>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
+                        <Button className="bg-rose-500 hover:bg-rose-600 text-white border-0" onClick={() => setIsAddOpen(true)}>
+                            <Plus className="w-4 h-4 mr-2" /> Add User
+                        </Button>
                     </div>
 
                     {/* Stats row */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {[
-                            { label: "Total Users", val: users.length, icon: Users, color: "bg-primary/10 text-primary" },
-                            { label: "Active", val: users.filter(u => u.status === "Active").length, icon: UserCheck, color: "bg-emerald-500/10 text-emerald-500" },
-                            { label: "Invited", val: users.filter(u => u.status === "Invited").length, icon: Mail, color: "bg-amber-500/10 text-amber-500" },
-                            { label: "Inactive", val: users.filter(u => u.status === "Inactive").length, icon: UserX, color: "bg-rose-500/10 text-rose-500" },
+                            { label: "Total Users", val: totalAll, icon: Users, color: "bg-primary/10 text-primary" },
+                            { label: "Active", val: totalActive, icon: UserCheck, color: "bg-emerald-500/10 text-emerald-500" },
+                            { label: "Inactive", val: totalInactive, icon: UserX, color: "bg-rose-500/10 text-rose-500" },
                         ].map((s) => (
                             <Card key={s.label} className="border-border/50">
                                 <CardContent className="p-4 flex items-center gap-3">
@@ -168,7 +200,7 @@ const AdminUsers = () => {
                                         <s.icon className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <p className="text-2xl font-black">{s.val}</p>
+                                        <p className="text-2xl font-black">{s.val ?? "-"}</p>
                                         <p className="text-xs text-muted-foreground">{s.label}</p>
                                     </div>
                                 </CardContent>
@@ -182,15 +214,14 @@ const AdminUsers = () => {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input className="pl-9" placeholder="Search by name or email…" value={search} onChange={(e) => setSearch(e.target.value)} />
                         </div>
-                        <Select value={filterDept} onValueChange={setFilterDept}>
+                        <Select value={filterRole} onValueChange={(v) => { setFilterRole(v); setPage(1); }}>
                             <SelectTrigger className="w-full sm:w-52">
                                 <Filter className="w-4 h-4 mr-2 text-muted-foreground" />
-                                <SelectValue placeholder="All Departments" />
+                                <SelectValue placeholder="All Roles" />
                             </SelectTrigger>
                             <SelectContent>
-                                {departments.map((d) => (
-                                    <SelectItem key={d} value={d}>{d === "all" ? "All Departments" : d}</SelectItem>
-                                ))}
+                                <SelectItem value="all">All Roles</SelectItem>
+                                {ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
@@ -203,53 +234,61 @@ const AdminUsers = () => {
                                     <thead>
                                         <tr className="border-b border-border/50 bg-muted/30">
                                             <th className="text-left px-5 py-3 font-semibold text-muted-foreground">Name</th>
-                                            <th className="text-left px-5 py-3 font-semibold text-muted-foreground hidden sm:table-cell">Team</th>
                                             <th className="text-left px-5 py-3 font-semibold text-muted-foreground hidden md:table-cell">Department</th>
-                                            <th className="text-left px-5 py-3 font-semibold text-muted-foreground hidden lg:table-cell">Role</th>
+                                            <th className="text-left px-5 py-3 font-semibold text-muted-foreground hidden sm:table-cell">Role</th>
                                             <th className="text-left px-5 py-3 font-semibold text-muted-foreground">Status</th>
                                             <th className="px-5 py-3" />
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filtered.map((user) => (
-                                            <tr key={user.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
+                                        {isLoading && (
+                                            <tr><td colSpan={5} className="text-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary inline" /></td></tr>
+                                        )}
+                                        {isError && (
+                                            <tr><td colSpan={5} className="text-center py-12 text-destructive">{getApiError(error, "Could not load users.")}</td></tr>
+                                        )}
+                                        {users.map((u) => (
+                                            <tr key={u.Id} className={cn("border-b border-border/30 hover:bg-muted/20 transition-colors", isFetching && "opacity-70")}>
                                                 <td className="px-5 py-3.5">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center font-bold text-xs shrink-0">
-                                                            {user.name.split(" ").map(n => n[0]).join("").toUpperCase()}
-                                                        </div>
+                                                        {u.AvatarUrl ? (
+                                                            <img src={u.AvatarUrl} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+                                                        ) : (
+                                                            <div className="w-8 h-8 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center font-bold text-xs shrink-0">
+                                                                {u.FullName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                                                            </div>
+                                                        )}
                                                         <div>
-                                                            <p className="font-semibold">{user.name}</p>
-                                                            <p className="text-xs text-muted-foreground">{user.email}</p>
+                                                            <p className="font-semibold">{u.FullName}</p>
+                                                            <p className="text-xs text-muted-foreground">{u.Email}</p>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-5 py-3.5 text-muted-foreground hidden sm:table-cell">{user.team}</td>
                                                 <td className="px-5 py-3.5 hidden md:table-cell">
                                                     <span className="flex items-center gap-1.5 text-muted-foreground">
-                                                        <Building2 className="w-3.5 h-3.5" /> {user.department}
+                                                        <Building2 className="w-3.5 h-3.5" /> {deptName(u.DepartmentId) ?? "-"}
                                                     </span>
                                                 </td>
-                                                <td className="px-5 py-3.5 hidden lg:table-cell">
+                                                <td className="px-5 py-3.5 hidden sm:table-cell">
                                                     <span className="flex items-center gap-1.5 text-muted-foreground">
-                                                        <Shield className="w-3.5 h-3.5" /> {user.role}
+                                                        <Shield className="w-3.5 h-3.5" /> {u.Role}
                                                     </span>
                                                 </td>
                                                 <td className="px-5 py-3.5">
-                                                    <Badge variant="outline" className={cn("text-xs font-semibold", statusColor(user.status))}>
-                                                        {user.status}
+                                                    <Badge variant="outline" className={cn("text-xs font-semibold", statusColor(u.IsActive))}>
+                                                        {u.IsActive ? "Active" : "Inactive"}
                                                     </Badge>
                                                 </td>
                                                 <td className="px-5 py-3.5 text-right">
-                                                    <Button variant="ghost" size="icon" className="w-8 h-8">
-                                                        <MoreHorizontal className="w-4 h-4" />
+                                                    <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => openEdit(u)} aria-label={`Edit ${u.FullName}`}>
+                                                        <Pencil className="w-4 h-4" />
                                                     </Button>
                                                 </td>
                                             </tr>
                                         ))}
-                                        {filtered.length === 0 && (
+                                        {!isLoading && !isError && users.length === 0 && (
                                             <tr>
-                                                <td colSpan={6} className="text-center py-12 text-muted-foreground">No users match your search.</td>
+                                                <td colSpan={5} className="text-center py-12 text-muted-foreground">No users match your search.</td>
                                             </tr>
                                         )}
                                     </tbody>
@@ -257,8 +296,121 @@ const AdminUsers = () => {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {total > PAGE_SIZE && (
+                        <div className="flex items-center justify-between">
+                            <p className="text-xs text-muted-foreground">Page {page} of {totalPages} · {total} users</p>
+                            <div className="flex gap-2">
+                                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
+                                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </main>
+
+            {/* Add user */}
+            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+                <DialogContent className="sm:max-w-[440px]">
+                    <DialogHeader>
+                        <DialogTitle>Add New User</DialogTitle>
+                        <DialogDescription>Create an account and set an initial password.</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="nu-name">Full Name</Label>
+                            <Input id="nu-name" placeholder="Jane Smith" value={newUser.fullName} onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="nu-email">Email</Label>
+                            <Input id="nu-email" type="email" placeholder="jane@example.com" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="nu-pass">Initial Password</Label>
+                            <Input id="nu-pass" type="password" placeholder="At least 8 characters" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Role</Label>
+                                <Select value={newUser.role} onValueChange={(v) => setNewUser({ ...newUser, role: v as UserRole })}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>{ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Department</Label>
+                                <Select value={newUser.departmentId} onValueChange={(v) => setNewUser({ ...newUser, departmentId: v })}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={NO_DEPARTMENT}>None</SelectItem>
+                                        {departments.map((d) => <SelectItem key={d.Id} value={d.Id}>{d.Name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button onClick={handleAddUser} disabled={createMutation.isPending} className="bg-rose-500 hover:bg-rose-600 text-white border-0">
+                            {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            Add User
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit user */}
+            <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
+                <DialogContent className="sm:max-w-[440px]">
+                    <DialogHeader>
+                        <DialogTitle>Edit User</DialogTitle>
+                        <DialogDescription>{editing?.FullName} · {editing?.Email}</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Role</Label>
+                                <Select value={edit.role} onValueChange={(v) => setEdit({ ...edit, role: v })} disabled={isSelf}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>{ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Status</Label>
+                                <Select value={edit.isActive ? "active" : "inactive"} onValueChange={(v) => setEdit({ ...edit, isActive: v === "active" })} disabled={isSelf}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active">Active</SelectItem>
+                                        <SelectItem value="inactive">Inactive</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        {isSelf && <p className="text-xs text-muted-foreground">You cannot change your own role or deactivate yourself.</p>}
+                        <div className="space-y-2">
+                            <Label>Department</Label>
+                            <Select value={edit.departmentId} onValueChange={(v) => setEdit({ ...edit, departmentId: v })}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={NO_DEPARTMENT}>None</SelectItem>
+                                    {departments.map((d) => <SelectItem key={d.Id} value={d.Id}>{d.Name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="eu-pass">Reset Password (optional)</Label>
+                            <Input id="eu-pass" type="password" placeholder="Leave blank to keep the current password" value={edit.newPassword} onChange={(e) => setEdit({ ...edit, newPassword: e.target.value })} />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+                        <Button onClick={handleSaveEdit} disabled={updateMutation.isPending} className="bg-rose-500 hover:bg-rose-600 text-white border-0">
+                            {updateMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                            Save Changes
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

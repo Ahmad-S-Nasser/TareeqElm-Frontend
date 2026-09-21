@@ -22,7 +22,7 @@ const AIStudyCoach = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
-  const { messages, isLoading, studentData, dataLoading, sendMessage, generateInsights, clearMessages } = useStudyCoach();
+  const { messages, isLoading, trainerData, dataLoading, sendMessage, generateInsights, clearMessages } = useStudyCoach();
   const { levelInfo, totalXP } = useAchievements();
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -48,19 +48,19 @@ const AIStudyCoach = () => {
     { label: "Motivate Me", icon: Flame, mode: "motivation", color: "text-orange-500" },
   ];
 
-  const statCards = studentData ? [
-    { label: "Study Hours", value: `${studentData.totalStudyHours}h`, icon: Clock, color: "text-primary" },
-    { label: "Streak", value: `${studentData.streak} days`, icon: Flame, color: "text-orange-500" },
-    { label: "Cards Due", value: `${studentData.flashcardsDue}`, icon: RotateCcw, color: "text-rose-500" },
-    { label: "Quiz Avg", value: `${studentData.quizAverage}%`, icon: TrendingUp, color: "text-emerald-500" },
-    { label: "Retention", value: `${studentData.retentionRate}%`, icon: Brain, color: "text-violet-500" },
-    { label: "Focus", value: `${studentData.avgFocusScore}%`, icon: Target, color: "text-blue-500" },
+  const statCards = trainerData ? [
+    { label: "Study Hours", value: `${trainerData.TotalStudyHours}h`, icon: Clock, color: "text-primary" },
+    { label: "Streak", value: `${trainerData.Streak} days`, icon: Flame, color: "text-orange-500" },
+    { label: "Cards Due", value: `${trainerData.FlashcardsDue}`, icon: RotateCcw, color: "text-rose-500" },
+    { label: "Quiz Avg", value: `${trainerData.QuizAverage}%`, icon: TrendingUp, color: "text-emerald-500" },
+    { label: "Retention", value: `${trainerData.RetentionRate}%`, icon: Brain, color: "text-violet-500" },
+    { label: "Focus", value: `${trainerData.AvgFocusScore}%`, icon: Target, color: "text-blue-500" },
   ] : [];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <ApplicantSidebar onCollapse={setSidebarCollapsed} />
-      <Header sidebarCollapsed={sidebarCollapsed} userRole="Student" mobileSidebar={<ApplicantSidebarContent onItemClick={() => {}} />} />
+      <Header sidebarCollapsed={sidebarCollapsed} userRole="Trainer" mobileSidebar={<ApplicantSidebarContent onItemClick={() => {}} />} />
 
       <main className={cn("pt-20 pb-8 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64", "ml-0")}>
         <div className="max-w-7xl mx-auto space-y-6">
@@ -157,54 +157,54 @@ const AIStudyCoach = () => {
               <section className="animate-slide-up" style={{ animationDelay: "300ms" }}>
                 <h2 className="text-lg font-semibold mb-3">Smart Alerts</h2>
                 <div className="space-y-3">
-                  {studentData && studentData.flashcardsDue > 0 && (
+                  {trainerData && trainerData.FlashcardsDue > 0 && (
                     <Card className="border-rose-500/30 bg-rose-500/5">
                       <CardContent className="p-4 flex items-center gap-3">
                         <RotateCcw className="w-5 h-5 text-rose-500 shrink-0" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">{studentData.flashcardsDue} flashcards due for review</p>
+                          <p className="text-sm font-medium">{trainerData.FlashcardsDue} flashcards due for review</p>
                           <p className="text-xs text-muted-foreground">Reviewing now will strengthen your memory retention</p>
                         </div>
                         <Button size="sm" variant="outline" className="shrink-0" onClick={() => navigate('/spaced-repetition')}>Review Now</Button>
                       </CardContent>
                     </Card>
                   )}
-                  {studentData && studentData.streak > 0 && (
+                  {trainerData && trainerData.Streak > 0 && (
                     <Card className="border-orange-500/30 bg-orange-500/5">
                       <CardContent className="p-4 flex items-center gap-3">
                         <Flame className="w-5 h-5 text-orange-500 shrink-0" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">🔥 {studentData.streak}-day study streak!</p>
+                          <p className="text-sm font-medium">🔥 {trainerData.Streak}-day study streak!</p>
                           <p className="text-xs text-muted-foreground">Complete one session today to keep it going</p>
                         </div>
                       </CardContent>
                     </Card>
                   )}
-                  {studentData && studentData.weakTopics.length > 0 && (
+                  {trainerData && trainerData.WeakTopics && trainerData.WeakTopics.length > 0 && (
                     <Card className="border-amber-500/30 bg-amber-500/5">
                       <CardContent className="p-4 flex items-center gap-3">
                         <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">Weak topics: {studentData.weakTopics.slice(0, 2).join(', ')}</p>
+                          <p className="text-sm font-medium">Weak topics: {trainerData.WeakTopics.slice(0, 2).join(', ')}</p>
                           <p className="text-xs text-muted-foreground">Extra review recommended for better retention</p>
                         </div>
                         <Button size="sm" variant="outline" className="shrink-0" onClick={() => { setActiveTab("chat"); generateInsights("weak_topics"); }}>Get Help</Button>
                       </CardContent>
                     </Card>
                   )}
-                  {studentData && studentData.sessionsThisWeek < 3 && (
+                  {trainerData && trainerData.SessionsThisWeek < 3 && (
                     <Card className="border-blue-500/30 bg-blue-500/5">
                       <CardContent className="p-4 flex items-center gap-3">
                         <Clock className="w-5 h-5 text-blue-500 shrink-0" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">Only {studentData.sessionsThisWeek} study sessions this week</p>
+                          <p className="text-sm font-medium">Only {trainerData.SessionsThisWeek} study sessions this week</p>
                           <p className="text-xs text-muted-foreground">Try to aim for at least 5 sessions per week</p>
                         </div>
                         <Button size="sm" variant="outline" className="shrink-0" onClick={() => navigate('/time-blocking')}>Plan Session</Button>
                       </CardContent>
                     </Card>
                   )}
-                  {studentData && studentData.timeBlocksToday === 0 && (
+                  {trainerData && trainerData.TimeBlocksToday === 0 && (
                     <Card className="border-violet-500/30 bg-violet-500/5">
                       <CardContent className="p-4 flex items-center gap-3">
                         <CalendarDays className="w-5 h-5 text-violet-500 shrink-0" />
@@ -252,7 +252,7 @@ const AIStudyCoach = () => {
                   </Button>
                 </CardHeader>
                 <CardContent className="flex-1 overflow-hidden p-0">
-                  <ScrollArea className="h-full px-4 pb-4" ref={scrollRef as any}>
+                  <ScrollArea className="h-full px-4 pb-4" ref={scrollRef}>
                     <div className="space-y-4 py-2">
                       {messages.length === 0 && (
                         <div className="text-center py-12 text-muted-foreground">
@@ -262,22 +262,22 @@ const AIStudyCoach = () => {
                         </div>
                       )}
                       {messages.map((msg) => (
-                        <div key={msg.id} className={cn("flex gap-3 max-w-[85%]", msg.role === 'user' ? "ml-auto flex-row-reverse" : "mr-auto")}>
-                          <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", msg.role === 'user' ? "bg-primary text-primary-foreground" : "bg-muted")}>
-                            {msg.role === 'user' ? <User className="w-4 h-4" /> : <Brain className="w-4 h-4" />}
+                        <div key={msg.Id} className={cn("flex gap-3 max-w-[85%]", msg.Role === 'user' ? "ml-auto flex-row-reverse" : "mr-auto")}>
+                          <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", msg.Role === 'user' ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                            {msg.Role === 'user' ? <User className="w-4 h-4" /> : <Brain className="w-4 h-4" />}
                           </div>
-                          <div className={cn("rounded-2xl px-4 py-3 text-sm", msg.role === 'user' ? "bg-primary text-primary-foreground rounded-tr-none" : "bg-muted border border-border/50 rounded-tl-none")}>
-                            {msg.role === 'assistant' ? (
+                          <div className={cn("rounded-2xl px-4 py-3 text-sm", msg.Role === 'user' ? "bg-primary text-primary-foreground rounded-tr-none" : "bg-muted border border-border/50 rounded-tl-none")}>
+                            {msg.Role === 'assistant' ? (
                               <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>ul]:mb-2 [&>ol]:mb-2 [&>h1]:text-base [&>h2]:text-sm [&>h3]:text-sm">
-                                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                <ReactMarkdown>{msg.Content}</ReactMarkdown>
                               </div>
                             ) : (
-                              <span className="whitespace-pre-wrap">{msg.content}</span>
+                              <span className="whitespace-pre-wrap">{msg.Content}</span>
                             )}
                           </div>
                         </div>
                       ))}
-                      {isLoading && messages[messages.length - 1]?.role !== 'assistant' && (
+                      {isLoading && messages[messages.length - 1]?.Role !== 'assistant' && (
                         <div className="flex gap-3 mr-auto">
                           <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
                             <Brain className="w-4 h-4" />
