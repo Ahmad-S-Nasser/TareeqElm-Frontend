@@ -138,7 +138,7 @@ const Auth = () => {
                     {[
                       { label: "Trainer", email: "trainer@tareeqelm.com", password: "Trainer@123", icon: "👨‍🎓", color: "hover:bg-primary/10 hover:text-primary hover:border-primary/40" },
                       { label: "Instructor", email: "instructor@tareeqelm.com", password: "Instructor@123", icon: "👨‍🏫", color: "hover:bg-accent/10 hover:text-accent-foreground hover:border-accent/40" },
-                      { label: "University", email: "university@tareeqelm.com", password: "University@123", icon: "🏛️", color: "hover:bg-indigo-500/10 hover:text-indigo-600 hover:border-indigo-400/40" },
+                      { label: "Organization", email: "organization@tareeqelm.com", password: "Organization@123", icon: "🏛️", color: "hover:bg-indigo-500/10 hover:text-indigo-600 hover:border-indigo-400/40" },
                       { label: "Admin", email: "admin@tareeqelm.com", password: "Admin@123", icon: "🛡️", color: "hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-400/40" },
                     ].map((acct) => (
                       <button
@@ -168,7 +168,7 @@ const Auth = () => {
               {mode === "signup" && (
                 <>
                   {/* Self-signup always creates a Trainer account.
-                      Instructor, University and Admin accounts are provisioned by administrators. */}
+                      Instructor, Organization and Admin accounts are provisioned by administrators. */}
 
                   {/* Full Name */}
                   <div className="space-y-2">

@@ -22,8 +22,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import api, { getApiError } from "@/lib/api";
 
-type UserRole = "Admin" | "Instructor" | "University" | "Trainer";
-const ROLES: UserRole[] = ["Admin", "Instructor", "University", "Trainer"];
+type UserRole = "Admin" | "Instructor" | "Organization" | "Trainer";
+const ROLES: UserRole[] = ["Admin", "Instructor", "Organization", "Trainer"];
 const PAGE_SIZE = 20;
 const NO_DEPARTMENT = "none";
 

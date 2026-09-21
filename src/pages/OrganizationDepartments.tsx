@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UniversitySidebar, UniversitySidebarContent } from "@/components/layout/UniversitySidebar";
+import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Department { Id: string; Name: string; Head: string | null; CoursesCount: number; TrainersCount: number; Performance: number; Trend: number }
 
-const UniversityDepartments = () => {
+const OrganizationDepartments = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [isAddOpen, setIsAddOpen] = useState(false);
@@ -41,13 +41,13 @@ const UniversityDepartments = () => {
     const queryClient = useQueryClient();
 
     const { data: departments = [], isLoading: loading, isError, error } = useQuery({
-        queryKey: ["university-departments"],
+        queryKey: ["organization-departments"],
         queryFn: async () => (await api.get<Department[]>("/Departments")).data,
     });
 
     const invalidate = () => {
-        queryClient.invalidateQueries({ queryKey: ["university-departments"] });
-        queryClient.invalidateQueries({ queryKey: ["university-stats"] });
+        queryClient.invalidateQueries({ queryKey: ["organization-departments"] });
+        queryClient.invalidateQueries({ queryKey: ["organization-stats"] });
         queryClient.invalidateQueries({ queryKey: ["departments"] });
     };
 
@@ -83,7 +83,7 @@ const UniversityDepartments = () => {
 
     return (
         <div className="min-h-screen bg-background">
-            <UniversitySidebar onCollapse={setSidebarCollapsed} />
+            <OrganizationSidebar onCollapse={setSidebarCollapsed} />
             <Header sidebarCollapsed={sidebarCollapsed} />
 
             <main className={cn(
@@ -94,7 +94,7 @@ const UniversityDepartments = () => {
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Departments</h1>
-                            <p className="text-muted-foreground mt-1">Manage university departments and their heads.</p>
+                            <p className="text-muted-foreground mt-1">Manage organization departments and their heads.</p>
                         </div>
                         <Button className="gradient-primary text-white border-0" onClick={() => setIsAddOpen(true)}>
                             <Plus className="w-4 h-4 mr-2" />
@@ -203,7 +203,7 @@ const UniversityDepartments = () => {
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle>Add New Department</DialogTitle>
-                        <DialogDescription>Create a new department under the university.</DialogDescription>
+                        <DialogDescription>Create a new department under the organization.</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
@@ -228,4 +228,4 @@ const UniversityDepartments = () => {
     );
 };
 
-export default UniversityDepartments;
+export default OrganizationDepartments;

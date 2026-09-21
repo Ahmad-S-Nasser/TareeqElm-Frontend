@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { UniversityPageLayout } from "@/components/layout/UniversityPageLayout";
+import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +47,7 @@ const formatFileSize = (bytes: number): string => {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-const UniversityContentLibrary = () => {
+const OrganizationContentLibrary = () => {
     const [search, setSearch] = useState("");
     const [isUploadOpen, setIsUploadOpen] = useState(false);
     const [uploadDept, setUploadDept] = useState("General");
@@ -109,7 +109,7 @@ const UniversityContentLibrary = () => {
     const departments = [...new Set(content.map((c) => c.Department || "General"))];
 
     return (
-        <UniversityPageLayout>
+        <OrganizationPageLayout>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
@@ -239,8 +239,8 @@ const UniversityContentLibrary = () => {
                     ))}
                 </Tabs>
             )}
-        </UniversityPageLayout>
+        </OrganizationPageLayout>
     );
 };
 
-export default UniversityContentLibrary;
+export default OrganizationContentLibrary;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UniversitySidebar, UniversitySidebarContent } from "@/components/layout/UniversitySidebar";
+import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -91,7 +91,7 @@ const StatCard = ({
     );
 };
 
-const UniversityDashboard = () => {
+const OrganizationDashboard = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [newDept, setNewDept] = useState({ name: "", head: "" });
@@ -100,15 +100,15 @@ const UniversityDashboard = () => {
     const queryClient = useQueryClient();
 
     const { data: dashboardData, isLoading: loading, isError, error } = useQuery({
-        queryKey: ["university-stats"],
-        queryFn: async () => (await api.get<DashboardData>("/University/stats")).data,
+        queryKey: ["organization-stats"],
+        queryFn: async () => (await api.get<DashboardData>("/Organization/stats")).data,
     });
 
     const addDepartment = useMutation({
         mutationFn: async (d: { Name: string; HeadOfDepartment?: string }) => { await api.post("/Departments", d); },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["university-stats"] });
-            queryClient.invalidateQueries({ queryKey: ["university-departments"] });
+            queryClient.invalidateQueries({ queryKey: ["organization-stats"] });
+            queryClient.invalidateQueries({ queryKey: ["organization-departments"] });
             queryClient.invalidateQueries({ queryKey: ["departments"] });
             setIsAddDialogOpen(false);
             setNewDept({ name: "", head: "" });
@@ -148,7 +148,7 @@ const UniversityDashboard = () => {
 
     return (
         <div className="min-h-screen bg-background">
-            <UniversitySidebar onCollapse={setSidebarCollapsed} />
+            <OrganizationSidebar onCollapse={setSidebarCollapsed} />
             <Header sidebarCollapsed={sidebarCollapsed} />
 
             <main className={cn(
@@ -169,7 +169,7 @@ const UniversityDashboard = () => {
                                     <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                                     <span className="text-xs font-semibold uppercase tracking-widest opacity-80">Live Admin Overview</span>
                                 </div>
-                                <h1 className="text-4xl font-black tracking-tight">University Control</h1>
+                                <h1 className="text-4xl font-black tracking-tight">Organization Control</h1>
                                 <p className="text-primary-foreground/70 mt-1 text-sm">
                                     Full campus intelligence · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                                 </p>
@@ -183,7 +183,7 @@ const UniversityDashboard = () => {
                                 <DialogContent className="sm:max-w-[425px]">
                                     <DialogHeader>
                                         <DialogTitle>Add New Department</DialogTitle>
-                                        <DialogDescription>Create a new department under the university.</DialogDescription>
+                                        <DialogDescription>Create a new department under the organization.</DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-4 py-4">
                                         <div className="space-y-2">
@@ -226,16 +226,16 @@ const UniversityDashboard = () => {
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div onClick={() => navigate("/university/trainers")} className="cursor-pointer">
+                        <div onClick={() => navigate("/organization/trainers")} className="cursor-pointer">
                             <StatCard title="Total Trainers" value={stats.TotalTrainers} sub="Enrolled across depts" icon={GraduationCap} color="primary" />
                         </div>
-                        <div onClick={() => navigate("/university/instructors")} className="cursor-pointer">
-                            <StatCard title="Instructors" value={stats.ActiveInstructors} sub="Active university-wide" icon={Users} color="accent" />
+                        <div onClick={() => navigate("/organization/instructors")} className="cursor-pointer">
+                            <StatCard title="Instructors" value={stats.ActiveInstructors} sub="Active organization-wide" icon={Users} color="accent" />
                         </div>
-                        <div onClick={() => navigate("/university/courses")} className="cursor-pointer">
+                        <div onClick={() => navigate("/organization/courses")} className="cursor-pointer">
                             <StatCard title="Active Courses" value={stats.TotalCourses} sub="Offering this term" icon={BookOpen} color="emerald" />
                         </div>
-                        <div onClick={() => navigate("/university/analytics")} className="cursor-pointer">
+                        <div onClick={() => navigate("/organization/analytics")} className="cursor-pointer">
                             <StatCard title="Avg Completion" value={`${stats.AvgCompletion}%`} sub="Global organization track" icon={TrendingUp} color="amber" />
                         </div>
                     </div>
@@ -248,7 +248,7 @@ const UniversityDashboard = () => {
                                     <BarChart2 className="w-5 h-5 text-primary" />
                                     Department Performance
                                 </h2>
-                                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-primary" onClick={() => navigate("/university/departments")}>
+                                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-primary" onClick={() => navigate("/organization/departments")}>
                                     View All <ChevronRight className="w-3 h-3 ml-1" />
                                 </Button>
                             </div>
@@ -257,7 +257,7 @@ const UniversityDashboard = () => {
                                     <Card className="border-border/50"><CardContent className="p-8 text-center text-sm text-muted-foreground">No departments yet. Use New Department to add one.</CardContent></Card>
                                 )}
                                 {departments.map((dept, i) => (
-                                    <Card key={dept.Id} className="border-border/50 hover:border-primary/30 transition-all duration-200 hover:shadow-md group cursor-pointer" onClick={() => navigate("/university/departments")}>
+                                    <Card key={dept.Id} className="border-border/50 hover:border-primary/30 transition-all duration-200 hover:shadow-md group cursor-pointer" onClick={() => navigate("/organization/departments")}>
                                         <CardContent className="p-4">
                                             <div className="flex items-center gap-4">
                                                 <div className={cn(
@@ -357,7 +357,7 @@ const UniversityDashboard = () => {
                             <h2 className="text-lg font-bold flex items-center gap-2">
                                 <Brain className="w-5 h-5 text-primary" /> AI Academic Insights
                             </h2>
-                            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-primary" onClick={() => navigate("/university/ai-insights")}>
+                            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-primary" onClick={() => navigate("/organization/ai-insights")}>
                                 View All <ChevronRight className="w-3 h-3 ml-1" />
                             </Button>
                         </div>
@@ -371,4 +371,4 @@ const UniversityDashboard = () => {
     );
 };
 
-export default UniversityDashboard;
+export default OrganizationDashboard;

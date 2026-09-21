@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UniversitySidebar, UniversitySidebarContent } from "@/components/layout/UniversitySidebar";
+import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import api, { getApiError } from "@/lib/api";
 
-interface UniversityInstructor {
+interface OrganizationInstructor {
     Id: string;
     FullName: string;
     Email: string;
@@ -31,12 +31,12 @@ interface UniversityInstructor {
     AvatarUrl?: string | null;
 }
 
-const UniversityInstructors = () => {
+const OrganizationInstructors = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const { data: instructors = [], isLoading: loading, isError, error } = useQuery({
-        queryKey: ["university-instructors"],
-        queryFn: async () => (await api.get<UniversityInstructor[]>("/University/instructors")).data,
+        queryKey: ["organization-instructors"],
+        queryFn: async () => (await api.get<OrganizationInstructor[]>("/Organization/instructors")).data,
     });
 
     const filteredInstructors = instructors.filter(inst =>
@@ -47,7 +47,7 @@ const UniversityInstructors = () => {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <UniversitySidebar onCollapse={setSidebarCollapsed} />
+            <OrganizationSidebar onCollapse={setSidebarCollapsed} />
             <Header sidebarCollapsed={sidebarCollapsed} />
 
             <main className={cn(
@@ -57,7 +57,7 @@ const UniversityInstructors = () => {
                 <div className="max-w-7xl mx-auto space-y-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight">University Instructors</h1>
+                            <h1 className="text-3xl font-bold tracking-tight">Organization Instructors</h1>
                             <p className="text-muted-foreground mt-1">Manage global instructor registry and teaching assignments.</p>
                         </div>
                         <Button className="gradient-primary text-white border-0">
@@ -157,4 +157,4 @@ const UniversityInstructors = () => {
     );
 };
 
-export default UniversityInstructors;
+export default OrganizationInstructors;

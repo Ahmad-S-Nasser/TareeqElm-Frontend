@@ -31,25 +31,25 @@ interface SidebarProps {
 }
 
 const menuItems = [
-    { icon: LayoutDashboard, label: "Overview", path: "/university" },
-    { icon: Building2, label: "Departments", path: "/university/departments" },
-    { icon: Calendar, label: "Academic Terms", path: "/university/terms" },
-    { icon: Layers, label: "Sections", path: "/university/sections" },
-    { icon: Users, label: "Instructors", path: "/university/instructors" },
-    { icon: GraduationCap, label: "Trainers", path: "/university/trainers" },
-    { icon: BookOpen, label: "Courses", path: "/university/courses" },
-    { icon: UserCheck, label: "Enrollment", path: "/university/enrollment" },
-    { icon: ClipboardList, label: "Exams", path: "/university/exams" },
-    { icon: Megaphone, label: "Announcements", path: "/university/announcements" },
-    { icon: FolderOpen, label: "Content Library", path: "/university/content" },
-    { icon: PieChart, label: "Analytics", path: "/university/analytics" },
-    { icon: FileBarChart, label: "Reports", path: "/university/reports" },
-    { icon: Brain, label: "AI Insights", path: "/university/ai-insights" },
-    { icon: ShieldCheck, label: "Roles & Permissions", path: "/university/roles" },
-    { icon: Settings, label: "Settings", path: "/university/settings" },
+    { icon: LayoutDashboard, label: "Overview", path: "/organization" },
+    { icon: Building2, label: "Departments", path: "/organization/departments" },
+    { icon: Calendar, label: "Academic Terms", path: "/organization/terms" },
+    { icon: Layers, label: "Sections", path: "/organization/sections" },
+    { icon: Users, label: "Instructors", path: "/organization/instructors" },
+    { icon: GraduationCap, label: "Trainers", path: "/organization/trainers" },
+    { icon: BookOpen, label: "Courses", path: "/organization/courses" },
+    { icon: UserCheck, label: "Enrollment", path: "/organization/enrollment" },
+    { icon: ClipboardList, label: "Exams", path: "/organization/exams" },
+    { icon: Megaphone, label: "Announcements", path: "/organization/announcements" },
+    { icon: FolderOpen, label: "Content Library", path: "/organization/content" },
+    { icon: PieChart, label: "Analytics", path: "/organization/analytics" },
+    { icon: FileBarChart, label: "Reports", path: "/organization/reports" },
+    { icon: Brain, label: "AI Insights", path: "/organization/ai-insights" },
+    { icon: ShieldCheck, label: "Roles & Permissions", path: "/organization/roles" },
+    { icon: Settings, label: "Settings", path: "/organization/settings" },
 ];
 
-export const UniversitySidebarContent = ({ collapsed }: { collapsed: boolean }) => {
+export const OrganizationSidebarContent = ({ collapsed }: { collapsed: boolean }) => {
     const location = useLocation();
     const { signOut } = useAuth();
     const navigate = useNavigate();
@@ -115,7 +115,7 @@ export const UniversitySidebarContent = ({ collapsed }: { collapsed: boolean }) 
     );
 };
 
-export const UniversitySidebar = ({ onCollapse }: SidebarProps) => {
+export const OrganizationSidebar = ({ onCollapse }: SidebarProps) => {
     const [collapsed, setCollapsed] = useState(false);
 
     useEffect(() => {
@@ -131,7 +131,7 @@ export const UniversitySidebar = ({ onCollapse }: SidebarProps) => {
                     collapsed ? "w-20" : "w-64"
                 )}
             >
-                <UniversitySidebarContent collapsed={collapsed} />
+                <OrganizationSidebarContent collapsed={collapsed} />
 
                 <Button
                     variant="ghost"

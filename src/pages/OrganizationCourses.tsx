@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UniversitySidebar, UniversitySidebarContent } from "@/components/layout/UniversitySidebar";
+import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -62,13 +62,13 @@ const getStatusColor = (status: string) => {
     }
 };
 
-const UniversityCourses = () => {
+const OrganizationCourses = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [syllabusCourse, setSyllabusCourse] = useState<Course | null>(null);
 
     const { data: courses = [], isLoading, isError, error } = useQuery({
-        queryKey: ["university-courses"],
+        queryKey: ["organization-courses"],
         queryFn: async () => (await api.get<Course[]>("/Courses", { params: { pageSize: 100 } })).data,
     });
 
@@ -85,11 +85,11 @@ const UniversityCourses = () => {
 
     return (
         <div className="min-h-screen bg-background">
-            <UniversitySidebar onCollapse={setSidebarCollapsed} />
+            <OrganizationSidebar onCollapse={setSidebarCollapsed} />
             <Header
                 sidebarCollapsed={sidebarCollapsed}
-                userRole="University"
-                mobileSidebar={<UniversitySidebarContent collapsed={false} />}
+                userRole="Organization"
+                mobileSidebar={<OrganizationSidebarContent collapsed={false} />}
             />
 
             <main className={cn(
@@ -232,4 +232,4 @@ const UniversityCourses = () => {
     );
 };
 
-export default UniversityCourses;
+export default OrganizationCourses;

@@ -1,10 +1,10 @@
-import { UniversityPageLayout } from "@/components/layout/UniversityPageLayout";
+import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardList } from "lucide-react";
 
-const UniversityExams = () => {
+const OrganizationExams = () => {
     return (
-        <UniversityPageLayout>
+        <OrganizationPageLayout>
             <div>
                 <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -21,8 +21,8 @@ const UniversityExams = () => {
                     <p className="text-sm text-muted-foreground mt-1">Exam scheduling and grading are not part of the platform yet. Quiz results are available to instructors on their own courses.</p>
                 </CardContent>
             </Card>
-        </UniversityPageLayout>
+        </OrganizationPageLayout>
     );
 };
 
-export default UniversityExams;
+export default OrganizationExams;

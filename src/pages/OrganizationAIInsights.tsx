@@ -1,10 +1,10 @@
-import { UniversityPageLayout } from "@/components/layout/UniversityPageLayout";
+import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain } from "lucide-react";
 
-const UniversityAIInsights = () => {
+const OrganizationAIInsights = () => {
     return (
-        <UniversityPageLayout>
+        <OrganizationPageLayout>
             <div>
                 <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -21,8 +21,8 @@ const UniversityAIInsights = () => {
                     <p className="text-sm text-muted-foreground mt-1">Automated insights are not available yet. Department performance is shown on the dashboard.</p>
                 </CardContent>
             </Card>
-        </UniversityPageLayout>
+        </OrganizationPageLayout>
     );
 };
 
-export default UniversityAIInsights;
+export default OrganizationAIInsights;

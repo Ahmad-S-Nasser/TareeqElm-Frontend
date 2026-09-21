@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { LegacyUniversityRedirect } from "@/components/routing/LegacyUniversityRedirect";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { StudySessionProvider } from "@/components/learning/StudySessionProvider";
@@ -62,23 +63,23 @@ const InstructorAnnouncements = lazy(() => import("./pages/InstructorAnnouncemen
 const InstructorFlashcards = lazy(() => import("./pages/InstructorFlashcards"));
 const InstructorLeaderboard = lazy(() => import("./pages/InstructorLeaderboard"));
 
-// ── University ──────────────────────────────────────────────────────────────
-const UniversityDashboard = lazy(() => import("./pages/UniversityDashboard"));
-const UniversityDepartments = lazy(() => import("./pages/UniversityDepartments"));
-const UniversityInstructors = lazy(() => import("./pages/UniversityInstructors"));
-const UniversityTrainers = lazy(() => import("./pages/UniversityTrainers"));
-const UniversityCourses = lazy(() => import("./pages/UniversityCourses"));
-const UniversityAnalytics = lazy(() => import("./pages/UniversityAnalytics"));
-const UniversitySettings = lazy(() => import("./pages/UniversitySettings"));
-const UniversityAcademicTerms = lazy(() => import("./pages/UniversityAcademicTerms"));
-const UniversitySections = lazy(() => import("./pages/UniversitySections"));
-const UniversityEnrollment = lazy(() => import("./pages/UniversityEnrollment"));
-const UniversityExams = lazy(() => import("./pages/UniversityExams"));
-const UniversityAnnouncements = lazy(() => import("./pages/UniversityAnnouncements"));
-const UniversityContentLibrary = lazy(() => import("./pages/UniversityContentLibrary"));
-const UniversityReports = lazy(() => import("./pages/UniversityReports"));
-const UniversityAIInsights = lazy(() => import("./pages/UniversityAIInsights"));
-const UniversityRoles = lazy(() => import("./pages/UniversityRoles"));
+// ── Organization ──────────────────────────────────────────────────────────────
+const OrganizationDashboard = lazy(() => import("./pages/OrganizationDashboard"));
+const OrganizationDepartments = lazy(() => import("./pages/OrganizationDepartments"));
+const OrganizationInstructors = lazy(() => import("./pages/OrganizationInstructors"));
+const OrganizationTrainers = lazy(() => import("./pages/OrganizationTrainers"));
+const OrganizationCourses = lazy(() => import("./pages/OrganizationCourses"));
+const OrganizationAnalytics = lazy(() => import("./pages/OrganizationAnalytics"));
+const OrganizationSettings = lazy(() => import("./pages/OrganizationSettings"));
+const OrganizationAcademicTerms = lazy(() => import("./pages/OrganizationAcademicTerms"));
+const OrganizationSections = lazy(() => import("./pages/OrganizationSections"));
+const OrganizationEnrollment = lazy(() => import("./pages/OrganizationEnrollment"));
+const OrganizationExams = lazy(() => import("./pages/OrganizationExams"));
+const OrganizationAnnouncements = lazy(() => import("./pages/OrganizationAnnouncements"));
+const OrganizationContentLibrary = lazy(() => import("./pages/OrganizationContentLibrary"));
+const OrganizationReports = lazy(() => import("./pages/OrganizationReports"));
+const OrganizationAIInsights = lazy(() => import("./pages/OrganizationAIInsights"));
+const OrganizationRoles = lazy(() => import("./pages/OrganizationRoles"));
 
 // ── Admin ───────────────────────────────────────────────────────────────────
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -161,26 +162,30 @@ const AppRoutes = () => (
       </Route>
     </Route>
 
-    {/* University (16 + catch-all) */}
-    <Route element={<RoleGuard roles={["university"]} />}>
+    {/* Legacy /university/* -> /organization/* redirects */}
+    <Route path="/university" element={<LegacyUniversityRedirect />} />
+    <Route path="/university/*" element={<LegacyUniversityRedirect />} />
+
+    {/* Organization (16 + catch-all) */}
+    <Route element={<RoleGuard roles={["organization"]} />}>
       <Route element={<RoleGroup />}>
-        <Route path="/university" element={<UniversityDashboard />} />
-        <Route path="/university/departments" element={<UniversityDepartments />} />
-        <Route path="/university/instructors" element={<UniversityInstructors />} />
-        <Route path="/university/trainers" element={<UniversityTrainers />} />
-        <Route path="/university/courses" element={<UniversityCourses />} />
-        <Route path="/university/analytics" element={<UniversityAnalytics />} />
-        <Route path="/university/settings" element={<UniversitySettings />} />
-        <Route path="/university/terms" element={<UniversityAcademicTerms />} />
-        <Route path="/university/sections" element={<UniversitySections />} />
-        <Route path="/university/enrollment" element={<UniversityEnrollment />} />
-        <Route path="/university/exams" element={<UniversityExams />} />
-        <Route path="/university/announcements" element={<UniversityAnnouncements />} />
-        <Route path="/university/content" element={<UniversityContentLibrary />} />
-        <Route path="/university/reports" element={<UniversityReports />} />
-        <Route path="/university/ai-insights" element={<UniversityAIInsights />} />
-        <Route path="/university/roles" element={<UniversityRoles />} />
-        <Route path="/university/*" element={<NotFound />} />
+        <Route path="/organization" element={<OrganizationDashboard />} />
+        <Route path="/organization/departments" element={<OrganizationDepartments />} />
+        <Route path="/organization/instructors" element={<OrganizationInstructors />} />
+        <Route path="/organization/trainers" element={<OrganizationTrainers />} />
+        <Route path="/organization/courses" element={<OrganizationCourses />} />
+        <Route path="/organization/analytics" element={<OrganizationAnalytics />} />
+        <Route path="/organization/settings" element={<OrganizationSettings />} />
+        <Route path="/organization/terms" element={<OrganizationAcademicTerms />} />
+        <Route path="/organization/sections" element={<OrganizationSections />} />
+        <Route path="/organization/enrollment" element={<OrganizationEnrollment />} />
+        <Route path="/organization/exams" element={<OrganizationExams />} />
+        <Route path="/organization/announcements" element={<OrganizationAnnouncements />} />
+        <Route path="/organization/content" element={<OrganizationContentLibrary />} />
+        <Route path="/organization/reports" element={<OrganizationReports />} />
+        <Route path="/organization/ai-insights" element={<OrganizationAIInsights />} />
+        <Route path="/organization/roles" element={<OrganizationRoles />} />
+        <Route path="/organization/*" element={<NotFound />} />
       </Route>
     </Route>
 

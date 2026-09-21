@@ -22,7 +22,7 @@ const learningGoals = [
 const roles = [
   { id: "applicant" as const, label: "Trainer", icon: GraduationCap, description: "Access courses, flashcards, and AI tutoring" },
   { id: "instructor" as const, label: "Instructor", icon: BookOpen, description: "Create and manage courses, track trainer progress" },
-  { id: "university" as const, label: "University / Admin", icon: Building2, description: "Manage departments, instructors, and analytics" },
+  { id: "organization" as const, label: "Organization / Admin", icon: Building2, description: "Manage departments, instructors, and analytics" },
 ];
 
 const Onboarding = () => {
@@ -51,7 +51,7 @@ const Onboarding = () => {
 
   const finish = () => {
     localStorage.setItem("tareeqelm_onboarding_complete", "true");
-    const dest = selectedRole === "instructor" ? "/instructor" : selectedRole === "university" ? "/university" : "/";
+    const dest = selectedRole === "instructor" ? "/instructor" : selectedRole === "organization" ? "/organization" : "/";
     navigate(dest, { replace: true });
   };
 

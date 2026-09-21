@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UniversitySidebar, UniversitySidebarContent } from "@/components/layout/UniversitySidebar";
+import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
 import api, { getApiError } from "@/lib/api";
 
-interface UniversityTrainer {
+interface OrganizationTrainer {
     Id: string;
     FullName: string;
     Email: string;
@@ -33,12 +33,12 @@ interface UniversityTrainer {
     AvatarUrl?: string | null;
 }
 
-const UniversityTrainers = () => {
+const OrganizationTrainers = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const { data: trainers = [], isLoading: loading, isError, error } = useQuery({
-        queryKey: ["university-trainers"],
-        queryFn: async () => (await api.get<UniversityTrainer[]>("/University/trainers")).data,
+        queryKey: ["organization-trainers"],
+        queryFn: async () => (await api.get<OrganizationTrainer[]>("/Organization/trainers")).data,
     });
 
     const filteredTrainers = trainers.filter(trainer =>
@@ -49,7 +49,7 @@ const UniversityTrainers = () => {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <UniversitySidebar onCollapse={setSidebarCollapsed} />
+            <OrganizationSidebar onCollapse={setSidebarCollapsed} />
             <Header sidebarCollapsed={sidebarCollapsed} />
 
             <main className={cn(
@@ -59,7 +59,7 @@ const UniversityTrainers = () => {
                 <div className="max-w-7xl mx-auto space-y-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight">University Trainers</h1>
+                            <h1 className="text-3xl font-bold tracking-tight">Organization Trainers</h1>
                             <p className="text-muted-foreground mt-1">Global trainer registry and organizational performance tracking.</p>
                         </div>
                         <Button className="gradient-primary text-white border-0">
@@ -155,4 +155,4 @@ const UniversityTrainers = () => {
     );
 };
 
-export default UniversityTrainers;
+export default OrganizationTrainers;

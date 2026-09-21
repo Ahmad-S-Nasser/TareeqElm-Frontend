@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UniversitySidebar, UniversitySidebarContent } from "@/components/layout/UniversitySidebar";
+import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 
-const UniversitySettings = () => {
+const OrganizationSettings = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
@@ -23,18 +23,18 @@ const UniversitySettings = () => {
             setLoading(false);
             toast({
                 title: "Settings Saved",
-                description: "Your university preferences have been updated.",
+                description: "Your organization preferences have been updated.",
             });
         }, 1000);
     };
 
     return (
         <div className="min-h-screen bg-background">
-            <UniversitySidebar onCollapse={setSidebarCollapsed} />
+            <OrganizationSidebar onCollapse={setSidebarCollapsed} />
             <Header
                 sidebarCollapsed={sidebarCollapsed}
-                userRole="University"
-                mobileSidebar={<UniversitySidebarContent collapsed={false} />}
+                userRole="Organization"
+                mobileSidebar={<OrganizationSidebarContent collapsed={false} />}
             />
 
             <main className={cn(
@@ -49,7 +49,7 @@ const UniversitySettings = () => {
                             Settings
                         </h1>
                         <p className="text-muted-foreground mt-1">
-                            Manage university profile, billing, and system preferences.
+                            Manage organization profile, billing, and system preferences.
                         </p>
                     </div>
 
@@ -63,19 +63,19 @@ const UniversitySettings = () => {
                         <TabsContent value="general">
                             <Card className="border-border/50 shadow-soft">
                                 <CardHeader>
-                                    <CardTitle>University Profile</CardTitle>
+                                    <CardTitle>Organization Profile</CardTitle>
                                     <CardDescription>
                                         Update your institution's public information.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="name">University Name</Label>
-                                        <Input id="name" defaultValue="LearnWise University" className="bg-background/50 focus-visible:ring-primary" />
+                                        <Label htmlFor="name">Organization Name</Label>
+                                        <Input id="name" defaultValue="My Organization" className="bg-background/50 focus-visible:ring-primary" />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="domain">Custom Domain</Label>
-                                        <Input id="domain" defaultValue="university.example.edu" className="bg-background/50 focus-visible:ring-primary" />
+                                        <Input id="domain" defaultValue="organization.example.com" className="bg-background/50 focus-visible:ring-primary" />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="address">Address</Label>
@@ -169,4 +169,4 @@ const UniversitySettings = () => {
     );
 };
 
-export default UniversitySettings;
+export default OrganizationSettings;

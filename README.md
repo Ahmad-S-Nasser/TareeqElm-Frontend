@@ -8,7 +8,7 @@ The web app of **TareeqElm** (طريق علم), an AI-powered learning platform.
 | --- | --- | --- |
 | Trainer | `/trainer/*` | Browse and enroll in courses, watch lessons, flashcards and spaced repetition, time blocking, AI study coach, progress and achievements |
 | Instructor | `/instructor/*` | Create courses and curricula, quizzes, announcements, analytics |
-| University | `/university/*` | Departments, sections, academic terms, instructors, trainers, reports |
+| Organization | `/organization/*` | Departments, sections, academic terms, instructors, trainers, reports |
 | Admin | `/admin/*` | Users, courses, enrollments, platform analytics and settings |
 
 ## Ports and environment
@@ -55,7 +55,7 @@ Seeded by the API in Development only:
 | --- | --- | --- |
 | Admin | admin@tareeqelm.com | Admin@123 |
 | Instructor | instructor@tareeqelm.com | Instructor@123 |
-| University | university@tareeqelm.com | University@123 |
+| Organization | organization@tareeqelm.com | Organization@123 |
 | Trainer | trainer@tareeqelm.com | Trainer@123 |
 
 The "Quick Test Login" buttons on the sign-in page only appear in development builds. Do not use these credentials anywhere else.
@@ -66,7 +66,7 @@ The "Quick Test Login" buttons on the sign-in page only appear in development bu
 src/
   App.tsx            Providers and routes
   main.tsx           Entry point
-  pages/             One file per screen, grouped by role prefix (Instructor*, University*, Admin*, Trainer*)
+  pages/             One file per screen, grouped by role prefix (Instructor*, Organization*, Admin*, Trainer*)
   components/
     ui/              shadcn/ui primitives
     layout/          Sidebars, header

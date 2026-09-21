@@ -1,4 +1,4 @@
-import { UniversityPageLayout } from "@/components/layout/UniversityPageLayout";
+import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldCheck, Crown, GraduationCap, BookOpen, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -13,14 +13,14 @@ interface Role {
 // The platform has four fixed roles. Access is enforced by the server per role.
 const roles: Role[] = [
     { name: "Admin", description: "Full access to all platform features, user management and administrative tools", icon: Crown, color: "text-amber-500 bg-amber-500/10" },
-    { name: "University", description: "Manage departments, terms, sections, announcements and the shared content library", icon: Building2, color: "text-primary bg-primary/10" },
+    { name: "Organization", description: "Manage departments, terms, sections, announcements and the shared content library", icon: Building2, color: "text-primary bg-primary/10" },
     { name: "Instructor", description: "Create and manage courses and quizzes, and track trainer progress", icon: BookOpen, color: "text-emerald-500 bg-emerald-500/10" },
     { name: "Trainer", description: "Access courses, take quizzes, and track learning progress", icon: GraduationCap, color: "text-sky-500 bg-sky-500/10" },
 ];
 
-const UniversityRoles = () => {
+const OrganizationRoles = () => {
     return (
-        <UniversityPageLayout>
+        <OrganizationPageLayout>
             <div>
                 <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -57,8 +57,8 @@ const UniversityRoles = () => {
                     Custom roles and per-permission editing are not available yet. Assign roles to users from the admin user management page.
                 </CardContent>
             </Card>
-        </UniversityPageLayout>
+        </OrganizationPageLayout>
     );
 };
 
-export default UniversityRoles;
+export default OrganizationRoles;

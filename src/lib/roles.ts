@@ -2,7 +2,7 @@
  * Single source of truth for application roles.
  * "applicant" is the internal name of the API's "Trainer" role.
  */
-export const APP_ROLES = ['applicant', 'instructor', 'university', 'admin'] as const;
+export const APP_ROLES = ['applicant', 'instructor', 'organization', 'admin'] as const;
 
 export type AppRole = (typeof APP_ROLES)[number];
 
@@ -10,21 +10,21 @@ export type AppRole = (typeof APP_ROLES)[number];
 const API_ROLE_TO_APP_ROLE: Readonly<Record<string, AppRole>> = {
   Trainer: 'applicant',
   Instructor: 'instructor',
-  University: 'university',
+  Organization: 'organization',
   Admin: 'admin',
 };
 
 const ROLE_HOME: Readonly<Record<AppRole, string>> = {
   applicant: '/dashboard',
   instructor: '/instructor',
-  university: '/university',
+  organization: '/organization',
   admin: '/admin',
 };
 
 const ROLE_LABEL: Readonly<Record<AppRole, string>> = {
   applicant: 'Trainer',
   instructor: 'Instructor',
-  university: 'University',
+  organization: 'Organization',
   admin: 'Administrator',
 };
 

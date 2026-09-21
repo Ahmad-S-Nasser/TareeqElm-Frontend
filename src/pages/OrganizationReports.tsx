@@ -1,4 +1,4 @@
-import { UniversityPageLayout } from "@/components/layout/UniversityPageLayout";
+import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -19,14 +19,14 @@ const reportCards = [
     { title: "Instructor Activity Report", description: "Teaching hours, trainer engagement scores, course ratings, and content uploads", icon: Users, color: "text-violet-500 bg-violet-500/10" },
 ];
 
-const UniversityReports = () => {
+const OrganizationReports = () => {
     const { data: departments = [], isLoading, isError, error } = useQuery({
-        queryKey: ["university-departments"],
+        queryKey: ["organization-departments"],
         queryFn: async () => (await api.get<DeptSummary[]>("/Departments")).data,
     });
 
     return (
-        <UniversityPageLayout>
+        <OrganizationPageLayout>
             <div>
                 <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -139,8 +139,8 @@ const UniversityReports = () => {
                     </Card>
                 </>
             )}
-        </UniversityPageLayout>
+        </OrganizationPageLayout>
     );
 };
 
-export default UniversityReports;
+export default OrganizationReports;

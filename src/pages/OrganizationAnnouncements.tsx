@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UniversityPageLayout } from "@/components/layout/UniversityPageLayout";
+import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,14 +36,14 @@ const audienceColor: Record<string, string> = {
     course: "text-violet-600 border-violet-200 bg-violet-50 dark:bg-violet-950/20",
 };
 
-const UniversityAnnouncements = () => {
+const OrganizationAnnouncements = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [form, setForm] = useState({ title: "", body: "", audience: "all", audienceDetail: "" });
     const { toast } = useToast();
     const queryClient = useQueryClient();
 
     const { data: announcements = [], isLoading, isError, error } = useQuery({
-        queryKey: ["university-announcements"],
+        queryKey: ["organization-announcements"],
         queryFn: async () => (await api.get<Announcement[]>("/Announcements")).data,
     });
 
@@ -52,7 +52,7 @@ const UniversityAnnouncements = () => {
             await api.post("/Announcements", ann);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["university-announcements"] });
+            queryClient.invalidateQueries({ queryKey: ["organization-announcements"] });
             setIsOpen(false);
             setForm({ title: "", body: "", audience: "all", audienceDetail: "" });
             toast({ title: "Announcement Published" });
@@ -64,7 +64,7 @@ const UniversityAnnouncements = () => {
         mutationFn: async ({ id, pinned }: { id: string; pinned: boolean }) => {
             await api.put(`/Announcements/${id}/pin`, { Pinned: !pinned });
         },
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["university-announcements"] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["organization-announcements"] }),
         onError: (err: unknown) => toast({ variant: "destructive", title: "Error", description: getApiError(err, "Could not update announcement") }),
     });
 
@@ -77,7 +77,7 @@ const UniversityAnnouncements = () => {
     };
 
     return (
-        <UniversityPageLayout>
+        <OrganizationPageLayout>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
@@ -177,8 +177,8 @@ const UniversityAnnouncements = () => {
                     })}
                 </div>
             )}
-        </UniversityPageLayout>
+        </OrganizationPageLayout>
     );
 };
 
-export default UniversityAnnouncements;
+export default OrganizationAnnouncements;

@@ -8,7 +8,7 @@ describe("roles", () => {
   it("roleHome maps every role and fails to sign-in for null/unknown", () => {
     expect(roleHome("applicant")).toBe("/dashboard");
     expect(roleHome("instructor")).toBe("/instructor");
-    expect(roleHome("university")).toBe("/university");
+    expect(roleHome("organization")).toBe("/organization");
     expect(roleHome("admin")).toBe("/admin");
     expect(roleHome(null)).toBe(SIGN_IN_PATH);
     expect(roleHome(undefined)).toBe(SIGN_IN_PATH);
@@ -18,7 +18,7 @@ describe("roles", () => {
   it("parseApiRole maps API roles and returns null for unknown values", () => {
     expect(parseApiRole("Trainer")).toBe("applicant");
     expect(parseApiRole("Instructor")).toBe("instructor");
-    expect(parseApiRole("University")).toBe("university");
+    expect(parseApiRole("Organization")).toBe("organization");
     expect(parseApiRole("Admin")).toBe("admin");
     expect(parseApiRole("Student")).toBeNull();
     expect(parseApiRole("admin")).toBeNull();
@@ -35,7 +35,7 @@ describe("roles", () => {
   });
 
   it("isRoleAllowed is true only for known roles in the list", () => {
-    expect(isRoleAllowed("admin", ["admin", "university"])).toBe(true);
+    expect(isRoleAllowed("admin", ["admin", "organization"])).toBe(true);
     expect(isRoleAllowed("applicant", ["admin"])).toBe(false);
     expect(isRoleAllowed(null, ["admin"])).toBe(false);
     expect(isRoleAllowed("bogus" as never, ["bogus" as never])).toBe(false);

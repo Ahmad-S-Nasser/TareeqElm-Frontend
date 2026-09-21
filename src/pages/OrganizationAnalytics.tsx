@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UniversitySidebar, UniversitySidebarContent } from "@/components/layout/UniversitySidebar";
+import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import api, { getApiError } from "@/lib/api";
 
 interface DeptSummary { Id: string; Name: string; Head: string | null; CoursesCount: number; TrainersCount: number; Performance: number; Trend: number }
-interface UniversityStats {
+interface OrganizationStats {
     Stats: { TotalTrainers: number; ActiveInstructors: number; TotalCourses: number; AvgCompletion: number };
     Departments: DeptSummary[];
 }
@@ -26,12 +26,12 @@ const NotAvailable = ({ text }: { text: string }) => (
     </Card>
 );
 
-const UniversityAnalytics = () => {
+const OrganizationAnalytics = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     const { data, isLoading, isError, error } = useQuery({
-        queryKey: ["university-stats"],
-        queryFn: async () => (await api.get<UniversityStats>("/University/stats")).data,
+        queryKey: ["organization-stats"],
+        queryFn: async () => (await api.get<OrganizationStats>("/Organization/stats")).data,
     });
 
     const stats = data?.Stats;
@@ -39,11 +39,11 @@ const UniversityAnalytics = () => {
 
     return (
         <div className="min-h-screen bg-background">
-            <UniversitySidebar onCollapse={setSidebarCollapsed} />
+            <OrganizationSidebar onCollapse={setSidebarCollapsed} />
             <Header
                 sidebarCollapsed={sidebarCollapsed}
-                userRole="University"
-                mobileSidebar={<UniversitySidebarContent collapsed={false} />}
+                userRole="Organization"
+                mobileSidebar={<OrganizationSidebarContent collapsed={false} />}
             />
 
             <main className={cn(
@@ -57,7 +57,7 @@ const UniversityAnalytics = () => {
                             Analytics & Reports
                         </h1>
                         <p className="text-muted-foreground mt-1">
-                            Insights into university performance and trainer enrollment.
+                            Insights into organization performance and trainer enrollment.
                         </p>
                     </div>
 
@@ -186,4 +186,4 @@ const UniversityAnalytics = () => {
     );
 };
 
-export default UniversityAnalytics;
+export default OrganizationAnalytics;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UniversityPageLayout } from "@/components/layout/UniversityPageLayout";
+import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +37,7 @@ const statusConfig = {
     archived: { label: "Archived", color: "bg-muted-foreground", badge: "text-muted-foreground border-border bg-muted" },
 };
 
-const UniversityAcademicTerms = () => {
+const OrganizationAcademicTerms = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [newTerm, setNewTerm] = useState({ name: "", type: "fall", year: "2026", startDate: "", endDate: "" });
     const { toast } = useToast();
@@ -87,7 +87,7 @@ const UniversityAcademicTerms = () => {
     };
 
     return (
-        <UniversityPageLayout>
+        <OrganizationPageLayout>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
@@ -218,8 +218,8 @@ const UniversityAcademicTerms = () => {
                     })}
                 </div>
             )}
-        </UniversityPageLayout>
+        </OrganizationPageLayout>
     );
 };
 
-export default UniversityAcademicTerms;
+export default OrganizationAcademicTerms;

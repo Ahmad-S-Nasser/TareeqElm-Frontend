@@ -1,22 +1,22 @@
 import { useState, ReactNode } from "react";
-import { UniversitySidebar, UniversitySidebarContent } from "@/components/layout/UniversitySidebar";
+import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 
-interface UniversityPageLayoutProps {
+interface OrganizationPageLayoutProps {
     children: ReactNode;
 }
 
-export const UniversityPageLayout = ({ children }: UniversityPageLayoutProps) => {
+export const OrganizationPageLayout = ({ children }: OrganizationPageLayoutProps) => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     return (
         <div className="min-h-screen bg-background">
-            <UniversitySidebar onCollapse={setSidebarCollapsed} />
+            <OrganizationSidebar onCollapse={setSidebarCollapsed} />
             <Header
                 sidebarCollapsed={sidebarCollapsed}
-                userRole="University"
-                mobileSidebar={<UniversitySidebarContent collapsed={false} />}
+                userRole="Organization"
+                mobileSidebar={<OrganizationSidebarContent collapsed={false} />}
             />
             <main className={cn(
                 "pt-20 pb-12 px-4 sm:px-6 transition-all duration-300",

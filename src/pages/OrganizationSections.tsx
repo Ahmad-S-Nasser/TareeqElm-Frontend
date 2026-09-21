@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { UniversityPageLayout } from "@/components/layout/UniversityPageLayout";
+import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ interface Section {
     Schedule: string | null;
 }
 
-const UniversitySections = () => {
+const OrganizationSections = () => {
     const [search, setSearch] = useState("");
 
     const { data: sections = [], isLoading, isError, error } = useQuery({
@@ -41,7 +41,7 @@ const UniversitySections = () => {
     }, {});
 
     return (
-        <UniversityPageLayout>
+        <OrganizationPageLayout>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
@@ -108,8 +108,8 @@ const UniversitySections = () => {
                     </div>
                 ))
             )}
-        </UniversityPageLayout>
+        </OrganizationPageLayout>
     );
 };
 
-export default UniversitySections;
+export default OrganizationSections;
