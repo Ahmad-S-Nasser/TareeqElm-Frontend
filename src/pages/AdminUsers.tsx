@@ -20,7 +20,10 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 import api, { getApiError } from "@/lib/api";
+import { useFormatters } from "@/lib/format";
+import { parseApiRole } from "@/lib/roles";
 
 type UserRole = "Admin" | "Instructor" | "Organization" | "Trainer";
 const ROLES: UserRole[] = ["Admin", "Instructor", "Organization", "Trainer"];
@@ -34,6 +37,7 @@ interface ManagedUser {
     Role: string;
     IsActive: boolean;
     DepartmentId: string | null;
+    DepartmentName?: string | null;
     AvatarUrl: string | null;
     CreatedAt: string;
 }
@@ -47,6 +51,9 @@ const fetchUsers = async (params: Record<string, string | number | boolean | und
 };
 
 const AdminUsers = () => {
+    const { t } = useTranslation(["admin", "common", "roles"]);
+    const { formatNumber } = useFormatters();
+    const roleLabel = (r: string) => { const ar = parseApiRole(r); return ar ? t(`roles:${ar}.name`) : t("common:labels.unknown"); };
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -61,8 +68,8 @@ const AdminUsers = () => {
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        const t = setTimeout(() => { setDebouncedSearch(search.trim()); setPage(1); }, 300);
-        return () => clearTimeout(t);
+        const timer = setTimeout(() => { setDebouncedSearch(search.trim()); setPage(1); }, 300);
+        return () => clearTimeout(timer);
     }, [search]);
 
     const roleParam = filterRole === "all" ? undefined : filterRole;
@@ -94,7 +101,8 @@ const AdminUsers = () => {
     const users = data?.items ?? [];
     const total = data?.total ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-    const deptName = (id: string | null) => departments.find((d) => d.Id === id)?.Name;
+    // Show the resolved department name, never the id.
+    const deptName = (u: ManagedUser) => u.DepartmentName ?? (u.DepartmentId ? (departments.find((d) => d.Id === u.DepartmentId)?.Name ?? t("common:deletedDepartment")) : null);
 
     const invalidate = () => {
         queryClient.invalidateQueries({ queryKey: ["admin-users"] });
@@ -115,9 +123,9 @@ const AdminUsers = () => {
             invalidate();
             setIsAddOpen(false);
             setNewUser({ fullName: "", email: "", password: "", role: "Trainer", departmentId: NO_DEPARTMENT });
-            toast({ title: "User created", description: "The user can now sign in with the password you set." });
+            toast({ title: t("admin:users.toast.created"), description: t("admin:users.toast.createdDescription", { name: newUser.fullName.trim() }) });
         },
-        onError: (err: unknown) => toast({ variant: "destructive", title: "Could not create user", description: getApiError(err, "Could not create user.") }),
+        onError: (err: unknown) => toast({ variant: "destructive", title: t("admin:users.toast.createFailed"), description: getApiError(err, t("admin:users.toast.createFailed")) }),
     });
 
     const updateMutation = useMutation({
@@ -134,18 +142,18 @@ const AdminUsers = () => {
         onSuccess: () => {
             invalidate();
             setEditing(null);
-            toast({ title: "User updated" });
+            toast({ title: t("admin:users.toast.updated", { name: editing?.FullName ?? "" }) });
         },
-        onError: (err: unknown) => toast({ variant: "destructive", title: "Could not update user", description: getApiError(err, "Could not update user.") }),
+        onError: (err: unknown) => toast({ variant: "destructive", title: t("admin:users.toast.updateFailed"), description: getApiError(err, t("admin:users.toast.updateFailed")) }),
     });
 
     const handleAddUser = () => {
         if (!newUser.fullName.trim() || !newUser.email.trim()) {
-            toast({ variant: "destructive", title: "Missing fields", description: "Name and email are required." });
+            toast({ variant: "destructive", title: t("admin:users.toast.missingFields"), description: t("admin:users.toast.missingFieldsDescription") });
             return;
         }
         if (newUser.password.length < 8) {
-            toast({ variant: "destructive", title: "Password too short", description: "Use at least 8 characters." });
+            toast({ variant: "destructive", title: t("admin:users.toast.passwordShort"), description: t("admin:users.toast.passwordShortDescription") });
             return;
         }
         createMutation.mutate();
@@ -158,7 +166,7 @@ const AdminUsers = () => {
 
     const handleSaveEdit = () => {
         if (edit.newPassword && edit.newPassword.length < 8) {
-            toast({ variant: "destructive", title: "Password too short", description: "Use at least 8 characters." });
+            toast({ variant: "destructive", title: t("admin:users.toast.passwordShort"), description: t("admin:users.toast.passwordShortDescription") });
             return;
         }
         updateMutation.mutate();
@@ -173,35 +181,35 @@ const AdminUsers = () => {
         <div className="min-h-screen bg-background">
             <AdminSidebar onCollapse={setSidebarCollapsed} />
             <Header sidebarCollapsed={sidebarCollapsed} userRole="Admin" mobileSidebar={<AdminSidebarContent collapsed={false} />} />
-            <main className={cn("pt-20 pb-12 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64")}>
+            <main className={cn("pt-20 pb-12 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ms-20" : "lg:ms-64")}>
                 <div className="max-w-7xl mx-auto space-y-6">
 
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-black">User Management</h1>
-                            <p className="text-muted-foreground text-sm mt-1">Create users, assign roles, and manage access</p>
+                            <h1 className="text-3xl font-black">{t("admin:users.title")}</h1>
+                            <p className="text-muted-foreground text-sm mt-1">{t("admin:users.subtitle")}</p>
                         </div>
                         <Button className="bg-rose-500 hover:bg-rose-600 text-white border-0" onClick={() => setIsAddOpen(true)}>
-                            <Plus className="w-4 h-4 mr-2" /> Add User
+                            <Plus className="w-4 h-4 me-2" /> {t("admin:users.add")}
                         </Button>
                     </div>
 
                     {/* Stats row */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {[
-                            { label: "Total Users", val: totalAll, icon: Users, color: "bg-primary/10 text-primary" },
-                            { label: "Active", val: totalActive, icon: UserCheck, color: "bg-emerald-500/10 text-emerald-500" },
-                            { label: "Inactive", val: totalInactive, icon: UserX, color: "bg-rose-500/10 text-rose-500" },
+                            { key: "total", val: totalAll, icon: Users, color: "bg-primary/10 text-primary" },
+                            { key: "active", val: totalActive, icon: UserCheck, color: "bg-emerald-500/10 text-emerald-500" },
+                            { key: "inactive", val: totalInactive, icon: UserX, color: "bg-rose-500/10 text-rose-500" },
                         ].map((s) => (
-                            <Card key={s.label} className="border-border/50">
+                            <Card key={s.key} className="border-border/50">
                                 <CardContent className="p-4 flex items-center gap-3">
                                     <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", s.color)}>
                                         <s.icon className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <p className="text-2xl font-black">{s.val ?? "-"}</p>
-                                        <p className="text-xs text-muted-foreground">{s.label}</p>
+                                        <p className="text-2xl font-black">{s.val === undefined ? "-" : formatNumber(s.val)}</p>
+                                        <p className="text-xs text-muted-foreground">{t(`admin:users.stats.${s.key}`)}</p>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -211,17 +219,17 @@ const AdminUsers = () => {
                     {/* Filters */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input className="pl-9" placeholder="Search by name or email…" value={search} onChange={(e) => setSearch(e.target.value)} />
+                            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input className="ps-9" placeholder={t("admin:users.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} />
                         </div>
                         <Select value={filterRole} onValueChange={(v) => { setFilterRole(v); setPage(1); }}>
                             <SelectTrigger className="w-full sm:w-52">
-                                <Filter className="w-4 h-4 mr-2 text-muted-foreground" />
-                                <SelectValue placeholder="All Roles" />
+                                <Filter className="w-4 h-4 me-2 text-muted-foreground" />
+                                <SelectValue placeholder={t("admin:users.allRoles")} />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">All Roles</SelectItem>
-                                {ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                                <SelectItem value="all">{t("admin:users.allRoles")}</SelectItem>
+                                {ROLES.map((r) => <SelectItem key={r} value={r}>{roleLabel(r)}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>
@@ -233,10 +241,10 @@ const AdminUsers = () => {
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b border-border/50 bg-muted/30">
-                                            <th className="text-left px-5 py-3 font-semibold text-muted-foreground">Name</th>
-                                            <th className="text-left px-5 py-3 font-semibold text-muted-foreground hidden md:table-cell">Department</th>
-                                            <th className="text-left px-5 py-3 font-semibold text-muted-foreground hidden sm:table-cell">Role</th>
-                                            <th className="text-left px-5 py-3 font-semibold text-muted-foreground">Status</th>
+                                            <th className="text-start px-5 py-3 font-semibold text-muted-foreground">{t("admin:users.table.name")}</th>
+                                            <th className="text-start px-5 py-3 font-semibold text-muted-foreground hidden md:table-cell">{t("admin:users.table.department")}</th>
+                                            <th className="text-start px-5 py-3 font-semibold text-muted-foreground hidden sm:table-cell">{t("admin:users.table.role")}</th>
+                                            <th className="text-start px-5 py-3 font-semibold text-muted-foreground">{t("admin:users.table.status")}</th>
                                             <th className="px-5 py-3" />
                                         </tr>
                                     </thead>
@@ -245,7 +253,7 @@ const AdminUsers = () => {
                                             <tr><td colSpan={5} className="text-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary inline" /></td></tr>
                                         )}
                                         {isError && (
-                                            <tr><td colSpan={5} className="text-center py-12 text-destructive">{getApiError(error, "Could not load users.")}</td></tr>
+                                            <tr><td colSpan={5} className="text-center py-12 text-destructive">{getApiError(error, t("admin:users.loadFailed"))}</td></tr>
                                         )}
                                         {users.map((u) => (
                                             <tr key={u.Id} className={cn("border-b border-border/30 hover:bg-muted/20 transition-colors", isFetching && "opacity-70")}>
@@ -260,27 +268,27 @@ const AdminUsers = () => {
                                                         )}
                                                         <div>
                                                             <p className="font-semibold">{u.FullName}</p>
-                                                            <p className="text-xs text-muted-foreground">{u.Email}</p>
+                                                            <p dir="ltr" className="text-xs text-muted-foreground text-start">{u.Email}</p>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-5 py-3.5 hidden md:table-cell">
                                                     <span className="flex items-center gap-1.5 text-muted-foreground">
-                                                        <Building2 className="w-3.5 h-3.5" /> {deptName(u.DepartmentId) ?? "-"}
+                                                        <Building2 className="w-3.5 h-3.5" /> {deptName(u) ?? "-"}
                                                     </span>
                                                 </td>
                                                 <td className="px-5 py-3.5 hidden sm:table-cell">
                                                     <span className="flex items-center gap-1.5 text-muted-foreground">
-                                                        <Shield className="w-3.5 h-3.5" /> {u.Role}
+                                                        <Shield className="w-3.5 h-3.5" /> {roleLabel(u.Role)}
                                                     </span>
                                                 </td>
                                                 <td className="px-5 py-3.5">
                                                     <Badge variant="outline" className={cn("text-xs font-semibold", statusColor(u.IsActive))}>
-                                                        {u.IsActive ? "Active" : "Inactive"}
+                                                        {u.IsActive ? t("admin:users.status.active") : t("admin:users.status.inactive")}
                                                     </Badge>
                                                 </td>
-                                                <td className="px-5 py-3.5 text-right">
-                                                    <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => openEdit(u)} aria-label={`Edit ${u.FullName}`}>
+                                                <td className="px-5 py-3.5 text-end">
+                                                    <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => openEdit(u)} aria-label={t("admin:users.editAria", { name: u.FullName })}>
                                                         <Pencil className="w-4 h-4" />
                                                     </Button>
                                                 </td>
@@ -288,7 +296,7 @@ const AdminUsers = () => {
                                         ))}
                                         {!isLoading && !isError && users.length === 0 && (
                                             <tr>
-                                                <td colSpan={5} className="text-center py-12 text-muted-foreground">No users match your search.</td>
+                                                <td colSpan={5} className="text-center py-12 text-muted-foreground">{t("admin:users.empty")}</td>
                                             </tr>
                                         )}
                                     </tbody>
@@ -299,10 +307,10 @@ const AdminUsers = () => {
 
                     {total > PAGE_SIZE && (
                         <div className="flex items-center justify-between">
-                            <p className="text-xs text-muted-foreground">Page {page} of {totalPages} · {total} users</p>
+                            <p className="text-xs text-muted-foreground">{t("admin:users.pageInfo", { page: formatNumber(page), pages: formatNumber(totalPages), count: total })}</p>
                             <div className="flex gap-2">
-                                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
-                                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+                                <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>{t("common:actions.previous")}</Button>
+                                <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>{t("common:actions.next")}</Button>
                             </div>
                         </div>
                     )}
@@ -313,36 +321,36 @@ const AdminUsers = () => {
             <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                 <DialogContent className="sm:max-w-[440px]">
                     <DialogHeader>
-                        <DialogTitle>Add New User</DialogTitle>
-                        <DialogDescription>Create an account and set an initial password.</DialogDescription>
+                        <DialogTitle>{t("admin:users.add_dialog.title")}</DialogTitle>
+                        <DialogDescription>{t("admin:users.add_dialog.description")}</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="nu-name">Full Name</Label>
-                            <Input id="nu-name" placeholder="Jane Smith" value={newUser.fullName} onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })} />
+                            <Label htmlFor="nu-name">{t("admin:users.fields.fullName")}</Label>
+                            <Input id="nu-name" placeholder={t("admin:users.fields.fullNamePlaceholder")} value={newUser.fullName} onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })} />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="nu-email">Email</Label>
-                            <Input id="nu-email" type="email" placeholder="jane@example.com" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
+                            <Label htmlFor="nu-email">{t("admin:users.fields.email")}</Label>
+                            <Input id="nu-email" type="email" placeholder={t("admin:users.fields.emailPlaceholder")} value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="nu-pass">Initial Password</Label>
-                            <Input id="nu-pass" type="password" placeholder="At least 8 characters" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} />
+                            <Label htmlFor="nu-pass">{t("admin:users.fields.initialPassword")}</Label>
+                            <Input id="nu-pass" type="password" placeholder={t("admin:users.fields.passwordPlaceholder")} value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Role</Label>
+                                <Label>{t("admin:users.fields.role")}</Label>
                                 <Select value={newUser.role} onValueChange={(v) => setNewUser({ ...newUser, role: v as UserRole })}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>{ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                                    <SelectContent>{ROLES.map((r) => <SelectItem key={r} value={r}>{roleLabel(r)}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Department</Label>
+                                <Label>{t("admin:users.fields.department")}</Label>
                                 <Select value={newUser.departmentId} onValueChange={(v) => setNewUser({ ...newUser, departmentId: v })}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value={NO_DEPARTMENT}>None</SelectItem>
+                                        <SelectItem value={NO_DEPARTMENT}>{t("admin:users.noDepartment")}</SelectItem>
                                         {departments.map((d) => <SelectItem key={d.Id} value={d.Id}>{d.Name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
@@ -350,10 +358,10 @@ const AdminUsers = () => {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button variant="outline" onClick={() => setIsAddOpen(false)}>{t("common:actions.cancel")}</Button>
                         <Button onClick={handleAddUser} disabled={createMutation.isPending} className="bg-rose-500 hover:bg-rose-600 text-white border-0">
-                            {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                            Add User
+                            {createMutation.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
+                            {t("admin:users.add")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -363,50 +371,50 @@ const AdminUsers = () => {
             <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}>
                 <DialogContent className="sm:max-w-[440px]">
                     <DialogHeader>
-                        <DialogTitle>Edit User</DialogTitle>
-                        <DialogDescription>{editing?.FullName} · {editing?.Email}</DialogDescription>
+                        <DialogTitle>{t("admin:users.edit_dialog.title")}</DialogTitle>
+                        <DialogDescription>{editing?.FullName} · <bdi dir="ltr">{editing?.Email}</bdi></DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Role</Label>
+                                <Label>{t("admin:users.fields.role")}</Label>
                                 <Select value={edit.role} onValueChange={(v) => setEdit({ ...edit, role: v })} disabled={isSelf}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
-                                    <SelectContent>{ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                                    <SelectContent>{ROLES.map((r) => <SelectItem key={r} value={r}>{roleLabel(r)}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Status</Label>
+                                <Label>{t("admin:users.fields.status")}</Label>
                                 <Select value={edit.isActive ? "active" : "inactive"} onValueChange={(v) => setEdit({ ...edit, isActive: v === "active" })} disabled={isSelf}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="active">Active</SelectItem>
-                                        <SelectItem value="inactive">Inactive</SelectItem>
+                                        <SelectItem value="active">{t("admin:users.status.active")}</SelectItem>
+                                        <SelectItem value="inactive">{t("admin:users.status.inactive")}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
-                        {isSelf && <p className="text-xs text-muted-foreground">You cannot change your own role or deactivate yourself.</p>}
+                        {isSelf && <p className="text-xs text-muted-foreground">{t("admin:users.edit_dialog.selfNote")}</p>}
                         <div className="space-y-2">
-                            <Label>Department</Label>
+                            <Label>{t("admin:users.fields.department")}</Label>
                             <Select value={edit.departmentId} onValueChange={(v) => setEdit({ ...edit, departmentId: v })}>
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value={NO_DEPARTMENT}>None</SelectItem>
+                                    <SelectItem value={NO_DEPARTMENT}>{t("admin:users.noDepartment")}</SelectItem>
                                     {departments.map((d) => <SelectItem key={d.Id} value={d.Id}>{d.Name}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="eu-pass">Reset Password (optional)</Label>
-                            <Input id="eu-pass" type="password" placeholder="Leave blank to keep the current password" value={edit.newPassword} onChange={(e) => setEdit({ ...edit, newPassword: e.target.value })} />
+                            <Label htmlFor="eu-pass">{t("admin:users.fields.resetPassword")}</Label>
+                            <Input id="eu-pass" type="password" placeholder={t("admin:users.fields.resetPasswordPlaceholder")} value={edit.newPassword} onChange={(e) => setEdit({ ...edit, newPassword: e.target.value })} />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+                        <Button variant="outline" onClick={() => setEditing(null)}>{t("common:actions.cancel")}</Button>
                         <Button onClick={handleSaveEdit} disabled={updateMutation.isPending} className="bg-rose-500 hover:bg-rose-600 text-white border-0">
-                            {updateMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                            Save Changes
+                            {updateMutation.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
+                            {t("admin:users.edit_dialog.saveChanges")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

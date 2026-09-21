@@ -1,0 +1,773 @@
+{
+  "ai": {
+    "title": "AI Teaching Assistant",
+    "subtitle": "Leverage AI to create content, grade assessments, and get teaching advice.",
+    "tabs": {
+      "chat": "Chat",
+      "quiz": "Quiz Gen",
+      "lesson": "Lesson Drafter",
+      "insights": "Insights"
+    },
+    "chat": {
+      "title": "Assistant Chat",
+      "description": "Ask questions about course structure, engagement, or technical topics.",
+      "welcome": "Hello! I am your AI teaching assistant. How can I help you improve your courses today?",
+      "reply": "I can certainly help you with \"{{message}}\". As an AI, I can assist with curriculum design, trainer engagement strategies, or technical explanations. What specific aspect would you like advice on?",
+      "placeholder": "Type your message...",
+      "send": "Send message"
+    },
+    "quiz": {
+      "title": "Quiz Generator",
+      "description": "Generate multiple-choice questions from a topic.",
+      "topic": "Topic or Concept",
+      "topicPlaceholder": "e.g. React Hooks, Photosynthesis...",
+      "difficulty": "Difficulty",
+      "selectDifficulty": "Select difficulty",
+      "difficultyLevels": {
+        "easy": "Easy",
+        "medium": "Medium",
+        "hard": "Hard",
+        "expert": "Expert"
+      },
+      "assignTo": "Assign To",
+      "allTrainers": "All Trainers",
+      "selectTrainers": "Select Trainers",
+      "selectToAssign": "Select trainers to assign",
+      "noTrainers": "No trainers found",
+      "attachment": "Attachment (Optional)",
+      "attached": "Attached: {{name}}",
+      "generating": "Generating...",
+      "generate": "Generate Quiz",
+      "result": "Result",
+      "copy": "Copy",
+      "placeholderResult": "Generated content will appear here",
+      "audienceAll": "All Trainers",
+      "audienceSelected_one": "{{count}} Selected Trainer",
+      "audienceSelected_other": "{{count}} Selected Trainers",
+      "none": "None",
+      "q1": "What is the primary function of {{topic}}?",
+      "q2": "Which of the following best describes {{topic}}?",
+      "optionA": "Option A",
+      "optionB": "Option B",
+      "optionC": "Option C",
+      "optionD": "Option D",
+      "conceptX": "Concept X",
+      "conceptY": "Concept Y",
+      "conceptZ": "Concept Z",
+      "generated": "Quiz Generated",
+      "generatedDesc": "Created for {{audience}} with difficulty {{difficulty}}."
+    },
+    "lesson": {
+      "title": "Lesson Drafter",
+      "description": "Create a structured lesson plan from a title.",
+      "lessonTitle": "Lesson Title",
+      "lessonPlaceholder": "e.g. Introduction to Thermodynamics",
+      "audienceLevel": "Target Audience level",
+      "audiencePlaceholder": "e.g. High School, Undergraduate",
+      "reference": "Reference Material (Optional)",
+      "drafting": "Drafting...",
+      "draft": "Draft Lesson Plan",
+      "draftTitle": "Draft",
+      "placeholderDraft": "Draft will appear here",
+      "drafted": "Lesson Drafted",
+      "draftedDesc": "Your lesson outline is ready.",
+      "copied": "Copied!",
+      "copiedDesc": "Content copied to clipboard.",
+      "context": "Based on {{name}}",
+      "contextGeneral": "General Overview",
+      "plan": "# Lesson Plan: {{topic}}\n**Context**: {{context}}\n\n## Learning Objectives\n1. Understand the core concepts of {{topic}}.\n2. Apply {{topic}} in real-world scenarios.\n\n## Introduction (5 mins)\n- Hook: Start with an interesting fact about {{topic}}.\n- Definition: Define key terms.\n\n## Main Content (20 mins)\n- Concept A: Detailed explanation.\n- Concept B: Common pitfalls.\n- Activity: Group discussion.\n\n## Conclusion (5 mins)\n- Recap key points.\n- Q&A session."
+    },
+    "insights": {
+      "title": "Trainer Performance Analysis",
+      "description": "AI-driven insights based on real trainer data.",
+      "avgProgress": "Avg. Progress",
+      "classAverage": "Class Average",
+      "atRisk": "At Risk Trainers",
+      "below50": "Below 50% Progress",
+      "focusArea": "Focus Area",
+      "lowestTopic": "Lowest performing topic",
+      "mockTopic": "State Management",
+      "recommendation": "AI Recommendation",
+      "behind_one": "There is {{count}} trainer falling behind. Consider scheduling a review session for \"{{topic}}\" or assigning extra practice quizzes.",
+      "behind_other": "There are {{count}} trainers falling behind. Consider scheduling a review session for \"{{topic}}\" or assigning extra practice quizzes.",
+      "performingWell": "The class is performing well! You might challenge them with advanced projects or peer-review sessions.",
+      "generateReview": "Generate Review Material for {{topic}}",
+      "analysis": "Trainer Analysis",
+      "columns": {
+        "trainer": "Trainer",
+        "courses": "Enrolled Courses",
+        "progress": "Overall Grade/Progress",
+        "status": "Status"
+      },
+      "onTrack": "On Track",
+      "atRiskBadge": "At Risk"
+    }
+  },
+  "analytics": {
+    "title": "Analytics Dashboard",
+    "subtitle": "Track your performance and trainer engagement.",
+    "loadFailed": "Failed to load analytics.",
+    "avgQuiz": "Average Quiz Score",
+    "avgQuizHint": "Across all your quizzes",
+    "activeTrainers": "Active Trainers",
+    "activeTrainersHint": "Enrolled in your courses",
+    "completion": "Course Completion",
+    "completionHint": "Of enrollments completed",
+    "totalCourses": "Total Courses",
+    "draftsPending_one": "{{count}} draft pending",
+    "draftsPending_other": "{{count}} drafts pending",
+    "lessonCompletions": "Lesson Completions",
+    "completionsPerWeek": "Completions per week",
+    "completions": "Completions",
+    "trainerActivity": "Trainer Activity",
+    "activePerWeek": "Active trainers per week",
+    "trainers": "Trainers",
+    "noActivity": "No activity yet.",
+    "recent": "Recent Activity",
+    "recentDesc": "Latest trainer activity across your courses",
+    "noRecent": "No trainer activity yet.",
+    "activeIn": "Active in \"{{course}}\"",
+    "personProgress": "{{name}} - {{progress}} complete"
+  },
+  "announcements": {
+    "title": "Announcements",
+    "subtitle": "Post updates and reminders to your trainers",
+    "new": "New Announcement",
+    "items": {
+      "1": {
+        "title": "Midterm Exam Schedule Released",
+        "course": "ML 101",
+        "content": "The midterm exam will be held on March 15th. Please review chapters 1-5."
+      },
+      "2": {
+        "title": "New Assignment Posted",
+        "course": "Statistics",
+        "content": "A new data analysis assignment has been posted. Due by March 20th."
+      },
+      "3": {
+        "title": "Guest Lecture This Friday",
+        "course": "Business Strategy",
+        "content": "We'll have a guest speaker from Google discussing AI strategy."
+      },
+      "4": {
+        "title": "Office Hours Change",
+        "course": "ML 101",
+        "content": "Office hours will be moved to Thursday 2-4 PM this week."
+      }
+    }
+  },
+  "assignments": {
+    "title": "Assignments",
+    "subtitle": "Create, manage, and grade trainer assignments",
+    "create": "Create Assignment",
+    "stats": {
+      "total": "Total",
+      "pending": "Pending Review",
+      "graded": "Graded",
+      "overdue": "Overdue"
+    },
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "upcoming": "Upcoming"
+    },
+    "due": "{{course}} • Due: {{date}}",
+    "submitted": "Submitted",
+    "gradedCount": "{{count}} graded",
+    "items": {
+      "1": {
+        "title": "Research Paper: AI in Education",
+        "course": "Machine Learning 101"
+      },
+      "2": {
+        "title": "Data Analysis Project",
+        "course": "Statistics Fundamentals"
+      },
+      "3": {
+        "title": "Final Case Study",
+        "course": "Business Strategy"
+      },
+      "4": {
+        "title": "Code Review Exercise",
+        "course": "Machine Learning 101"
+      }
+    }
+  },
+  "chapters": {
+    "title": "Curriculum",
+    "addChapter": "Add Chapter",
+    "addNewChapter": "Add New Chapter",
+    "chapterTitle": "Chapter Title",
+    "chapterPlaceholder": "e.g. Introduction",
+    "lessonsInline_one": "({{count}} lesson)",
+    "lessonsInline_other": "({{count}} lessons)",
+    "deleteChapter": "Delete chapter",
+    "editLesson": "Edit lesson",
+    "addLesson": "Add Lesson",
+    "addLessonTo": "Add Lesson to \"{{chapter}}\"",
+    "lessonTitle": "Lesson Title",
+    "lessonPlaceholder": "e.g. Setting up the environment",
+    "type": "Type",
+    "videoSource": "Video Source",
+    "uploading": "Uploading...",
+    "uploadVideo": "Upload Video",
+    "videoUrlPlaceholder": "Or paste video URL (YouTube, Vimeo...)",
+    "selected": "Selected: {{url}}",
+    "content": "Content / Description",
+    "contentPlaceholder": "Lesson content or description...",
+    "empty": "No chapters yet. Start by adding one.",
+    "addFirst": "Add First Chapter"
+  },
+  "content": {
+    "title": "Content Tools",
+    "subtitle": "Manage your course assets, media, and resources.",
+    "uploadNew": "Upload New",
+    "library": "Media Library",
+    "searchPlaceholder": "Search files...",
+    "uploadFile": "Upload File",
+    "download": "Download",
+    "delete": "Delete",
+    "moreActions": "More actions",
+    "units": {
+      "KB": "{{value}} KB",
+      "MB": "{{value}} MB"
+    }
+  },
+  "courses": {
+    "title": "My Courses",
+    "subtitle": "Create, manage, and publish your courses",
+    "create": "Create Course",
+    "createNew": "Create New Course",
+    "courseTitle": "Course Title",
+    "titlePlaceholder": "e.g., ISTQB Foundation Level",
+    "description": "Description",
+    "descriptionPlaceholder": "What will trainers learn?",
+    "category": "Category",
+    "categoryPlaceholder": "e.g., Certification",
+    "level": "Level",
+    "creating": "Creating...",
+    "emptyTitle": "No courses yet",
+    "emptyDesc": "Create your first course to get started",
+    "moreActions": "Course actions",
+    "edit": "Edit",
+    "viewTrainers": "View Trainers",
+    "publish": "Publish",
+    "archive": "Archive",
+    "delete": "Delete",
+    "noDescription": "No description",
+    "trainersCount_one": "{{count}} trainer",
+    "trainersCount_other": "{{count}} trainers",
+    "publishFailed": "Publish failed",
+    "archiveFailed": "Archive failed",
+    "deleteFailed": "Delete failed",
+    "deleteTitle": "Delete Course?",
+    "deleteDesc": "This will permanently delete \"{{title}}\" and all its content. This action cannot be undone."
+  },
+  "createCourse": {
+    "title": "Create Course",
+    "stepOf": "Step {{current}} of {{total}} — {{label}}",
+    "steps": {
+      "info": "Course Info",
+      "curriculum": "Curriculum",
+      "materials": "Materials",
+      "quizzes": "Quizzes",
+      "publish": "Publish"
+    },
+    "titleRequired": "Title required",
+    "courseTitleRequired": "Course title is required",
+    "outlineReady": "Suggested outline ready",
+    "outlineReadyDesc_one": "{{count}} chapter suggested. Review and edit it before continuing.",
+    "outlineReadyDesc_other": "{{count}} chapters suggested. Review and edit them before continuing.",
+    "outlineFailed": "Could not suggest an outline",
+    "publishFailed": "Publish failed",
+    "published": "Course Published!",
+    "publishedDesc": "Your course is now live.",
+    "newChapter": "New Chapter",
+    "newLesson": "New Lesson",
+    "info": {
+      "title": "Course Information",
+      "description": "Basic details about your course",
+      "titleLabel": "Title *",
+      "titlePlaceholder": "e.g. Introduction to Machine Learning",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "What will trainers learn?",
+      "category": "Category",
+      "categoryPlaceholder": "e.g. Computer Science",
+      "level": "Level"
+    },
+    "curriculum": {
+      "title": "Course Curriculum",
+      "suggest": "Suggest Outline",
+      "addChapter": "Add Chapter",
+      "empty": "No chapters yet. Click \"Suggest Outline\" or add manually.",
+      "chapterShort": "Ch {{number}}",
+      "deleteChapter": "Delete chapter",
+      "deleteLesson": "Delete lesson",
+      "addLesson": "Add Lesson"
+    },
+    "materials": {
+      "title": "Upload Materials",
+      "description": "Add videos, PDFs, and resources to your lessons",
+      "drop": "Drag and drop files here, or click to browse",
+      "supports": "Supports PDF, MP4, DOCX (max 20MB)",
+      "browse": "Browse Files"
+    },
+    "quizzes": {
+      "title": "Quizzes & Assessments",
+      "description": "Create quizzes or let AI generate them from your course content",
+      "hint": "You can create quizzes from the Quizzes & Exams page after publishing.",
+      "go": "Go to Quiz Builder"
+    },
+    "publish": {
+      "title": "Review & Publish",
+      "description": "Review your course and make it live",
+      "titleField": "Title",
+      "level": "Level",
+      "chapters": "Chapters",
+      "lessons": "Lessons",
+      "publish": "Publish Course"
+    },
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "curriculum": {
+    "title": "Curriculum Manager",
+    "subtitle": "Organize course content with sections, lessons, and resources",
+    "selectCourse": "Select a course",
+    "noCourses": "No courses",
+    "addSection": "Add Section",
+    "addLesson": "Add Lesson",
+    "selectPrompt": "Select a course to view its curriculum.",
+    "loadFailed": "Failed to load the curriculum.",
+    "emptyCourse": "This course has no sections yet. Use \"Add Section\" to build the curriculum in the course editor.",
+    "lessonsCount_one": "{{count}} lesson",
+    "lessonsCount_other": "{{count}} lessons",
+    "minutes": "{{value}} min"
+  },
+  "dashboard": {
+    "title": "Instructor Dashboard",
+    "subtitle": "Monitor trainer performance and manage your courses",
+    "myCourses": "My Courses",
+    "createCourse": "Create Course",
+    "loadFailed": "Failed to load your dashboard statistics.",
+    "stats": {
+      "totalCourses": "Total Courses",
+      "totalTrainers": "Total Trainers",
+      "completionRate": "Completion Rate",
+      "avgQuizScore": "Avg Quiz Score"
+    },
+    "engagement": {
+      "title": "Trainer Engagement",
+      "description": "Weekly active trainers & lesson completions",
+      "activeTrainers": "Active Trainers",
+      "completions": "Completions"
+    },
+    "distribution": {
+      "title": "Course Status Distribution",
+      "description": "Breakdown of your courses by status",
+      "empty": "No courses yet"
+    },
+    "insights": {
+      "title": "Insights",
+      "description": "Observations about your courses and trainers, based on your data",
+      "lowCompletion": "Course completion rate is {{rate}} — consider adding more engaging content",
+      "lowScore": "Average quiz score is {{score}} — trainers may need more preparation material",
+      "highScore": "Great quiz performance! Average score is {{score}}",
+      "drafts_one": "You have {{count}} draft course ready to publish",
+      "drafts_other": "You have {{count}} draft courses ready to publish",
+      "good": "Your courses are performing well. Keep it up!",
+      "createFirst": "Create your first course to see insights"
+    }
+  },
+  "discussions": {
+    "title": "Discussions",
+    "subtitle": "Monitor and moderate course discussions",
+    "items": {
+      "1": {
+        "title": "How do I approach the final project?",
+        "course": "ML 101"
+      },
+      "2": {
+        "title": "Confusion about gradient descent steps",
+        "course": "ML 101"
+      },
+      "3": {
+        "title": "Study group for midterm?",
+        "course": "Statistics"
+      },
+      "4": {
+        "title": "Resource recommendation for regression",
+        "course": "ML 101"
+      },
+      "5": {
+        "title": "Assignment 2 deadline extension?",
+        "course": "Business Strategy"
+      }
+    }
+  },
+  "editor": {
+    "onlyTxtMd": "Only .txt and .md syllabus files can be analysed.",
+    "unsupportedFile": "Unsupported file",
+    "noChapters": "No chapters could be found in that file.",
+    "nothingFound": "Nothing found",
+    "analysisComplete": "Analysis Complete",
+    "analysisCompleteDesc": "A suggested course structure was created from your syllabus. Review it before saving.",
+    "analysisFailedMsg": "The syllabus could not be analysed.",
+    "analysisFailed": "Analysis Failed",
+    "uploadFailed": "Upload Failed",
+    "uploadFailedDesc": "Could not upload the file.",
+    "curriculumSaved": "Curriculum Saved",
+    "curriculumSavedDesc": "Your course structure has been updated successfully.",
+    "saveFailed": "Save Failed",
+    "saveFailedDesc": "Could not save course curriculum.",
+    "fetchFailed": "Fetch Failed",
+    "fetchFailedDesc": "Could not load course curriculum."
+  },
+  "courseEditor": {
+    "back": "Back",
+    "title": "Edit Course",
+    "tabs": {
+      "info": "Course Info",
+      "curriculum": "Curriculum",
+      "trainers": "Trainers",
+      "settings": "Settings"
+    },
+    "info": {
+      "title": "Basic Information",
+      "description": "Manage your course details and settings.",
+      "courseTitle": "Course Title",
+      "titlePlaceholder": "e.g. Master React",
+      "descriptionLabel": "Description",
+      "category": "Category",
+      "level": "Level",
+      "selectLevel": "Select level",
+      "minApplicants": "Minimum Applicants",
+      "minApplicantsHint": "Minimum number of trainers required to start the course.",
+      "syllabus": "Syllabus Analysis",
+      "analyzing": "Analyzing syllabus...",
+      "uploadText": "Upload Text Syllabus (.txt or .md)",
+      "uploadHint": "A suggested outline is created from the topics; review it before saving",
+      "save": "Save Changes"
+    },
+    "curriculum": {
+      "title": "Course Curriculum",
+      "description": "Drag and drop chapters and lessons to reorder.",
+      "save": "Save Curriculum"
+    },
+    "trainers": {
+      "title": "Enrolled Trainers",
+      "description": "Manage and view trainers enrolled in this course.",
+      "trainer": "Trainer",
+      "enrolledDate": "Enrolled Date",
+      "progress": "Progress",
+      "status": "Status",
+      "loadFailed": "Failed to load trainers.",
+      "empty": "No trainers enrolled yet.",
+      "completed": "Completed",
+      "active": "Active"
+    },
+    "settings": {
+      "visibility": "Course Visibility",
+      "visibilityDesc": "Control how your course is viewed by others.",
+      "publish": "Publish Course",
+      "publishHint": "Make this course visible to trainers.",
+      "danger": "Danger Zone",
+      "dangerDesc": "Irreversible actions for this course.",
+      "warning": "Warning",
+      "warningDesc": "Archiving a course will hide it from trainers but keep data. Deleting is permanent.",
+      "archiveCourse": "Archive Course",
+      "archiveHint": "Hide from public view.",
+      "archive": "Archive",
+      "deleteCourse": "Delete Course",
+      "deleteHint": "Permanently remove this course.",
+      "archiveFailed": "Archive failed",
+      "deleteConfirm": "Permanently delete this course and all of its content?",
+      "deleteFailed": "Delete failed",
+      "deleteFailedDesc": "The course could not be deleted."
+    }
+  },
+  "flashcards": {
+    "title": "Flashcards Manager",
+    "subtitle": "Create and assign flashcard decks for your trainers",
+    "aiGenerate": "AI Generate",
+    "createDeck": "Create Deck",
+    "deckMeta": "{{course}} • {{count}} cards",
+    "trainersUsing": "{{count}} trainers",
+    "retention": "{{value}} retention",
+    "items": {
+      "1": {
+        "title": "Machine Learning Key Concepts",
+        "course": "ML 101"
+      },
+      "2": {
+        "title": "Statistical Methods",
+        "course": "Statistics"
+      },
+      "3": {
+        "title": "Business Models & Frameworks",
+        "course": "Business Strategy"
+      },
+      "4": {
+        "title": "Neural Networks Vocabulary",
+        "course": "ML 101"
+      }
+    }
+  },
+  "leaderboard": {
+    "title": "Trainer Leaderboard",
+    "subtitle": "Top performing trainers across your courses, ranked by lessons completed",
+    "loadFailed": "Failed to load the leaderboard.",
+    "empty": "No trainers are enrolled in your courses yet.",
+    "lessons_one": "{{count}} lesson",
+    "lessons_other": "{{count}} lessons",
+    "quizAvg": "{{value}} quiz avg",
+    "noQuizzes": "No quizzes",
+    "fullRankings": "Full Rankings",
+    "completed_one": "{{count}} completed",
+    "completed_other": "{{count}} completed"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Stay updated with trainer activity and system alerts.",
+    "markAllRead": "Mark all as read",
+    "empty": "No notifications found.",
+    "items": {
+      "1": {
+        "title": "New Enrollment",
+        "message": "{{name}} enrolled in '{{course}}'"
+      },
+      "2": {
+        "title": "New Question",
+        "message": "{{name}} asked a question in '{{module}}'"
+      },
+      "3": {
+        "title": "System Maintenance",
+        "message": "Platform maintenance scheduled for Saturday 2am EST."
+      },
+      "4": {
+        "title": "Course Published",
+        "message": "Your course '{{course}}' is now live."
+      },
+      "5": {
+        "title": "Review Goal Met",
+        "message": "You reached 100 positive reviews!"
+      }
+    }
+  },
+  "quizzes": {
+    "title": "Quizzes & Exams",
+    "subtitle": "Create, schedule, and review assessments",
+    "generate": "Generate Quiz",
+    "create": "Create Quiz",
+    "loadFailed": "Failed to load quizzes.",
+    "empty": "No quizzes yet. Create one or generate suggested questions from your material.",
+    "badge": "Quiz",
+    "minutesShort": "{{value}}m",
+    "questionsCount_one": "{{count}} question",
+    "questionsCount_other": "{{count}} questions",
+    "pass": "Pass: {{value}}",
+    "generatorTitle": "Quiz Generator",
+    "generatorDesc": "Paste course material to get suggested quiz questions. Review them before saving.",
+    "selectCourse": "Select Course",
+    "chooseCourse": "Choose a course",
+    "quizTitle": "Quiz Title",
+    "quizTitlePlaceholder": "e.g. Chapter 3 Quiz",
+    "material": "Course Material",
+    "materialPlaceholder": "Paste lecture notes, textbook content, or lesson summaries here…",
+    "numQuestions": "Number of Questions",
+    "generating": "Generating…",
+    "generateQuestions": "Generate Questions",
+    "suggested": "Suggested Questions ({{count}})",
+    "fromTemplates": "built from templates",
+    "questionLabel": "Q{{number}}. {{text}}",
+    "pointsCorrect": "Points: {{points}} | Correct: {{answer}}",
+    "saveQuiz": "Save Quiz to Course",
+    "questionsReady": "Questions ready",
+    "questionsReadyDesc_one": "{{count}} suggested question. Review them before saving.",
+    "questionsReadyDesc_other": "{{count}} suggested questions. Review them before saving.",
+    "generationFailed": "Generation Failed",
+    "saved": "Quiz Saved!",
+    "savedDesc_one": "\"{{title}}\" with {{count}} question.",
+    "savedDesc_other": "\"{{title}}\" with {{count}} questions.",
+    "saveFailed": "Save Failed",
+    "provideMaterial": "Provide course material",
+    "provideMaterialDesc": "Paste at least 20 characters of material.",
+    "fillAll": "Fill all fields",
+    "fillAllDesc": "Select course, title, and generate questions first.",
+    "resultsTitle": "{{title}} - Results",
+    "resultsFailed": "Failed to load results.",
+    "noResults": "No trainer has taken this quiz yet.",
+    "passed": "Passed",
+    "failed": "Failed"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account preferences and instructor profile.",
+    "tabs": {
+      "profile": "Profile",
+      "notifications": "Notifications",
+      "security": "Security"
+    },
+    "profile": {
+      "title": "Public Profile",
+      "description": "Your name is displayed to trainers on your course pages.",
+      "loadFailed": "Could not load your profile.",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "nameRequired": "Name is required",
+      "saved": "Profile Saved",
+      "savedDesc": "Your changes have been updated successfully.",
+      "saveFailed": "Could not save",
+      "saveFailedDesc": "Could not save your profile."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Email notifications are coming soon. These switches are a preview and are not saved yet.",
+      "emailHeading": "Email Notifications",
+      "enrollments": "New Enrollments",
+      "enrollmentsDesc": "Receive an email when a trainer enrolls.",
+      "completions": "Course Completions",
+      "completionsDesc": "Receive an email when a trainer completes a course.",
+      "questions": "Q&A Updates",
+      "questionsDesc": "Receive an email when a trainer asks a question."
+    },
+    "security": {
+      "title": "Security",
+      "description": "Manage your password and account security.",
+      "current": "Current Password",
+      "next": "New Password",
+      "confirm": "Confirm Password",
+      "update": "Update Password",
+      "updating": "Updating...",
+      "checkTitle": "Check your passwords",
+      "checkDesc": "Enter your current password and a new one of at least 8 characters.",
+      "mismatch": "Passwords do not match",
+      "updated": "Password updated",
+      "failed": "Could not update password",
+      "failedDesc": "Could not update your password."
+    }
+  },
+  "level": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced"
+  },
+  "week": "Week {{number}}",
+  "courseStatus": {
+    "Published": "Published",
+    "Draft": "Draft",
+    "Archived": "Archived"
+  },
+  "lessonType": {
+    "video": "Video",
+    "reading": "Article / Text",
+    "quiz": "Quiz",
+    "assignment": "Assignment",
+    "interactive": "Interactive"
+  },
+  "syllabus": {
+    "backToDashboard": "Back to Dashboard",
+    "title": "Upload Syllabus",
+    "subtitle": "Let AI transform your syllabus into an interactive course",
+    "aiAnalysis": "AI-Powered Analysis",
+    "aiAnalysisDesc": "Our AI analyzes your syllabus structure and automatically generates chapters, topics, quizzes, and flashcards.",
+    "formats": "Supported Formats",
+    "formatsDesc": "Upload PDF, Word documents (.docx, .doc), or plain text files. We handle the rest!",
+    "uploadDifferent": "Upload a different file",
+    "courseCreated": "Course created successfully!",
+    "courseCreatedDesc": "Your ISTQB course has been generated and is ready for review.",
+    "editMode": "Edit mode",
+    "editModeDesc": "You can now modify the course outline.",
+    "mock": {
+      "courseName": "ISTQB Foundation Level - Complete Course"
+    },
+    "dropzone": {
+      "invalidType": "Invalid file type. Accepted: {{types}}",
+      "tooLarge": "File too large. Maximum size: {{size}}",
+      "fileSelected": "File selected",
+      "drop": "Drop your file here",
+      "drag": "Drag & drop your syllabus",
+      "browse": "or click to browse files",
+      "maxSize": "Maximum file size: {{size}}",
+      "remove": "Remove file and upload different one",
+      "sizeB": "{{value}} B",
+      "sizeKB": "{{value}} KB",
+      "sizeMB": "{{value}} MB"
+    },
+    "parsing": {
+      "title": "AI Processing",
+      "analyzing": "Analyzing your syllabus...",
+      "progress": "Progress",
+      "stepOf": "Step {{current}}/{{total}}",
+      "steps": {
+        "upload": "Uploading document",
+        "parse": "Parsing content",
+        "analyze": "AI analyzing structure",
+        "generate": "Generating course outline"
+      }
+    },
+    "preview": {
+      "badge": "AI Generated",
+      "description": "Review and customize your AI-generated course outline",
+      "chapters": "Chapters",
+      "topics": "Topics",
+      "activities": "Activities",
+      "topicsCount_one": "{{count}} topic",
+      "topicsCount_other": "{{count}} topics",
+      "quizIncluded": "Quiz included",
+      "flashcardsIncluded": "Flashcards included",
+      "addTopic": "Add topic",
+      "editOutline": "Edit Outline",
+      "confirm": "Confirm & Create Course"
+    }
+  },
+  "trainers": {
+    "all": {
+      "title": "All Trainers",
+      "subtitle": "Manage and view all trainers enrolled in your courses",
+      "search": "Search trainers...",
+      "directory": "Trainer Directory ({{count}})",
+      "loadFailed": "Failed to load trainers.",
+      "empty": "No trainers found.",
+      "columns": {
+        "trainer": "Trainer",
+        "courses": "Enrolled Courses",
+        "progress": "Avg. Progress",
+        "lastActive": "Last Active",
+        "actions": "Actions"
+      },
+      "noEmail": "No email",
+      "coursesCount_one": "{{count}} course",
+      "coursesCount_other": "{{count}} courses",
+      "never": "Never",
+      "viewDetails": "View Details",
+      "enrollmentsOf": "{{name}}'s Enrollments",
+      "completedPercent": "{{value}} Completed"
+    },
+    "course": {
+      "title": "Enrolled Trainers",
+      "fallbackCourse": "Course",
+      "back": "Back to courses",
+      "stats": {
+        "total": "Total Trainers",
+        "completed": "Completed",
+        "avgProgress": "Avg. Progress",
+        "avgQuiz": "Avg. Quiz Score"
+      },
+      "list": "Trainer List",
+      "loadFailed": "Failed to load trainers.",
+      "empty": "No trainers enrolled yet",
+      "columns": {
+        "trainer": "Trainer",
+        "enrolled": "Enrolled",
+        "progress": "Progress",
+        "lessons": "Lessons",
+        "avgScore": "Avg. Score",
+        "lastActive": "Last Active"
+      },
+      "never": "Never"
+    }
+  }
+}

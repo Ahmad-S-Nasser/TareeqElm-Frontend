@@ -1,4 +1,6 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 
 interface ReadinessGaugeProps {
   percentage: number;
@@ -11,6 +13,8 @@ export const ReadinessGauge = ({
   size = "md",
   showLabel = true 
 }: ReadinessGaugeProps) => {
+  const { t } = useTranslation("dashboard");
+  const { formatPercent } = useFormatters();
   const getColor = (value: number) => {
     if (value >= 80) return { stroke: "stroke-success", text: "text-success", bg: "bg-success/10" };
     if (value >= 50) return { stroke: "stroke-warning", text: "text-warning", bg: "bg-warning/10" };
@@ -18,9 +22,9 @@ export const ReadinessGauge = ({
   };
 
   const getStatus = (value: number) => {
-    if (value >= 80) return "Ready!";
-    if (value >= 50) return "Almost there";
-    return "Keep going";
+    if (value >= 80) return t("readiness.ready");
+    if (value >= 50) return t("readiness.almost");
+    return t("readiness.keepGoing");
   };
 
   const colors = getColor(percentage);
@@ -68,7 +72,7 @@ export const ReadinessGauge = ({
         {/* Center content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className={cn("font-bold", fontSize, colors.text)}>
-            {percentage}%
+            <bdi>{formatPercent(percentage)}</bdi>
           </span>
         </div>
       </div>

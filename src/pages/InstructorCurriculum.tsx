@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import api, { getApiError } from "@/lib/api";
-import { Chapter } from "@/hooks/useCourseEditor";
+import { Chapter, lessonTypeLabel } from "@/hooks/useCourseEditor";
 import { InstructorPageLayout } from "@/components/instructor/InstructorPageLayout";
 import { ListTree, BookOpen, GripVertical, Plus, Loader2, ChevronDown, ChevronRight, Video, FileText, HelpCircle, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,8 @@ const typeIcons: Record<string, React.ElementType> = {
 };
 
 const InstructorCurriculum = () => {
+  const { t } = useTranslation("instructor");
+  const { formatNumber } = useFormatters();
   const { courses, fetchInstructorCourses } = useCourses();
   const [selectedCourse, setSelectedCourse] = useState<string>("");
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -45,24 +49,24 @@ const InstructorCurriculum = () => {
               <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center shadow-glow-accent">
                 <ListTree className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-2xl font-bold">Curriculum Manager</h1>
+              <h1 className="text-2xl font-bold">{t("curriculum.title")}</h1>
             </div>
-            <p className="text-muted-foreground">Organize course content with sections, lessons, and resources</p>
+            <p className="text-muted-foreground">{t("curriculum.subtitle")}</p>
           </div>
           <div className="flex gap-3 items-center">
             <Select value={selectedCourse} onValueChange={setSelectedCourse}>
               <SelectTrigger className="w-[220px]">
-                <SelectValue placeholder="Select a course" />
+                <SelectValue placeholder={t("curriculum.selectCourse")} />
               </SelectTrigger>
               <SelectContent>
                 {courses.map(c => (
                   <SelectItem key={c.Id} value={c.Id}>{c.Title}</SelectItem>
                 ))}
-                {courses.length === 0 && <SelectItem value="none" disabled>No courses</SelectItem>}
+                {courses.length === 0 && <SelectItem value="none" disabled>{t("curriculum.noCourses")}</SelectItem>}
               </SelectContent>
             </Select>
             <Button className="gradient-accent text-white shadow-glow-accent" disabled={!selectedCourse} onClick={editCourse}>
-              <Plus className="w-4 h-4 mr-2" /> Add Section
+              <Plus className="w-4 h-4 me-2" /> {t("curriculum.addSection")}
             </Button>
           </div>
         </div>
@@ -70,13 +74,13 @@ const InstructorCurriculum = () => {
 
       <section className="space-y-3 animate-slide-up" style={{ animationDelay: "100ms" }}>
         {!selectedCourse ? (
-          <p className="text-center text-muted-foreground py-12">Select a course to view its curriculum.</p>
+          <p className="text-center text-muted-foreground py-12">{t("curriculum.selectPrompt")}</p>
         ) : isLoading ? (
           <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
         ) : error ? (
-          <p className="text-center text-destructive py-12">{getApiError(error, "Failed to load the curriculum.")}</p>
+          <p className="text-center text-destructive py-12">{getApiError(error, t("curriculum.loadFailed"))}</p>
         ) : sections.length === 0 ? (
-          <p className="text-center text-muted-foreground py-12">This course has no sections yet. Use "Add Section" to build the curriculum in the course editor.</p>
+          <p className="text-center text-muted-foreground py-12">{t("curriculum.emptyCourse")}</p>
         ) : null}
         {sections.map((section) => {
           const expanded = !collapsed[section.Id];
@@ -85,14 +89,14 @@ const InstructorCurriculum = () => {
             <CardHeader className="py-3 px-4 cursor-pointer" onClick={() => toggleSection(section.Id)}>
               <div className="flex items-center gap-3">
                 <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab" />
-                {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4 rtl:rotate-180" />}
                 <CardTitle className="text-sm font-semibold flex-1">{section.Title}</CardTitle>
-                <Badge variant="secondary" className="text-xs">{section.Lessons.length} lessons</Badge>
+                <Badge variant="secondary" className="text-xs">{t("curriculum.lessonsCount", { count: section.Lessons.length })}</Badge>
               </div>
             </CardHeader>
             {expanded && (
               <CardContent className="pt-0 pb-3 px-4">
-                <div className="space-y-2 ml-8">
+                <div className="space-y-2 ms-8">
                   {section.Lessons.map((lesson) => {
                     const TypeIcon = typeIcons[lesson.LessonType.toLowerCase()] || FileText;
                     return (
@@ -100,13 +104,13 @@ const InstructorCurriculum = () => {
                         <GripVertical className="w-3.5 h-3.5 text-muted-foreground cursor-grab" />
                         <TypeIcon className="w-4 h-4 text-primary" />
                         <span className="text-sm flex-1">{lesson.Title}</span>
-                        <Badge variant="outline" className="text-xs capitalize">{lesson.LessonType.toLowerCase()}</Badge>
-                        <span className="text-xs text-muted-foreground">{lesson.DurationMinutes ? `${lesson.DurationMinutes} min` : ""}</span>
+                        <Badge variant="outline" className="text-xs">{lessonTypeLabel(t, lesson.LessonType)}</Badge>
+                        <span className="text-xs text-muted-foreground">{lesson.DurationMinutes ? t("curriculum.minutes", { value: formatNumber(lesson.DurationMinutes) }) : ""}</span>
                       </div>
                     );
                   })}
                   <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={editCourse}>
-                    <Plus className="w-3 h-3 mr-1" /> Add Lesson
+                    <Plus className="w-3 h-3 me-1" /> {t("curriculum.addLesson")}
                   </Button>
                 </div>
               </CardContent>

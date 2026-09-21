@@ -1,4 +1,6 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { ApplicantSidebar } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -19,6 +21,8 @@ import { FileQuestion, Clock, Target } from "lucide-react";
 
 const MockExamRunner = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const { t } = useTranslation("quizzes");
+    const { formatPercent } = useFormatters();
     const [showResults, setShowResults] = useState(false);
     const [examResult, setExamResult] = useState<ExamResult | null>(null);
 
@@ -104,7 +108,7 @@ const MockExamRunner = () => {
             <main
                 className={cn(
                     "pt-20 pb-8 px-6 transition-all duration-300",
-                    sidebarCollapsed ? "ml-20" : "ml-64"
+                    sidebarCollapsed ? "ms-20" : "ms-64"
                 )}
             >
                 <div className="max-w-7xl mx-auto space-y-6">
@@ -116,23 +120,23 @@ const MockExamRunner = () => {
                                     <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow-primary">
                                         <FileQuestion className="w-5 h-5 text-primary-foreground" />
                                     </div>
-                                    <h1 className="text-2xl font-bold">{mockExamConfig.title}</h1>
+                                    <h1 className="text-2xl font-bold">{t("exam.title")}</h1>
                                 </div>
                                 <p className="text-muted-foreground">
-                                    {mockExamConfig.description}
+                                    {t("exam.description")}
                                 </p>
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/50">
                                     <Clock className="w-4 h-4 text-muted-foreground" />
                                     <span className="text-sm font-medium">
-                                        {mockExamConfig.timeLimitMinutes} min
+                                        {t("list.minutes", { count: mockExamConfig.timeLimitMinutes })}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/50">
                                     <Target className="w-4 h-4 text-muted-foreground" />
                                     <span className="text-sm font-medium">
-                                        Pass: {mockExamConfig.passingScore}%
+                                        {t("list.pass", { score: formatPercent(mockExamConfig.passingScore) })}
                                     </span>
                                 </div>
                             </div>

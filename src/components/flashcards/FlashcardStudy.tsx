@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 import { Flashcard, StudyRating } from "./types";
 import { Button } from "@/components/ui/button";
 import useEmblaCarousel from 'embla-carousel-react';
@@ -36,6 +38,9 @@ export function FlashcardStudy({
     hasNextDeck,
     hasPrevDeck
 }: FlashcardStudyProps) {
+    const { t, i18n } = useTranslation("learning");
+    const { formatNumber } = useFormatters();
+    const isRtl = i18n.dir() === "rtl";
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
     const [showHint, setShowHint] = useState(false);
@@ -44,7 +49,8 @@ export function FlashcardStudy({
     const [emblaRef, emblaApi] = useEmblaCarousel({
         loop: false,
         duration: 30,
-        watchDrag: true
+        watchDrag: true,
+        direction: isRtl ? "rtl" : "ltr"
     });
 
     const onSelect = useCallback(() => {
@@ -108,7 +114,7 @@ export function FlashcardStudy({
                             disabled={!hasPrevDeck}
                             className="h-8 w-8 rounded-full"
                         >
-                            <ChevronLeft className="w-4 h-4" />
+                            <ChevronLeft className="w-4 h-4 rtl:rotate-180" />
                         </Button>
                         <Button
                             variant="ghost"
@@ -117,19 +123,19 @@ export function FlashcardStudy({
                             disabled={!hasNextDeck}
                             className="h-8 w-8 rounded-full"
                         >
-                            <ChevronRight className="w-4 h-4" />
+                            <ChevronRight className="w-4 h-4 rtl:rotate-180" />
                         </Button>
                     </div>
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight">{deckName}</h2>
                         <p className="text-sm text-muted-foreground mt-1">
-                            Card {currentIndex + 1} of {cards.length}
+                            {t("flashcards.cardOf", { current: formatNumber(currentIndex + 1), total: formatNumber(cards.length) })}
                         </p>
                     </div>
                 </div>
                 <Button variant="ghost" size="sm" onClick={onExit} className="hover:bg-destructive/10 hover:text-destructive">
-                    <X className="w-4 h-4 mr-2" />
-                    Exit Session
+                    <X className="w-4 h-4 me-2" />
+                    {t("flashcards.exit")}
                 </Button>
             </div>
 
@@ -167,9 +173,9 @@ export function FlashcardStudy({
                                             "hover:shadow-2xl hover:border-primary/20 transition-all duration-300",
                                             "bg-gradient-to-br from-card to-secondary/10"
                                         )}>
-                                            <div className="absolute top-8 left-8">
+                                            <div className="absolute top-8 start-8">
                                                 <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium tracking-wider uppercase">
-                                                    Question
+                                                    {t("flashcards.question")}
                                                 </span>
                                             </div>
 
@@ -181,14 +187,14 @@ export function FlashcardStudy({
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="absolute bottom-8 right-8 text-muted-foreground hover:text-primary"
+                                                    className="absolute bottom-8 end-8 text-muted-foreground hover:text-primary"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setShowHint(true);
                                                     }}
                                                 >
-                                                    <Lightbulb className="w-4 h-4 mr-2" />
-                                                    Hint
+                                                    <Lightbulb className="w-4 h-4 me-2" />
+                                                    {t("flashcards.hint")}
                                                 </Button>
                                             )}
 
@@ -202,7 +208,7 @@ export function FlashcardStudy({
 
                                             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-muted-foreground/30 text-sm font-medium flex items-center gap-2 group-hover:text-muted-foreground/50 transition-colors">
                                                 <Repeat className="w-3 h-3" />
-                                                Click to flip
+                                                {t("flashcards.clickToFlip")}
                                             </div>
                                         </div>
                                     </div>
@@ -221,11 +227,11 @@ export function FlashcardStudy({
                                             "bg-gradient-to-br from-primary/5 via-card to-accent/5",
                                             "relative overflow-hidden"
                                         )}>
-                                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-primary" />
+                                            <div className="absolute top-0 start-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-primary" />
 
-                                            <div className="absolute top-8 left-8">
+                                            <div className="absolute top-8 start-8">
                                                 <span className="px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium tracking-wider uppercase shadow-sm">
-                                                    Answer
+                                                    {t("flashcards.answer")}
                                                 </span>
                                             </div>
 
@@ -254,7 +260,7 @@ export function FlashcardStudy({
                             onClick={handlePrevious}
                             disabled={!emblaApi?.canScrollPrev()}
                         >
-                            <ChevronLeft className="w-6 h-6" />
+                            <ChevronLeft className="w-6 h-6 rtl:rotate-180" />
                         </Button>
 
                         <Button
@@ -262,8 +268,8 @@ export function FlashcardStudy({
                             onClick={handleFlip}
                             className="h-12 px-8 rounded-full shadow-lg hover:shadow-primary/25 hover:scale-105 transition-all"
                         >
-                            <RotateCcw className="w-4 h-4 mr-2" />
-                            Reveal Answer
+                            <RotateCcw className="w-4 h-4 me-2" />
+                            {t("flashcards.reveal")}
                         </Button>
 
                         <Button
@@ -273,20 +279,20 @@ export function FlashcardStudy({
                             onClick={handleNext}
                             disabled={currentIndex === cards.length - 1}
                         >
-                            <ChevronRight className="w-6 h-6" />
+                            <ChevronRight className="w-6 h-6 rtl:rotate-180" />
                         </Button>
                     </div>
                 ) : (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <p className="text-center text-muted-foreground font-medium">
-                            How well did you know this?
+                            {t("flashcards.howWell")}
                         </p>
                         <div className="grid grid-cols-4 gap-4">
                             {[
-                                { id: 'again', label: 'Again', icon: X, color: 'text-destructive', border: 'border-destructive/20', bg: 'hover:bg-destructive/10' },
-                                { id: 'hard', label: 'Hard', icon: Zap, color: 'text-orange-500', border: 'border-orange-500/20', bg: 'hover:bg-orange-500/10' },
-                                { id: 'good', label: 'Good', icon: Check, color: 'text-primary', border: 'border-primary/20', bg: 'hover:bg-primary/10' },
-                                { id: 'easy', label: 'Easy', icon: Star, color: 'text-green-500', border: 'border-green-500/20', bg: 'hover:bg-green-500/10' }
+                                { id: 'again', labelKey: 'again', icon: X, color: 'text-destructive', border: 'border-destructive/20', bg: 'hover:bg-destructive/10' },
+                                { id: 'hard', labelKey: 'hard', icon: Zap, color: 'text-orange-500', border: 'border-orange-500/20', bg: 'hover:bg-orange-500/10' },
+                                { id: 'good', labelKey: 'good', icon: Check, color: 'text-primary', border: 'border-primary/20', bg: 'hover:bg-primary/10' },
+                                { id: 'easy', labelKey: 'easy', icon: Star, color: 'text-green-500', border: 'border-green-500/20', bg: 'hover:bg-green-500/10' }
                             ].map((btn) => (
                                 <Button
                                     key={btn.id}
@@ -299,7 +305,7 @@ export function FlashcardStudy({
                                     onClick={() => handleRating(btn.id as StudyRating)}
                                 >
                                     <btn.icon className={cn("w-6 h-6", btn.color)} />
-                                    <span className={cn("font-medium", btn.color)}>{btn.label}</span>
+                                    <span className={cn("font-medium", btn.color)}>{t(`flashcards.rating.${btn.labelKey}`)}</span>
                                 </Button>
                             ))}
                         </div>

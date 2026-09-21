@@ -1,5 +1,7 @@
 import { BookOpen, Clock, BarChart3 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 import { Progress } from "@/components/ui/progress";
 
 interface CourseCardProps {
@@ -23,6 +25,8 @@ export const CourseCard = ({
   variant = "default",
   onClick,
 }: CourseCardProps) => {
+  const { t } = useTranslation("dashboard");
+  const { formatPercent } = useFormatters();
   return (
     <div
       onClick={onClick}
@@ -49,9 +53,9 @@ export const CourseCard = ({
         <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
         
         {/* Progress Badge */}
-        <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full glass text-xs font-medium">
+        <div className="absolute top-3 end-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full glass text-xs font-medium">
           <BarChart3 className="w-3.5 h-3.5" />
-          {progressValue}%
+          {formatPercent(progressValue)}
         </div>
       </div>
 
@@ -73,7 +77,7 @@ export const CourseCard = ({
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <BookOpen className="w-3.5 h-3.5" />
-            <span>{Lessons} lessons</span>
+            <span>{t("courseCard.lessons", { count: Lessons })}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" />

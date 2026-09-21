@@ -1,5 +1,7 @@
 import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApplicantSidebar } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
@@ -65,13 +67,13 @@ const LESSON_TYPE_MAP: Record<string, LessonType> = {
     interactive: "exercise",
 };
 
-const formatMinutes = (minutes: number) =>
-    minutes >= 60 ? `${Math.floor(minutes / 60)}h${minutes % 60 ? ` ${minutes % 60}m` : ""}` : `${minutes} min`;
-
 const CourseDetail = () => {
     const { courseId } = useParams<{ courseId: string }>();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const { t } = useTranslation(["courses", "common"]);
+    const { formatNumber, formatPercent, formatDuration } = useFormatters();
+    const formatMinutes = (minutes: number) => formatDuration(minutes * 60);
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [openChapterId, setOpenChapterId] = useState<string | null>(null);
     const [enrolling, setEnrolling] = useState(false);
@@ -129,7 +131,8 @@ const CourseDetail = () => {
                     Lessons: lessons,
                 };
             });
-    }, [detail, completedIds, contentUnlocked]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [detail, completedIds, contentUnlocked, t]);
 
     if (loading) {
         return (
@@ -144,9 +147,9 @@ const CourseDetail = () => {
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold mb-2">Could not load this course</h2>
-                    <p className="text-muted-foreground mb-4">{getApiError(courseQuery.error, "Failed to load the course.")}</p>
-                    <Button onClick={() => courseQuery.refetch()}>Try again</Button>
+                    <h2 className="text-xl font-semibold mb-2">{t("detail.loadFailedTitle")}</h2>
+                    <p className="text-muted-foreground mb-4">{getApiError(courseQuery.error, t("detail.loadFailed"))}</p>
+                    <Button onClick={() => courseQuery.refetch()}>{t("common:actions.retry")}</Button>
                 </div>
             </div>
         );
@@ -157,11 +160,11 @@ const CourseDetail = () => {
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold mb-2">Course Not Found</h2>
-                    <p className="text-muted-foreground mb-4">This course doesn't exist or has been removed.</p>
+                    <h2 className="text-xl font-semibold mb-2">{t("detail.notFound")}</h2>
+                    <p className="text-muted-foreground mb-4">{t("detail.notFoundDesc")}</p>
                     <Button onClick={() => navigate("/courses")}>
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to Courses
+                        <ArrowLeft className="w-4 h-4 me-2 rtl:rotate-180" />
+                        {t("detail.backToCourses")}
                     </Button>
                 </div>
             </div>
@@ -211,7 +214,7 @@ const CourseDetail = () => {
     const handleEnroll = async () => {
         if (!courseId) return;
         setEnrolling(true);
-        const { error } = await enrollInCourse(courseId);
+        const { error } = await enrollInCourse(courseId, detail?.Title);
         if (!error) {
             await Promise.all([
                 courseQuery.refetch(),
@@ -230,7 +233,7 @@ const CourseDetail = () => {
             <main
                 className={cn(
                     "pt-20 pb-8 px-6 transition-all duration-300",
-                    sidebarCollapsed ? "ml-20" : "ml-64"
+                    sidebarCollapsed ? "ms-20" : "ms-64"
                 )}
             >
                 <div className="max-w-5xl mx-auto space-y-6">
@@ -238,10 +241,10 @@ const CourseDetail = () => {
                     <Button
                         variant="ghost"
                         onClick={() => navigate("/courses")}
-                        className="gap-2 -ml-2"
+                        className="gap-2 -ms-2"
                     >
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Courses
+                        <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
+                        {t("detail.backToCourses")}
                     </Button>
 
                     {/* Course Header Card */}
@@ -257,13 +260,13 @@ const CourseDetail = () => {
                             course.Category?.toLowerCase() === "soft-skills" && "bg-gradient-to-br from-pink-500 to-rose-600",
                         )}>
                             <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
-                            <div className="absolute bottom-4 left-6 right-6">
+                            <div className="absolute bottom-4 start-6 end-6">
                                 <div className="flex flex-wrap gap-2 mb-3">
                                     <Badge className="bg-white/20 text-white border-0">
-                                        {course.Category}
+                                        {course.Category ? t(`category.${course.Category.toLowerCase()}`, { defaultValue: course.Category }) : ""}
                                     </Badge>
                                     <Badge variant="outline" className={cn("border-white/30 text-white", getLevelColor(course.Level))}>
-                                        {course.Level}
+                                        {course.Level ? t(`level.${course.Level.toLowerCase()}`, { defaultValue: course.Level }) : ""}
                                     </Badge>
                                 </div>
                                 <h1 className="text-3xl font-bold text-white">{course.Title}</h1>
@@ -278,32 +281,32 @@ const CourseDetail = () => {
                             <div className="flex flex-wrap items-center gap-6 mb-6">
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Users className="w-5 h-5" />
-                                    <span>{(course.EnrolledCount ?? 0).toLocaleString()} trainers</span>
+                                    <span>{t("detail.trainersCount", { count: course.EnrolledCount ?? 0 })}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Clock className="w-5 h-5" />
-                                    <span>{course.DurationHours ?? 0} hours</span>
+                                    <span>{t("hoursCount", { count: course.DurationHours ?? 0 })}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <BookOpen className="w-5 h-5" />
-                                    <span>{totalLessons} lessons</span>
+                                    <span>{t("lessonsCount", { count: totalLessons })}</span>
                                 </div>
                             </div>
 
                             {/* Progress Section */}
                             <div className="p-4 rounded-xl bg-muted/30 mb-6">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="font-medium">Your Progress</span>
+                                    <span className="font-medium">{t("detail.yourProgress")}</span>
                                     <span className="text-sm text-muted-foreground">
-                                        {completedLessons} of {totalLessons} lessons completed
+                                        {t("detail.lessonsCompleted", { done: formatNumber(completedLessons), total: formatNumber(totalLessons) })}
                                     </span>
                                 </div>
                                 <Progress value={progressPercent} className="h-3 mb-2" />
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-muted-foreground">
-                                        {completedChapters} of {chapters.length} chapters done
+                                        {t("detail.chaptersDone", { done: formatNumber(completedChapters), total: formatNumber(chapters.length) })}
                                     </span>
-                                    <span className="font-semibold text-primary">{progressPercent}%</span>
+                                    <span className="font-semibold text-primary">{formatPercent(progressPercent)}</span>
                                 </div>
                             </div>
 
@@ -319,7 +322,7 @@ const CourseDetail = () => {
                                             }}
                                         >
                                             <Play className="w-5 h-5" />
-                                            Continue: {nextLesson.lesson.Title}
+                                            {t("detail.continueLesson", { title: nextLesson.lesson.Title })}
                                         </Button>
                                     )
                                 ) : (
@@ -334,7 +337,7 @@ const CourseDetail = () => {
                                         ) : (
                                             <GraduationCap className="w-5 h-5" />
                                         )}
-                                        Enroll Now
+                                        {t("detail.enrollNow")}
                                     </Button>
                                 )}
                                 {enrolled && (
@@ -345,16 +348,16 @@ const CourseDetail = () => {
                                         onClick={() => navigate(`/quizzes?courseId=${course.Id}`)}
                                     >
                                         <ClipboardCheck className="w-5 h-5" />
-                                        Quizzes
+                                        {t("detail.quizzes")}
                                     </Button>
                                 )}
                                 <span className="text-sm text-muted-foreground">
                                     {enrolled ? (
                                         nextLesson
-                                            ? `Chapter ${nextLesson.chapter.Number}${nextLesson.lesson.Duration ? ` • ${nextLesson.lesson.Duration}` : ""}`
-                                            : chapters.length === 0 ? "No lessons published yet" : "Course completed"
+                                            ? `${t("detail.chapterN", { number: formatNumber(nextLesson.chapter.Number) })}${nextLesson.lesson.Duration ? ` • ${nextLesson.lesson.Duration}` : ""}`
+                                            : chapters.length === 0 ? t("detail.noLessonsYet") : t("detail.courseCompleted")
                                     ) : (
-                                        "Enroll to start learning"
+                                        t("detail.enrollToStart")
                                     )}
                                 </span>
                             </div>
@@ -365,7 +368,7 @@ const CourseDetail = () => {
                     <div className="grid lg:grid-cols-3 gap-6">
                         {/* Main Content - Chapters */}
                         <div className="lg:col-span-2 space-y-4">
-                            <h2 className="text-xl font-semibold">Course Content</h2>
+                            <h2 className="text-xl font-semibold">{t("detail.courseContent")}</h2>
                             <div className="space-y-3">
                                 {!contentUnlocked && (
                                     <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 flex flex-col sm:flex-row sm:items-center gap-4">
@@ -373,19 +376,19 @@ const CourseDetail = () => {
                                             <Lock className="w-5 h-5 text-primary" />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="font-medium">Enroll to unlock this course</p>
-                                            <p className="text-sm text-muted-foreground">Lesson content and videos are available once you are enrolled.</p>
+                                            <p className="font-medium">{t("detail.unlockTitle")}</p>
+                                            <p className="text-sm text-muted-foreground">{t("detail.unlockDesc")}</p>
                                         </div>
                                         <Button onClick={handleEnroll} disabled={enrolling} className="gap-2">
                                             {enrolling ? <Loader2 className="w-4 h-4 animate-spin" /> : <GraduationCap className="w-4 h-4" />}
-                                            Enroll Now
+                                            {t("detail.enrollNow")}
                                         </Button>
                                     </div>
                                 )}
                                 {chapters.length === 0 && (
                                     <div className="rounded-2xl border border-border/50 bg-card p-8 text-center text-muted-foreground">
                                         <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                        <p>The instructor has not added any lessons yet.</p>
+                                        <p>{t("detail.noLessons")}</p>
                                     </div>
                                 )}
                                 {chapters.map((chapter) => (
@@ -404,14 +407,14 @@ const CourseDetail = () => {
                         <div className="space-y-4">
                             {/* Instructor */}
                             <div className="rounded-2xl bg-card border border-border/50 shadow-soft p-5">
-                                <h3 className="font-semibold mb-4">Instructor</h3>
+                                <h3 className="font-semibold mb-4">{t("detail.instructor")}</h3>
                                 <div className="flex items-center gap-3">
                                     <div className="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-white font-bold">
-                                        {(course.InstructorName || "Instructor").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                                        {(course.InstructorName || "?").split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="font-medium">{course.InstructorName || "Instructor"}</p>
-                                        <p className="text-sm text-muted-foreground">Course Instructor</p>
+                                        <p className="font-medium">{course.InstructorName ?? t("common:labels.unknown")}</p>
+                                        <p className="text-sm text-muted-foreground">{t("detail.courseInstructor")}</p>
                                     </div>
                                 </div>
                             </div>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useStudySession } from '@/components/learning/studySessionContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Pause, Play, CheckCircle, Volume2, StopCircle, Sparkles, Lock, AlertCircle, FileText } from 'lucide-react';
@@ -36,6 +37,7 @@ const resolveMediaUrl = (url: string) => (url.startsWith('/') ? `${apiOrigin}${u
 const LessonPlayer = () => {
     const { courseId, lessonId } = useParams();
     const navigate = useNavigate();
+    const { t, i18n } = useTranslation(['learning', 'common']);
     const { toast } = useToast();
     const {
         startSession,
@@ -151,7 +153,7 @@ const LessonPlayer = () => {
         if (!completed) {
             const { error } = await completeLesson(courseId, lessonId, true);
             if (error) return;
-            toast({ title: 'Lesson completed', description: 'Your progress has been saved.' });
+            toast({ title: t('player.lessonCompleted'), description: t('player.progressSaved') });
         }
         await endSession();
         navigate(`/courses/${courseId}`);
@@ -160,7 +162,7 @@ const LessonPlayer = () => {
     const handleEnroll = async () => {
         if (!courseId) return;
         setEnrolling(true);
-        const { error } = await enrollInCourse(courseId);
+        const { error } = await enrollInCourse(courseId, course?.Title);
         if (!error) await courseQuery.refetch();
         setEnrolling(false);
     };
@@ -171,6 +173,7 @@ const LessonPlayer = () => {
             setIsSpeaking(false);
         } else {
             const utterance = new SpeechSynthesisUtterance(lessonContent);
+            utterance.lang = i18n.language?.startsWith('ar') ? 'ar-SA' : 'en-US';
             utterance.onend = () => setIsSpeaking(false);
             utteranceRef.current = utterance;
             window.speechSynthesis.speak(utterance);
@@ -189,13 +192,13 @@ const LessonPlayer = () => {
 
         try {
             const response = await api.post<{ Content: string }>('/AI/coach', {
-                Messages: [{ Role: 'user', Content: `Explain this passage from my lesson "${lessonTitle}" in simple terms: "${text}"` }],
+                Messages: [{ Role: 'user', Content: t('player.explainPrompt', { title: lessonTitle, text }) }],
                 Mode: 'chat',
             });
             setExplanationText(response.data.Content);
         } catch (error) {
             setShowExplanation(false);
-            toast({ title: 'Could not get an explanation', description: getApiError(error), variant: 'destructive' });
+            toast({ title: t('player.explainFailed'), description: getApiError(error), variant: 'destructive' });
         } finally {
             setExplanationLoading(false);
         }
@@ -214,12 +217,12 @@ const LessonPlayer = () => {
             <div className="min-h-screen bg-background flex items-center justify-center px-4">
                 <div className="text-center">
                     <AlertCircle className="w-14 h-14 text-muted-foreground mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold mb-2">Lesson not available</h2>
+                    <h2 className="text-xl font-semibold mb-2">{t('player.notAvailable')}</h2>
                     <p className="text-muted-foreground mb-4">
-                        {courseQuery.error ? getApiError(courseQuery.error, 'Failed to load the lesson.') : "This lesson doesn't exist or has been removed."}
+                        {courseQuery.error ? getApiError(courseQuery.error, t('player.loadFailed')) : t('player.notFoundDesc')}
                     </p>
                     <Button onClick={() => navigate(courseId ? `/courses/${courseId}` : '/courses')}>
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Back to course
+                        <ArrowLeft className="w-4 h-4 me-2 rtl:rotate-180" /> {t('player.backToCourse')}
                     </Button>
                 </div>
             </div>
@@ -233,17 +236,17 @@ const LessonPlayer = () => {
                     <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                         <Lock className="w-7 h-7 text-primary" />
                     </div>
-                    <h2 className="text-xl font-semibold mb-2">Enroll to view this lesson</h2>
+                    <h2 className="text-xl font-semibold mb-2">{t('player.enrollToView')}</h2>
                     <p className="text-muted-foreground mb-6">
-                        "{lessonTitle}" is part of {course.Title}. Enroll in the course to unlock its content.
+                        {t('player.enrollToViewDesc', { lesson: lessonTitle, course: course.Title })}
                     </p>
                     <div className="flex items-center justify-center gap-3">
                         <Button variant="outline" onClick={() => navigate(`/courses/${courseId}`)}>
-                            <ArrowLeft className="w-4 h-4 mr-2" /> Back to course
+                            <ArrowLeft className="w-4 h-4 me-2 rtl:rotate-180" /> {t('player.backToCourse')}
                         </Button>
                         <Button onClick={handleEnroll} disabled={enrolling}>
-                            {enrolling && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                            Enroll Now
+                            {enrolling && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
+                            {t('player.enrollNow')}
                         </Button>
                     </div>
                 </div>
@@ -253,17 +256,17 @@ const LessonPlayer = () => {
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            <header className="border-b px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card fixed top-0 left-0 right-0 z-50">
+            <header className="border-b px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card fixed top-0 start-0 end-0 z-50">
                 <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
                     <Button variant="ghost" size="sm" onClick={() => navigate(`/courses/${courseId}`)} className="h-8 px-2">
-                        <ArrowLeft className="w-4 h-4" />
+                        <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
                     </Button>
-                    <h1 className="font-semibold text-base sm:text-lg line-clamp-1">{lessonTitle || "Lesson Player"}</h1>
+                    <h1 className="font-semibold text-base sm:text-lg line-clamp-1">{lessonTitle || t('player.title')}</h1>
                 </div>
                 <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
                     <div className="font-mono text-lg sm:text-xl font-medium bg-muted px-3 py-1.5 rounded-md flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                        {formatTime(sessionDuration)}
+                        <span dir="ltr">{formatTime(sessionDuration)}</span>
                     </div>
                 </div>
             </header>
@@ -279,14 +282,14 @@ const LessonPlayer = () => {
                                 controls
                                 src={videoUrl}
                             >
-                                Your browser does not support the video tag.
+                                {t('player.noVideoSupport')}
                             </video>
                         </Card>
                     ) : (
                         <Card className="aspect-video flex items-center justify-center bg-muted/30">
                             <div className="text-center text-muted-foreground px-6">
                                 <FileText className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                                <p className="text-sm">This lesson has no video. Read the material alongside.</p>
+                                <p className="text-sm">{t('player.noVideo')}</p>
                             </div>
                         </Card>
                     )}
@@ -295,18 +298,18 @@ const LessonPlayer = () => {
                         <div className="flex gap-2">
                             {isTracking ? (
                                 <Button variant="outline" onClick={pauseSession}>
-                                    <Pause className="w-4 h-4 mr-2" /> Pause Session
+                                    <Pause className="w-4 h-4 me-2" /> {t('player.pause')}
                                 </Button>
                             ) : (
                                 <Button variant="outline" onClick={resumeSession}>
-                                    <Play className="w-4 h-4 mr-2" /> Resume Session
+                                    <Play className="w-4 h-4 me-2" /> {t('player.resume')}
                                 </Button>
                             )}
                         </div>
 
                         <Button variant={completed ? "outline" : "default"} onClick={handleComplete} disabled={isCompleting}>
-                            {isCompleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-                            {completed ? "Completed - Back to Course" : "Complete Lesson"}
+                            {isCompleting ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <CheckCircle className="w-4 h-4 me-2" />}
+                            {completed ? t('player.completedBack') : t('player.complete')}
                         </Button>
                     </div>
                 </div>
@@ -316,7 +319,7 @@ const LessonPlayer = () => {
                     <Card className="flex-1 flex flex-col">
                         <CardContent className="p-0 flex flex-col h-full">
                             <div className="p-4 border-b flex items-center justify-between bg-muted/20">
-                                <h3 className="font-semibold">Lesson Material</h3>
+                                <h3 className="font-semibold">{t('player.material')}</h3>
                                 <Button
                                     variant={isSpeaking ? "destructive" : "secondary"}
                                     size="sm"
@@ -325,11 +328,11 @@ const LessonPlayer = () => {
                                 >
                                     {isSpeaking ? (
                                         <>
-                                            <StopCircle className="w-4 h-4 mr-2" /> Stop Reading
+                                            <StopCircle className="w-4 h-4 me-2" /> {t('player.stopReading')}
                                         </>
                                     ) : (
                                         <>
-                                            <Volume2 className="w-4 h-4 mr-2" /> Read Aloud
+                                            <Volume2 className="w-4 h-4 me-2" /> {t('player.readAloud')}
                                         </>
                                     )}
                                 </Button>
@@ -337,7 +340,7 @@ const LessonPlayer = () => {
                             <ScrollArea className="flex-1 p-4 relative" >
                                 <article ref={textRef} className="prose prose-sm dark:prose-invert max-w-none">
                                     {!lessonContent.trim() && (
-                                        <p className="text-sm text-muted-foreground">No written material for this lesson.</p>
+                                        <p className="text-sm text-muted-foreground">{t('player.noMaterial')}</p>
                                     )}
                                     {lessonContent.split('\n').map((paragraph, idx) => (
                                         <p key={idx} className="mb-4 leading-relaxed text-muted-foreground">
@@ -361,8 +364,8 @@ const LessonPlayer = () => {
                             className="shadow-xl bg-primary text-primary-foreground animate-in fade-in zoom-in duration-200"
                             onClick={handleExplain}
                         >
-                            <Sparkles className="w-3 h-3 mr-2" />
-                            Explain Clip?
+                            <Sparkles className="w-3 h-3 me-2" />
+                            {t('player.explainClip')}
                         </Button>
                     </div>
                 )}
@@ -374,22 +377,22 @@ const LessonPlayer = () => {
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Sparkles className="w-5 h-5 text-primary" />
-                            Explanation
+                            {t('player.explanation')}
                         </DialogTitle>
                         <DialogDescription>
-                            A simplified explanation of the selected text.
+                            {t('player.explanationDesc')}
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="py-4">
-                        <div className="bg-muted/50 p-3 rounded-md mb-4 text-xs text-muted-foreground border-l-2 border-primary italic">
+                        <div className="bg-muted/50 p-3 rounded-md mb-4 text-xs text-muted-foreground border-s-2 border-primary italic">
                             "{explainedText}"
                         </div>
 
                         {explanationLoading ? (
                             <div className="flex flex-col items-center justify-center py-8 space-y-3">
                                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                                <p className="text-sm text-foreground/80">Analyzing context...</p>
+                                <p className="text-sm text-foreground/80">{t('player.analyzing')}</p>
                             </div>
                         ) : (
                             <div className="text-sm leading-relaxed">
@@ -401,7 +404,7 @@ const LessonPlayer = () => {
                     </div>
 
                     <DialogFooter>
-                        <Button onClick={() => setShowExplanation(false)}>Close</Button>
+                        <Button onClick={() => setShowExplanation(false)}>{t('common:actions.close')}</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

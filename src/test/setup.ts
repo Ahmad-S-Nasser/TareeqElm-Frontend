@@ -16,6 +16,17 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeEach, vi } from "vitest";
+import i18n, { i18nReady } from "@/i18n";
+
+// i18n: load every locale file eagerly so translations are available synchronously in tests
+// (the app itself lazy-loads them). English is the default language; each test starts in English.
+await i18nReady;
+const localeFiles = import.meta.glob<{ default: Record<string, unknown> }>("../locales/*/*.json", { eager: true });
+for (const [file, mod] of Object.entries(localeFiles)) {
+  const [, lng, ns] = /locales\/([^/]+)\/([^/]+)\.json$/.exec(file) ?? [];
+  if (lng && ns) i18n.addResourceBundle(lng, ns, mod.default, true, true);
+}
+await i18n.changeLanguage("en");
 
 class ResizeObserverStub {
   observe() {}
@@ -59,7 +70,8 @@ beforeEach(() => {
   localStorage.clear();
 });
 
-afterEach(() => {
+afterEach(async () => {
   cleanup();
+  await i18n.changeLanguage("en");
   localStorage.clear();
 });

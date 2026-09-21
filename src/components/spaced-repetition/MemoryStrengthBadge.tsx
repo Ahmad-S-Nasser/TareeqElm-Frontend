@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -7,10 +8,11 @@ interface MemoryStrengthBadgeProps {
 }
 
 export function MemoryStrengthBadge({ repetitions, easeFactor }: MemoryStrengthBadgeProps) {
+  const { t } = useTranslation("learning");
   const getStrength = () => {
-    if (repetitions >= 4 && easeFactor >= 2.3) return { label: "Strong", color: "bg-success/15 text-success border-success/30" };
-    if (repetitions >= 2 || (repetitions >= 1 && easeFactor >= 2.0)) return { label: "Medium", color: "bg-warning/15 text-warning-foreground border-warning/30" };
-    return { label: "Weak", color: "bg-destructive/15 text-destructive border-destructive/30" };
+    if (repetitions >= 4 && easeFactor >= 2.3) return { label: t("spaced.strength.strong"), color: "bg-success/15 text-success border-success/30" };
+    if (repetitions >= 2 || (repetitions >= 1 && easeFactor >= 2.0)) return { label: t("spaced.strength.medium"), color: "bg-warning/15 text-warning-foreground border-warning/30" };
+    return { label: t("spaced.strength.weak"), color: "bg-destructive/15 text-destructive border-destructive/30" };
   };
 
   const strength = getStrength();

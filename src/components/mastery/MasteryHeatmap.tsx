@@ -1,4 +1,6 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 import {
     TrainerMastery,
     Topic,
@@ -21,6 +23,8 @@ interface MasteryHeatmapProps {
 }
 
 export function MasteryHeatmap({ trainers, topics, className }: MasteryHeatmapProps) {
+    const { t } = useTranslation("learning");
+    const { formatNumber, formatPercent, formatDate } = useFormatters();
     const getTrendIcon = (trend: "improving" | "stable" | "declining") => {
         switch (trend) {
             case "improving":
@@ -44,10 +48,10 @@ export function MasteryHeatmap({ trainers, topics, className }: MasteryHeatmapPr
                         {/* Header Row - Topics */}
                         <thead>
                             <tr className="border-b border-border/50">
-                                <th className="sticky left-0 bg-card z-10 px-4 py-3 text-left text-sm font-semibold min-w-[180px]">
+                                <th className="sticky start-0 bg-card z-10 px-4 py-3 text-start text-sm font-semibold min-w-[180px]">
                                     <div className="flex items-center gap-2">
                                         <User className="w-4 h-4 text-muted-foreground" />
-                                        Trainer
+                                        {t("mastery.trainer")}
                                     </div>
                                 </th>
                                 {topics.map((topic) => (
@@ -64,7 +68,7 @@ export function MasteryHeatmap({ trainers, topics, className }: MasteryHeatmapPr
                                     </th>
                                 ))}
                                 <th className="px-4 py-3 text-center text-xs font-semibold bg-primary/5 min-w-[80px]">
-                                    Overall
+                                    {t("mastery.overall")}
                                 </th>
                             </tr>
                         </thead>
@@ -80,7 +84,7 @@ export function MasteryHeatmap({ trainers, topics, className }: MasteryHeatmapPr
                                     )}
                                 >
                                     {/* Trainer Name Cell */}
-                                    <td className="sticky left-0 bg-card z-10 px-4 py-3">
+                                    <td className="sticky start-0 bg-card z-10 px-4 py-3">
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
                                                 {trainer.trainerName.split(" ").map((n) => n[0]).join("")}
@@ -88,7 +92,7 @@ export function MasteryHeatmap({ trainers, topics, className }: MasteryHeatmapPr
                                             <div>
                                                 <p className="text-sm font-medium">{trainer.trainerName}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    Last active: {trainer.lastActive.toLocaleDateString()}
+                                                    {t("mastery.lastActive", { date: formatDate(trainer.lastActive) })}
                                                 </p>
                                             </div>
                                         </div>
@@ -112,7 +116,7 @@ export function MasteryHeatmap({ trainers, topics, className }: MasteryHeatmapPr
                                                             )}
                                                         >
                                                             <span className={cn("text-sm font-bold", textColorClass)}>
-                                                                {score?.score ?? "-"}
+                                                                {score ? formatNumber(score.score) : "-"}
                                                             </span>
                                                             {score && score.score > 0 && (
                                                                 <div className="mt-0.5">{getTrendIcon(score.trend)}</div>
@@ -124,18 +128,18 @@ export function MasteryHeatmap({ trainers, topics, className }: MasteryHeatmapPr
                                                             <div className="space-y-1">
                                                                 <p className="font-semibold">{topic.name}</p>
                                                                 <p className="text-xs">
-                                                                    Score: <span className="font-medium">{score.score}%</span>
+                                                                    {t("mastery.score")} <span className="font-medium">{formatPercent(score.score)}</span>
                                                                 </p>
                                                                 <p className="text-xs">
-                                                                    Progress: {score.questionsCorrect}/{score.questionsAttempted} correct
+                                                                    {t("mastery.progress", { correct: formatNumber(score.questionsCorrect), attempted: formatNumber(score.questionsAttempted) })}
                                                                 </p>
                                                                 <p className="text-xs flex items-center gap-1">
-                                                                    Trend: {getTrendIcon(score.trend)}{" "}
-                                                                    <span className="capitalize">{score.trend}</span>
+                                                                    {t("mastery.trend")} {getTrendIcon(score.trend)}{" "}
+                                                                    <span>{t(`mastery.trends.${score.trend}`)}</span>
                                                                 </p>
                                                             </div>
                                                         ) : (
-                                                            <p className="text-xs">Not started</p>
+                                                            <p className="text-xs">{t("mastery.notStarted")}</p>
                                                         )}
                                                     </TooltipContent>
                                                 </Tooltip>
@@ -152,7 +156,7 @@ export function MasteryHeatmap({ trainers, topics, className }: MasteryHeatmapPr
                                                 getMasteryTextColor(getMasteryLevel(trainer.overallMastery))
                                             )}
                                         >
-                                            {trainer.overallMastery}%
+                                            {formatPercent(trainer.overallMastery)}
                                         </div>
                                     </td>
                                 </tr>
@@ -165,27 +169,27 @@ export function MasteryHeatmap({ trainers, topics, className }: MasteryHeatmapPr
             {/* Summary Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="rounded-xl bg-card border border-border/50 p-4">
-                    <p className="text-xs text-muted-foreground mb-1">Total Trainers</p>
-                    <p className="text-2xl font-bold">{trainers.length}</p>
+                    <p className="text-xs text-muted-foreground mb-1">{t("mastery.totalTrainers")}</p>
+                    <p className="text-2xl font-bold">{formatNumber(trainers.length)}</p>
                 </div>
                 <div className="rounded-xl bg-card border border-border/50 p-4">
-                    <p className="text-xs text-muted-foreground mb-1">Avg. Mastery</p>
+                    <p className="text-xs text-muted-foreground mb-1">{t("mastery.avgMastery")}</p>
                     <p className="text-2xl font-bold">
-                        {Math.round(
+                        {formatPercent(
                             trainers.reduce((sum, s) => sum + s.overallMastery, 0) / trainers.length
-                        )}%
+                        )}
                     </p>
                 </div>
                 <div className="rounded-xl bg-card border border-border/50 p-4">
-                    <p className="text-xs text-muted-foreground mb-1">Trainers Struggling</p>
+                    <p className="text-xs text-muted-foreground mb-1">{t("mastery.struggling")}</p>
                     <p className="text-2xl font-bold text-destructive">
-                        {trainers.filter((s) => s.overallMastery < 40).length}
+                        {formatNumber(trainers.filter((s) => s.overallMastery < 40).length)}
                     </p>
                 </div>
                 <div className="rounded-xl bg-card border border-border/50 p-4">
-                    <p className="text-xs text-muted-foreground mb-1">Trainers Mastered</p>
+                    <p className="text-xs text-muted-foreground mb-1">{t("mastery.mastered")}</p>
                     <p className="text-2xl font-bold text-success">
-                        {trainers.filter((s) => s.overallMastery >= 80).length}
+                        {formatNumber(trainers.filter((s) => s.overallMastery >= 80).length)}
                     </p>
                 </div>
             </div>

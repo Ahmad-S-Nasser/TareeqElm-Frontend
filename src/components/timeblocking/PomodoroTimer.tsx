@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Play, Pause, RotateCcw, Coffee, Brain } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 
 interface PomodoroTimerProps {
   activeBlockTitle?: string | null;
@@ -18,13 +20,14 @@ const DURATIONS: Record<TimerMode, number> = {
   "long-break": 15 * 60,
 };
 
-const modeLabels: Record<TimerMode, string> = {
-  focus: "Focus",
-  "short-break": "Short Break",
-  "long-break": "Long Break",
-};
-
 export const PomodoroTimer = ({ activeBlockTitle, onSessionComplete }: PomodoroTimerProps) => {
+  const { t } = useTranslation("learning");
+  const { formatNumber } = useFormatters();
+  const modeLabels: Record<TimerMode, string> = {
+    focus: t("pomodoro.focus"),
+    "short-break": t("pomodoro.shortBreak"),
+    "long-break": t("pomodoro.longBreak"),
+  };
   const [mode, setMode] = useState<TimerMode>("focus");
   const [timeLeft, setTimeLeft] = useState(DURATIONS.focus);
   const [isRunning, setIsRunning] = useState(false);
@@ -38,8 +41,9 @@ export const PomodoroTimer = ({ activeBlockTitle, onSessionComplete }: PomodoroT
   useEffect(() => {
     if (activeBlockTitle) {
       setMode("focus"); setTimeLeft(DURATIONS.focus); setIsRunning(true);
-      toast.info(`Pomodoro started for: ${activeBlockTitle}`);
+      toast.info(t("pomodoro.startedFor", { title: activeBlockTitle }));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeBlockTitle]);
 
   const hasTimeLeft = timeLeft > 0;
@@ -58,15 +62,16 @@ export const PomodoroTimer = ({ activeBlockTitle, onSessionComplete }: PomodoroT
       if (mode === "focus") {
         const newCount = completedPomodoros + 1;
         setCompletedPomodoros(newCount);
-        toast.success(`Pomodoro #${newCount} complete! Take a break.`);
+        toast.success(t("pomodoro.complete", { count: formatNumber(newCount) }));
         onSessionComplete?.();
         const nextMode = newCount % 4 === 0 ? "long-break" : "short-break";
         setMode(nextMode); setTimeLeft(DURATIONS[nextMode]);
       } else {
-        toast.info("Break over! Ready to focus again.");
+        toast.info(t("pomodoro.breakOver"));
         setMode("focus"); setTimeLeft(DURATIONS.focus);
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, isRunning, mode, completedPomodoros, onSessionComplete]);
 
   const toggleTimer = () => setIsRunning((r) => !r);
@@ -84,7 +89,7 @@ export const PomodoroTimer = ({ activeBlockTitle, onSessionComplete }: PomodoroT
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold flex items-center gap-2">
             {mode === "focus" ? <Brain className="w-4 h-4 text-primary" /> : <Coffee className="w-4 h-4 text-success" />}
-            Pomodoro
+            {t("pomodoro.title")}
           </h3>
           <div className="flex gap-0.5 bg-muted/50 rounded-lg p-0.5">
             {(["focus", "short-break", "long-break"] as TimerMode[]).map((m) => (
@@ -121,19 +126,19 @@ export const PomodoroTimer = ({ activeBlockTitle, onSessionComplete }: PomodoroT
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-2xl font-bold tabular-nums">{minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")}</span>
+              <span dir="ltr" className="text-2xl font-bold tabular-nums">{minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")}</span>
               <span className="text-[10px] text-muted-foreground">{modeLabels[mode]}</span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center justify-center gap-2 mt-1">
-          <Button variant="outline" size="icon" onClick={resetTimer} className="h-8 w-8 rounded-lg">
+          <Button variant="outline" size="icon" aria-label={t("pomodoro.reset")} onClick={resetTimer} className="h-8 w-8 rounded-lg">
             <RotateCcw className="w-3.5 h-3.5" />
           </Button>
           <Button onClick={toggleTimer} className="gap-2 px-5 h-9 rounded-lg" size="sm">
             {isRunning ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-            {isRunning ? "Pause" : "Start"}
+            {isRunning ? t("pomodoro.pause") : t("pomodoro.start")}
           </Button>
         </div>
 
@@ -141,7 +146,7 @@ export const PomodoroTimer = ({ activeBlockTitle, onSessionComplete }: PomodoroT
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className={cn("w-2 h-2 rounded-full transition-all", i < completedPomodoros % 4 ? "bg-primary" : "bg-border")} />
           ))}
-          <span className="text-[10px] text-muted-foreground ml-1">{completedPomodoros} done</span>
+          <span className="text-[10px] text-muted-foreground ms-1">{t("pomodoro.done", { count: formatNumber(completedPomodoros) })}</span>
         </div>
       </CardContent>
     </Card>

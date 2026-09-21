@@ -21,8 +21,8 @@ export const InstructorPageLayout = ({ children }: InstructorPageLayoutProps) =>
       <main
         className={cn(
           "pt-20 pb-8 px-4 sm:px-6 transition-all duration-300",
-          sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
-          "ml-0"
+          sidebarCollapsed ? "lg:ms-20" : "lg:ms-64",
+          "ms-0"
         )}
       >
         <div className="max-w-7xl mx-auto space-y-6">

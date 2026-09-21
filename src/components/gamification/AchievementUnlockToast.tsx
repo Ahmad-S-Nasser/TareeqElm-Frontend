@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import type { Achievement } from "@/hooks/useAchievements";
 
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export const AchievementUnlockToast = ({ achievements, onDismiss }: Props) => {
+  const { t } = useTranslation("dashboard");
   const [visible, setVisible] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -56,11 +58,11 @@ export const AchievementUnlockToast = ({ achievements, onDismiss }: Props) => {
       )}>
         <div className="text-4xl animate-bounce">{current.icon}</div>
         <div>
-          <p className="text-xs text-primary font-semibold uppercase tracking-wider">Achievement Unlocked!</p>
+          <p className="text-xs text-primary font-semibold uppercase tracking-wider">{t("achievements.unlocked")}</p>
           <p className="text-base font-bold mt-0.5">{current.title}</p>
           <p className="text-xs text-muted-foreground">{current.description}</p>
         </div>
-        <button onClick={() => { setVisible(false); setTimeout(onDismiss, 300); }} className="ml-auto text-muted-foreground hover:text-foreground">
+        <button aria-label={t("achievements.dismiss")} onClick={() => { setVisible(false); setTimeout(onDismiss, 300); }} className="ms-auto text-muted-foreground hover:text-foreground">
           ✕
         </button>
       </div>

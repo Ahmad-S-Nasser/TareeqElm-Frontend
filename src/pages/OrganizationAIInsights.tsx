@@ -1,8 +1,10 @@
 import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain } from "lucide-react";
 
 const OrganizationAIInsights = () => {
+    const { t } = useTranslation("organization");
     return (
         <OrganizationPageLayout>
             <div>
@@ -10,15 +12,15 @@ const OrganizationAIInsights = () => {
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                         <Brain className="w-5 h-5 text-primary" />
                     </div>
-                    Academic Insights
+                    {t('aiInsights.title')}
                 </h1>
-                <p className="text-muted-foreground mt-1">Analysis of academic performance patterns across the platform</p>
+                <p className="text-muted-foreground mt-1">{t('aiInsights.subtitle')}</p>
             </div>
 
             <Card className="border-border/50">
                 <CardContent className="p-12 text-center">
-                    <p className="font-semibold">Not available yet</p>
-                    <p className="text-sm text-muted-foreground mt-1">Automated insights are not available yet. Department performance is shown on the dashboard.</p>
+                    <p className="font-semibold">{t('notAvailable')}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t('aiInsights.body')}</p>
                 </CardContent>
             </Card>
         </OrganizationPageLayout>

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { FileSearch, Brain, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 
 interface ParsingStep {
   id: string;
-  label: string;
   icon: React.ElementType;
   status: "pending" | "active" | "complete";
 }
@@ -16,12 +17,14 @@ interface ParsingProgressProps {
 }
 
 export const ParsingProgress = ({ isActive, onComplete }: ParsingProgressProps) => {
+  const { t } = useTranslation("instructor");
+  const { formatPercent, formatNumber } = useFormatters();
   const [progress, setProgress] = useState(0);
   const [steps, setSteps] = useState<ParsingStep[]>([
-    { id: "upload", label: "Uploading document", icon: FileSearch, status: "pending" },
-    { id: "parse", label: "Parsing content", icon: FileSearch, status: "pending" },
-    { id: "analyze", label: "AI analyzing structure", icon: Brain, status: "pending" },
-    { id: "generate", label: "Generating course outline", icon: Sparkles, status: "pending" },
+    { id: "upload", icon: FileSearch, status: "pending" },
+    { id: "parse", icon: FileSearch, status: "pending" },
+    { id: "analyze", icon: Brain, status: "pending" },
+    { id: "generate", icon: Sparkles, status: "pending" },
   ]);
 
   const totalSteps = steps.length;
@@ -61,16 +64,16 @@ export const ParsingProgress = ({ isActive, onComplete }: ParsingProgressProps) 
           <Sparkles className="w-5 h-5 text-accent-foreground animate-pulse" />
         </div>
         <div>
-          <h3 className="font-semibold">AI Processing</h3>
-          <p className="text-sm text-muted-foreground">Analyzing your syllabus...</p>
+          <h3 className="font-semibold">{t("syllabus.parsing.title")}</h3>
+          <p className="text-sm text-muted-foreground">{t("syllabus.parsing.analyzing")}</p>
         </div>
       </div>
 
       {/* Progress Bar */}
       <div className="mb-6">
         <div className="flex justify-between text-sm mb-2">
-          <span className="text-muted-foreground">Progress</span>
-          <span className="font-medium">{Math.round(progress)}%</span>
+          <span className="text-muted-foreground">{t("syllabus.parsing.progress")}</span>
+          <span className="font-medium">{formatPercent(Math.round(progress))}</span>
         </div>
         <div className="relative">
           <Progress value={progress} className="h-3" />
@@ -118,12 +121,12 @@ export const ParsingProgress = ({ isActive, onComplete }: ParsingProgressProps) 
                 step.status === "active" && "text-accent",
                 step.status === "complete" && "text-success"
               )}>
-                {step.label}
+                {t(`syllabus.parsing.steps.${step.id}`)}
               </span>
 
               {/* Step Number */}
-              <span className="ml-auto text-xs text-muted-foreground">
-                Step {index + 1}/{steps.length}
+              <span className="ms-auto text-xs text-muted-foreground">
+                {t("syllabus.parsing.stepOf", { current: formatNumber(index + 1), total: formatNumber(steps.length) })}
               </span>
             </div>
           );

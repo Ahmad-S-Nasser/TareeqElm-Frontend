@@ -1,5 +1,7 @@
 import { ExamResult } from "./types";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -27,14 +29,10 @@ export function ExamResultsDialog({
     onRetake,
 }: ExamResultsDialogProps) {
     const navigate = useNavigate();
+    const { t } = useTranslation("quizzes");
+    const { formatNumber, formatPercent, formatDuration } = useFormatters();
 
     if (!result) return null;
-
-    const formatTime = (seconds: number): string => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}m ${secs}s`;
-    };
 
     return (
         <Dialog open={isOpen}>
@@ -57,12 +55,12 @@ export function ExamResultsDialog({
                         </div>
                     </div>
                     <DialogTitle className="text-2xl">
-                        {result.passed ? "Congratulations! 🎉" : "Keep Practicing!"}
+                        {result.passed ? t("exam.congrats") : t("exam.keepPracticing")}
                     </DialogTitle>
                     <DialogDescription>
                         {result.passed
-                            ? "You passed the mock exam!"
-                            : "You didn't pass this time, but don't give up!"}
+                            ? t("exam.passedDesc")
+                            : t("exam.failedDesc")}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -75,26 +73,26 @@ export function ExamResultsDialog({
                                 result.passed ? "text-success" : "text-destructive"
                             )}
                         >
-                            {Math.round(result.percentage)}%
+                            {formatPercent(result.percentage)}
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">
-                            {result.correctCount} of {result.correctCount + result.incorrectCount + result.unansweredCount} correct
+                            {t("exam.correctOf", { correct: formatNumber(result.correctCount), total: formatNumber(result.correctCount + result.incorrectCount + result.unansweredCount) })}
                         </p>
                     </div>
 
                     {/* Progress bar */}
                     <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Score Progress</span>
+                            <span className="text-muted-foreground">{t("exam.scoreProgress")}</span>
                             <span className="font-medium">
-                                Passing: 65%
+                                {t("exam.passing", { score: formatPercent(65) })}
                             </span>
                         </div>
                         <div className="relative">
                             <Progress value={result.percentage} className="h-4" />
                             <div
                                 className="absolute top-0 bottom-0 w-0.5 bg-foreground"
-                                style={{ left: "65%" }}
+                                style={{ insetInlineStart: "65%" }}
                             />
                         </div>
                     </div>
@@ -103,25 +101,25 @@ export function ExamResultsDialog({
                     <div className="grid grid-cols-3 gap-3">
                         <div className="flex flex-col items-center p-3 rounded-xl bg-muted/50">
                             <Clock className="w-5 h-5 text-muted-foreground mb-1" />
-                            <span className="text-lg font-bold">{formatTime(result.timeTaken)}</span>
-                            <span className="text-xs text-muted-foreground">Time Taken</span>
+                            <span className="text-lg font-bold">{formatDuration(result.timeTaken)}</span>
+                            <span className="text-xs text-muted-foreground">{t("exam.timeTaken")}</span>
                         </div>
                         <div className="flex flex-col items-center p-3 rounded-xl bg-success/10">
                             <CheckCircle className="w-5 h-5 text-success mb-1" />
-                            <span className="text-lg font-bold text-success">{result.correctCount}</span>
-                            <span className="text-xs text-muted-foreground">Correct</span>
+                            <span className="text-lg font-bold text-success">{formatNumber(result.correctCount)}</span>
+                            <span className="text-xs text-muted-foreground">{t("exam.correct")}</span>
                         </div>
                         <div className="flex flex-col items-center p-3 rounded-xl bg-destructive/10">
                             <AlertCircle className="w-5 h-5 text-destructive mb-1" />
-                            <span className="text-lg font-bold text-destructive">{result.incorrectCount}</span>
-                            <span className="text-xs text-muted-foreground">Incorrect</span>
+                            <span className="text-lg font-bold text-destructive">{formatNumber(result.incorrectCount)}</span>
+                            <span className="text-xs text-muted-foreground">{t("exam.incorrect")}</span>
                         </div>
                     </div>
 
                     {/* Topic Breakdown */}
                     {result.topicBreakdown.length > 0 && (
                         <div className="space-y-2">
-                            <h4 className="text-sm font-semibold">Topic Breakdown</h4>
+                            <h4 className="text-sm font-semibold">{t("exam.topicBreakdown")}</h4>
                             <div className="space-y-2 max-h-40 overflow-y-auto">
                                 {result.topicBreakdown.map((topic) => (
                                     <div
@@ -131,11 +129,11 @@ export function ExamResultsDialog({
                                         <span className="text-sm truncate flex-1">{topic.topic}</span>
                                         <span
                                             className={cn(
-                                                "text-sm font-semibold ml-2",
+                                                "text-sm font-semibold ms-2",
                                                 topic.percentage >= 65 ? "text-success" : "text-destructive"
                                             )}
                                         >
-                                            {topic.correct}/{topic.total}
+                                            <bdi>{formatNumber(topic.correct)}/{formatNumber(topic.total)}</bdi>
                                         </span>
                                     </div>
                                 ))}
@@ -146,14 +144,14 @@ export function ExamResultsDialog({
 
                 <DialogFooter className="flex-col sm:flex-row gap-2">
                     <Button variant="outline" onClick={() => navigate("/")} className="w-full sm:w-auto">
-                        Back to Dashboard
+                        {t("exam.backToDashboard")}
                     </Button>
                     <Button variant="outline" onClick={onReviewAnswers} className="w-full sm:w-auto">
-                        Review Answers
+                        {t("exam.reviewAnswers")}
                     </Button>
                     <Button onClick={onRetake} className="w-full sm:w-auto gap-2">
                         <RotateCcw className="w-4 h-4" />
-                        Retake Exam
+                        {t("exam.retake")}
                     </Button>
                 </DialogFooter>
             </DialogContent>

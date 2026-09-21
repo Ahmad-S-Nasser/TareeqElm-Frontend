@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import api, { getApiError } from '@/lib/api';
 import { TrainerData, useTrainerStatsQuery } from './useTrainerApi';
+import i18n from '@/i18n';
 import { useToast } from './use-toast';
 
 export interface CoachMessage {
@@ -45,8 +46,8 @@ export const useStudyCoach = () => {
       setMessages(prev => [...prev, assistantMsg]);
     } catch (e) {
       toast({
-        title: "AI Coach Error",
-        description: getApiError(e, "Failed to get response from AI Coach"),
+        title: i18n.t('dashboard:coach.errorTitle'),
+        description: getApiError(e, i18n.t('dashboard:coach.errorFallback')),
         variant: "destructive"
       });
     } finally {
@@ -55,14 +56,10 @@ export const useStudyCoach = () => {
   }, [messages, trainerData, toast]);
 
   const generateInsights = useCallback(async (mode: string) => {
-    const prompts: Record<string, string> = {
-      insights: "Analyze my learning data and give me personalized study insights.",
-      recommendations: "Based on my study patterns, what should I improve?",
-      weekly_plan: "Create a personalized weekly study plan for me.",
-      weak_topics: "What are my weakest topics and how should I improve them?",
-      motivation: "Give me a motivational update on my progress.",
-    };
-    await sendMessage(prompts[mode] || prompts.insights, mode);
+    // The prompt is written in the active language so the coach answers in it.
+    const known = ['insights', 'recommendations', 'weekly_plan', 'weak_topics', 'motivation'];
+    const key = known.includes(mode) ? mode : 'insights';
+    await sendMessage(i18n.t(`dashboard:coach.prompts.${key}`), mode);
   }, [sendMessage]);
 
   const clearMessages = useCallback(() => {

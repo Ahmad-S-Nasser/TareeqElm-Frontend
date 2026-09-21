@@ -1,0 +1,379 @@
+{
+  "dashboard": {
+    "pageTitle": "مركز التحكم بالنظام",
+    "liveBadge": "لوحة تحكم المسؤول المباشرة",
+    "subtitle": "منصة الذكاء الشاملة · {{date}}",
+    "allCourses": "جميع الدورات",
+    "userManagement": "إدارة المستخدمين",
+    "loadFailed": "تعذّر تحميل لوحة التحكم.",
+    "hero": {
+      "totalUsers": "إجمالي المستخدمين",
+      "activeCourses": "الدورات النشطة",
+      "avgCompletion": "متوسط الإكمال",
+      "atRisk": "المعرّضون للخطر"
+    },
+    "cards": {
+      "totalUsers": {
+        "title": "إجمالي المستخدمين",
+        "sub": "على مستوى المنصة"
+      },
+      "activeCourses": {
+        "title": "الدورات النشطة",
+        "sub": "منشورة وقيد التشغيل"
+      },
+      "avgCompletion": {
+        "title": "متوسط الإكمال",
+        "sub": "المتوسط العام"
+      },
+      "atRisk": {
+        "title": "متدرّبون معرّضون للخطر",
+        "sub": "تقدّمهم أقل من 50%"
+      }
+    },
+    "vsLastMonth": "{{value}} مقارنة بالشهر الماضي",
+    "coursePerformance": "أداء الدورات",
+    "noCourseData": "لا توجد بيانات للدورات بعد.",
+    "avgScore": "متوسط الدرجات {{score}}",
+    "courseStats": "{{enrolled}} مسجّلون · اكتمل {{completion}}",
+    "quickActions": "إجراءات سريعة",
+    "quick": {
+      "users": "إدارة المستخدمين",
+      "courses": "مكتبة المحتوى",
+      "analytics": "تحليلات النظام"
+    },
+    "liveActivity": "النشاط المباشر",
+    "noActivity": "لا يوجد نشاط حديث."
+  },
+  "activity": {
+    "enrolled": "سجّل {{actor}} في {{target}}",
+    "completed": "أكمل {{actor}} دورة {{target}}",
+    "joined": "انضم {{actor}} بصفة {{role}}",
+    "joinedNoRole": "انضم {{actor}} إلى المنصة",
+    "unknown": "نشاط جديد"
+  },
+  "audit": {
+    "actions": {
+      "user_create": "أنشأ مستخدمًا",
+      "user_update": "حدّث بيانات مستخدم",
+      "user_delete": "حذف مستخدمًا",
+      "user_role_change": "غيّر دور مستخدم",
+      "user_activate": "فعّل مستخدمًا",
+      "user_deactivate": "عطّل مستخدمًا",
+      "user_password_reset": "أعاد تعيين كلمة مرور مستخدم",
+      "course_create": "أنشأ دورة",
+      "course_update": "حدّث دورة",
+      "course_delete": "حذف دورة",
+      "course_publish": "نشر دورة",
+      "course_archive": "أرشف دورة",
+      "unknown": "نفّذ إجراءً"
+    },
+    "line": "{{actor}} {{action}} · {{target}}"
+  },
+  "users": {
+    "title": "إدارة المستخدمين",
+    "subtitle": "أنشئ المستخدمين وعيّن الأدوار وأدِر الصلاحيات",
+    "add": "إضافة مستخدم",
+    "stats": {
+      "total": "إجمالي المستخدمين",
+      "active": "نشطون",
+      "inactive": "غير نشطين"
+    },
+    "searchPlaceholder": "ابحث بالاسم أو البريد الإلكتروني…",
+    "allRoles": "جميع الأدوار",
+    "table": {
+      "name": "الاسم",
+      "department": "القسم",
+      "role": "الدور",
+      "status": "الحالة"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "loadFailed": "تعذّر تحميل المستخدمين.",
+    "empty": "لا يوجد مستخدمون مطابقون لبحثك.",
+    "noDepartment": "بدون",
+    "editAria": "تعديل {{name}}",
+    "pageInfo_zero": "الصفحة {{page}} من {{pages}} · لا مستخدمين",
+    "pageInfo_one": "الصفحة {{page}} من {{pages}} · مستخدم واحد",
+    "pageInfo_two": "الصفحة {{page}} من {{pages}} · مستخدمان",
+    "pageInfo_few": "الصفحة {{page}} من {{pages}} · {{count}} مستخدمين",
+    "pageInfo_many": "الصفحة {{page}} من {{pages}} · {{count}} مستخدمًا",
+    "pageInfo_other": "الصفحة {{page}} من {{pages}} · {{count}} مستخدم",
+    "add_dialog": {
+      "title": "إضافة مستخدم جديد",
+      "description": "أنشئ حسابًا وعيّن كلمة مرور مبدئية."
+    },
+    "fields": {
+      "fullName": "الاسم الكامل",
+      "fullNamePlaceholder": "سارة أحمد",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "name@example.com",
+      "initialPassword": "كلمة المرور المبدئية",
+      "passwordPlaceholder": "8 أحرف على الأقل",
+      "role": "الدور",
+      "department": "القسم",
+      "status": "الحالة",
+      "resetPassword": "إعادة تعيين كلمة المرور (اختياري)",
+      "resetPasswordPlaceholder": "اتركه فارغًا للإبقاء على كلمة المرور الحالية"
+    },
+    "edit_dialog": {
+      "title": "تعديل المستخدم",
+      "selfNote": "لا يمكنك تغيير دورك أو تعطيل حسابك بنفسك.",
+      "saveChanges": "حفظ التغييرات"
+    },
+    "toast": {
+      "created": "تم إنشاء المستخدم",
+      "createdDescription": "يمكن لـ {{name}} تسجيل الدخول الآن بكلمة المرور التي عيّنتها.",
+      "createFailed": "تعذّر إنشاء المستخدم",
+      "updated": "تم تحديث {{name}}",
+      "updateFailed": "تعذّر تحديث المستخدم",
+      "missingFields": "حقول ناقصة",
+      "missingFieldsDescription": "الاسم والبريد الإلكتروني مطلوبان.",
+      "passwordShort": "كلمة المرور قصيرة جدًا",
+      "passwordShortDescription": "استخدم 8 أحرف على الأقل."
+    }
+  },
+  "enrollments": {
+    "title": "إدارة التسجيلات",
+    "subtitle": "عدد المسجّلين في كل دورة. يسجّل المتدرّبون أنفسهم في الدورات المنشورة.",
+    "coursesCount": "الدورات",
+    "totalEnrollments": "إجمالي التسجيلات",
+    "searchPlaceholder": "ابحث في الدورات أو المدرّسين…",
+    "loadFailed": "تعذّر تحميل الدورات.",
+    "empty": "لم يتم العثور على دورات.",
+    "enrolled_zero": "لا مسجّلين",
+    "enrolled_one": "مسجّل واحد",
+    "enrolled_two": "مسجّلان",
+    "enrolled_few": "{{count}} مسجّلين",
+    "enrolled_many": "{{count}} مسجّلًا",
+    "enrolled_other": "{{count}} مسجّل",
+    "note": "التسجيل المباشر وإعدادات التسجيل المفتوح غير متاحة بعد.",
+    "status": {
+      "Draft": "مسوّدة",
+      "Published": "منشورة",
+      "Archived": "مؤرشفة",
+      "unknown": "غير معروفة"
+    }
+  },
+  "courses": {
+    "title": "إدارة الدورات",
+    "subtitle": "أنشئ مكتبتك التدريبية وأدرها",
+    "create": "إنشاء دورة",
+    "createDialog": {
+      "title": "إنشاء دورة جديدة",
+      "description": "أدخل المعلومات الأساسية لدورتك التدريبية."
+    },
+    "fields": {
+      "title": "عنوان الدورة",
+      "titlePlaceholder": "مثال: أساسيات إدارة المشاريع",
+      "description": "الوصف",
+      "descriptionPlaceholder": "ماذا سيتعلّم الموظفون؟",
+      "audience": "الفئة المستهدفة",
+      "audiencePlaceholder": "مثال: جميع المديرين",
+      "duration": "المدة",
+      "durationPlaceholder": "مثال: 4 ساعات"
+    },
+    "searchPlaceholder": "ابحث في الدورات…",
+    "status": {
+      "Draft": "مسوّدة",
+      "Processing": "قيد المعالجة",
+      "Active": "نشطة"
+    },
+    "aiIndexing": "الفهرسة بالذكاء الاصطناعي…",
+    "stat": {
+      "enrolled": "المسجّلون",
+      "done": "المكتمل",
+      "score": "الدرجة"
+    },
+    "upload": "رفع",
+    "questions": "الأسئلة",
+    "moreActions": "المزيد من الإجراءات",
+    "uploadDialog": {
+      "title": "رفع المحتوى",
+      "description": "سيفهرس الذكاء الاصطناعي هذه المواد تلقائيًا لدورة \"{{course}}\".",
+      "drop": "اسحب الملفات وأفلتها هنا أو انقر للاستعراض",
+      "types": "ملفات PDF وعروض تقديمية وفيديو ومستندات",
+      "pdf": "PDF",
+      "video": "فيديو"
+    },
+    "empty": "لم يتم العثور على دورات",
+    "toast": {
+      "titleRequired": "العنوان مطلوب",
+      "created": "تم إنشاء الدورة",
+      "createdDescription": "تمت إضافة \"{{title}}\". ارفع المحتوى لتفعيلها.",
+      "uploadStarted": "بدأ الرفع",
+      "uploadStartedDescription": "جارٍ معالجة {{file}}",
+      "processed": "اكتملت المعالجة بالذكاء الاصطناعي",
+      "processedDescription": "تمت فهرسة المحتوى. أسئلة المسوّدة جاهزة.",
+      "regenerated": "أُعيد إنشاء الأسئلة",
+      "regeneratedDescription": "أسئلة المسوّدة الجديدة جاهزة."
+    },
+    "seed": {
+      "1": {
+        "title": "أساسيات React",
+        "description": "المفاهيم الأساسية لمكتبة React لمطوّري الواجهات",
+        "audience": "الهندسة",
+        "duration": "6 ساعات"
+      },
+      "2": {
+        "title": "بايثون لعلوم البيانات",
+        "description": "أساسيات بايثون ومعالجة البيانات",
+        "audience": "فريق التحليلات",
+        "duration": "8 ساعات"
+      },
+      "3": {
+        "title": "أساسيات القيادة",
+        "description": "المهارات الشخصية للمديرين الجدد",
+        "audience": "جميع المديرين",
+        "duration": "4 ساعات"
+      },
+      "4": {
+        "title": "إكسل وتحليل البيانات",
+        "description": "إتقان جداول البيانات",
+        "audience": "المالية والعمليات",
+        "duration": "5 ساعات"
+      },
+      "5": {
+        "title": "أساسيات الأمن السيبراني",
+        "description": "التوعية الأمنية لجميع العاملين",
+        "audience": "جميع الموظفين",
+        "duration": "3 ساعات"
+      }
+    }
+  },
+  "analytics": {
+    "title": "التحليلات والرؤى",
+    "subtitle": "اتجاهات الأداء وفجوات المهارات وبيانات القرار",
+    "export": "تصدير التقرير",
+    "vsLastMonth": "{{value}} مقارنة بالشهر الماضي",
+    "kpi": {
+      "completion": "معدل الإكمال في المؤسسة",
+      "score": "متوسط درجات التقييم",
+      "improvement": "التحسّن بين الاختبار القبلي والبعدي",
+      "atRisk": "الموظفون المعرّضون للخطر"
+    },
+    "topics": {
+      "title": "اتجاهات صعوبة المواضيع",
+      "avg": "المتوسط {{value}}",
+      "struggling": "{{value}} يواجهون صعوبة"
+    },
+    "departments": {
+      "title": "مقارنة الأقسام",
+      "atRisk": "{{count}} معرّضون للخطر",
+      "doneScore": "اكتمل {{completion}} · الدرجة {{score}}"
+    },
+    "flagged": {
+      "title": "موظفون تم رصد ضعف أدائهم",
+      "employee": "الموظف",
+      "course": "الدورة",
+      "score": "الدرجة",
+      "completion": "الإكمال",
+      "action": "الإجراء",
+      "followUp": "متابعة"
+    },
+    "toast": {
+      "exported": "تم تصدير التقرير",
+      "exportedDescription": "تم تنزيل {{file}}.",
+      "sessionPlanned": "تم تحديد جلسة",
+      "sessionPlannedDescription": "تم جدولة جلسة متابعة لـ {{name}}."
+    },
+    "csv": {
+      "department": "القسم",
+      "completion": "الإكمال %",
+      "avgScore": "متوسط الدرجات",
+      "employees": "الموظفون",
+      "atRisk": "المعرّضون للخطر"
+    },
+    "seed": {
+      "topics": {
+        "1": "React Hooks",
+        "2": "هياكل بيانات بايثون",
+        "3": "حل النزاعات",
+        "4": "الجداول المحورية في إكسل",
+        "5": "بروتوكولات الأمان"
+      },
+      "departments": {
+        "Engineering": "الهندسة",
+        "Finance": "المالية",
+        "Operations": "العمليات",
+        "DesignAndProduct": "التصميم والمنتجات",
+        "SalesAndMarketing": "المبيعات والتسويق",
+        "All": "الجميع",
+        "Analytics": "التحليلات",
+        "IT": "تقنية المعلومات",
+        "Sales": "المبيعات"
+      },
+      "people": {
+        "1": "توم تشين",
+        "2": "كارلوس ريفيرا",
+        "3": "أليس ميرسر"
+      },
+      "courses": {
+        "1": "أساسيات React",
+        "2": "أساسيات القيادة",
+        "3": "إكسل وتحليل البيانات"
+      }
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "اضبط مساحة عمل مؤسستك",
+    "org": {
+      "title": "المؤسسة",
+      "name": "اسم المؤسسة",
+      "namePlaceholder": "شركة أكمي",
+      "logo": "الشعار",
+      "uploadLogo": "رفع الشعار",
+      "logoHint": "PNG أو JPG · يُوصى بحجم 512×512 بكسل"
+    },
+    "locale": {
+      "title": "اللغة والمنطقة",
+      "timezone": "المنطقة الزمنية",
+      "language": "اللغة"
+    },
+    "languages": {
+      "en": "الإنجليزية",
+      "ar": "العربية",
+      "fr": "الفرنسية",
+      "de": "الألمانية",
+      "es": "الإسبانية"
+    },
+    "branding": {
+      "title": "الهوية البصرية",
+      "accent": "اللون الرئيسي",
+      "customColor": "لون مخصص",
+      "pickColor": "اختيار اللون {{color}}"
+    },
+    "ai": {
+      "title": "الذكاء الاصطناعي والإشعارات",
+      "enable": "تفعيل المساعد الذكي",
+      "enableSub": "السماح للموظفين باستخدام محادثة الأسئلة والأجوبة الذكية في جميع الدورات",
+      "notifyCompletion": "الإشعار عند إكمال الدورة",
+      "notifyCompletionSub": "إرسال تنبيهات للمسؤول عند إكمال الموظفين لدورة",
+      "notifyAtRisk": "التنبيه عند وجود موظفين معرّضين للخطر",
+      "notifyAtRiskSub": "رصد الموظفين الذين تقل درجاتهم عن 50% للمراجعة"
+    },
+    "save": "حفظ الإعدادات",
+    "toast": {
+      "saved": "تم حفظ الإعدادات",
+      "savedDescription": "تم تحديث إعدادات مؤسستك.",
+      "logo": "رفع الشعار",
+      "logoDescription": "رفع الشعار سيتوفر قريبًا."
+    }
+  },
+  "statistics": {
+    "streakValue_zero": "لا أيام",
+    "streakValue_one": "يوم واحد",
+    "streakValue_two": "يومان",
+    "streakValue_few": "{{count}} أيام",
+    "streakValue_many": "{{count}} يومًا",
+    "streakValue_other": "{{count}} يوم",
+    "cardsValue_zero": "لا بطاقات",
+    "cardsValue_one": "بطاقة واحدة",
+    "cardsValue_two": "بطاقتان",
+    "cardsValue_few": "{{count}} بطاقات",
+    "cardsValue_many": "{{count}} بطاقة",
+    "cardsValue_other": "{{count}} بطاقة"
+  }
+}

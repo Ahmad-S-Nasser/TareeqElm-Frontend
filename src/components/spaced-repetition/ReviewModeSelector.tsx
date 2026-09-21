@@ -1,4 +1,6 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 import { Zap, GraduationCap, AlertTriangle, Clock } from "lucide-react";
 
 export type ReviewMode = "all-due" | "quick" | "exam" | "weak-only";
@@ -11,13 +13,15 @@ interface ReviewModeSelectorProps {
 }
 
 const modes = [
-  { id: "all-due" as const, icon: Clock, label: "Due Today", desc: "All cards due for review" },
-  { id: "quick" as const, icon: Zap, label: "Quick Review", desc: "10 cards max, fast pace" },
-  { id: "exam" as const, icon: GraduationCap, label: "Exam Mode", desc: "Timed, no peeking" },
-  { id: "weak-only" as const, icon: AlertTriangle, label: "Weak Cards", desc: "Cards you struggle with" },
+  { id: "all-due" as const, icon: Clock, labelKey: "allDue" },
+  { id: "quick" as const, icon: Zap, labelKey: "quick" },
+  { id: "exam" as const, icon: GraduationCap, labelKey: "exam" },
+  { id: "weak-only" as const, icon: AlertTriangle, labelKey: "weakOnly" },
 ];
 
 export function ReviewModeSelector({ value, onChange, dueTodayCount, weakCount }: ReviewModeSelectorProps) {
+  const { t } = useTranslation("learning");
+  const { formatNumber } = useFormatters();
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
       {modes.map((mode) => {
@@ -27,6 +31,7 @@ export function ReviewModeSelector({ value, onChange, dueTodayCount, weakCount }
         return (
           <button
             key={mode.id}
+            title={t(`spaced.modes.${mode.labelKey}Desc`)}
             onClick={() => onChange(mode.id)}
             className={cn(
               "flex flex-col items-center gap-1.5 p-3 rounded-xl border transition-all text-center",
@@ -36,8 +41,8 @@ export function ReviewModeSelector({ value, onChange, dueTodayCount, weakCount }
             )}
           >
             <Icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-muted-foreground")} />
-            <span className={cn("text-xs font-semibold", isActive ? "text-foreground" : "text-muted-foreground")}>{mode.label}</span>
-            {count !== undefined && <span className="text-[10px] text-muted-foreground">{count} cards</span>}
+            <span className={cn("text-xs font-semibold", isActive ? "text-foreground" : "text-muted-foreground")}>{t(`spaced.modes.${mode.labelKey}`)}</span>
+            {count !== undefined && <span className="text-[10px] text-muted-foreground">{t("spaced.cardsCount", { count })}</span>}
           </button>
         );
       })}

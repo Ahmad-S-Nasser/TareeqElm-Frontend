@@ -1,5 +1,7 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Award, Trophy, Star, Target, Zap, Flame, Clock, CheckCircle2, Calendar } from "lucide-react";
@@ -8,9 +10,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 interface BadgeDefinition {
   id: string;
   icon: React.ElementType;
-  title: string;
-  description: string;
-  requirement: string;
   check: (stats: BadgeStats) => boolean;
   tier: "bronze" | "silver" | "gold" | "platinum";
 }
@@ -31,18 +30,18 @@ const tierStyles: Record<string, { bg: string; border: string; icon: string; glo
 };
 
 const allBadges: BadgeDefinition[] = [
-  { id: "first-block", icon: CheckCircle2, title: "First Step", description: "Created your first time block", requirement: "1+ block", check: (s) => s.totalBlocks >= 1, tier: "bronze" },
-  { id: "planner", icon: Calendar, title: "Day Planner", description: "Scheduled 5+ blocks in a day", requirement: "5 blocks/day", check: (s) => s.todayBlockCount >= 5, tier: "bronze" },
-  { id: "streak-3", icon: Flame, title: "On Fire", description: "Maintained a 3-day streak", requirement: "3-day streak", check: (s) => s.streak >= 3, tier: "bronze" },
-  { id: "streak-7", icon: Flame, title: "Week Warrior", description: "Maintained a 7-day streak", requirement: "7-day streak", check: (s) => s.streak >= 7, tier: "silver" },
-  { id: "streak-14", icon: Trophy, title: "Unstoppable", description: "Maintained a 14-day streak", requirement: "14-day streak", check: (s) => s.streak >= 14, tier: "gold" },
-  { id: "streak-30", icon: Trophy, title: "Legend", description: "Maintained a 30-day streak", requirement: "30-day streak", check: (s) => s.streak >= 30, tier: "platinum" },
-  { id: "hours-10", icon: Clock, title: "Dedicated", description: "Studied 10+ hours this week", requirement: "10h/week", check: (s) => s.totalWeeklyHours >= 10, tier: "silver" },
-  { id: "hours-20", icon: Clock, title: "Scholar", description: "Studied 20+ hours this week", requirement: "20h/week", check: (s) => s.totalWeeklyHours >= 20, tier: "gold" },
-  { id: "hours-40", icon: Star, title: "Elite Learner", description: "Studied 40+ hours this week", requirement: "40h/week", check: (s) => s.totalWeeklyHours >= 40, tier: "platinum" },
-  { id: "full-day", icon: Target, title: "Perfect Day", description: "Completed all blocks in a day", requirement: "All blocks done", check: (s) => s.todayAllCompleted && s.todayBlockCount >= 3, tier: "gold" },
-  { id: "blocks-50", icon: Zap, title: "Power Planner", description: "Created 50+ total blocks", requirement: "50 blocks", check: (s) => s.totalBlocks >= 50, tier: "silver" },
-  { id: "blocks-100", icon: Award, title: "Master Scheduler", description: "Created 100+ total blocks", requirement: "100 blocks", check: (s) => s.totalBlocks >= 100, tier: "platinum" },
+  { id: "first-block", icon: CheckCircle2, check: (s) => s.totalBlocks >= 1, tier: "bronze" },
+  { id: "planner", icon: Calendar, check: (s) => s.todayBlockCount >= 5, tier: "bronze" },
+  { id: "streak-3", icon: Flame, check: (s) => s.streak >= 3, tier: "bronze" },
+  { id: "streak-7", icon: Flame, check: (s) => s.streak >= 7, tier: "silver" },
+  { id: "streak-14", icon: Trophy, check: (s) => s.streak >= 14, tier: "gold" },
+  { id: "streak-30", icon: Trophy, check: (s) => s.streak >= 30, tier: "platinum" },
+  { id: "hours-10", icon: Clock, check: (s) => s.totalWeeklyHours >= 10, tier: "silver" },
+  { id: "hours-20", icon: Clock, check: (s) => s.totalWeeklyHours >= 20, tier: "gold" },
+  { id: "hours-40", icon: Star, check: (s) => s.totalWeeklyHours >= 40, tier: "platinum" },
+  { id: "full-day", icon: Target, check: (s) => s.todayAllCompleted && s.todayBlockCount >= 3, tier: "gold" },
+  { id: "blocks-50", icon: Zap, check: (s) => s.totalBlocks >= 50, tier: "silver" },
+  { id: "blocks-100", icon: Award, check: (s) => s.totalBlocks >= 100, tier: "platinum" },
 ];
 
 interface AchievementBadgesProps {
@@ -53,6 +52,8 @@ interface AchievementBadgesProps {
 }
 
 export function AchievementBadges({ streak, totalWeeklyHours, todayBlockCount, totalBlocks }: AchievementBadgesProps) {
+  const { t } = useTranslation("learning");
+  const { formatNumber } = useFormatters();
   const stats = useMemo<BadgeStats>(() => {
     const now = new Date();
     const nowMin = now.getHours() * 60 + now.getMinutes();
@@ -70,15 +71,15 @@ export function AchievementBadges({ streak, totalWeeklyHours, todayBlockCount, t
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <Award className="w-4 h-4 text-warning" />
-            Achievements
+            {t("badges.title")}
           </CardTitle>
-          <Badge variant="secondary" className="text-[11px]">{earned.length}/{allBadges.length}</Badge>
+          <Badge variant="secondary" className="text-[11px]"><bdi>{formatNumber(earned.length)}/{formatNumber(allBadges.length)}</bdi></Badge>
         </div>
       </CardHeader>
       <CardContent className="p-4 pt-0">
         {earned.length > 0 && (
           <div className="mb-4">
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium mb-2">Earned</p>
+            <p className="text-[11px] text-muted-foreground tracking-wider font-medium mb-2">{t("badges.earned")}</p>
             <div className="flex flex-wrap gap-2">
               {earned.map((badge) => {
                 const style = tierStyles[badge.tier];
@@ -92,14 +93,14 @@ export function AchievementBadges({ streak, totalWeeklyHours, todayBlockCount, t
                       )}>
                         <Icon className={cn("w-4 h-4", style.icon)} />
                         <div>
-                          <p className="text-xs font-semibold leading-tight">{badge.title}</p>
-                          <p className="text-[10px] text-muted-foreground">{badge.requirement}</p>
+                          <p className="text-xs font-semibold leading-tight">{t(`badges.items.${badge.id}.title`)}</p>
+                          <p className="text-[10px] text-muted-foreground">{t(`badges.items.${badge.id}.req`)}</p>
                         </div>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className="font-medium">{badge.title}</p>
-                      <p className="text-xs text-muted-foreground">{badge.description}</p>
+                      <p className="font-medium">{t(`badges.items.${badge.id}.title`)}</p>
+                      <p className="text-xs text-muted-foreground">{t(`badges.items.${badge.id}.desc`)}</p>
                     </TooltipContent>
                   </Tooltip>
                 );
@@ -110,7 +111,7 @@ export function AchievementBadges({ streak, totalWeeklyHours, todayBlockCount, t
 
         {locked.length > 0 && (
           <div>
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium mb-2">Locked</p>
+            <p className="text-[11px] text-muted-foreground tracking-wider font-medium mb-2">{t("badges.locked")}</p>
             <div className="flex flex-wrap gap-2">
               {locked.map((badge) => {
                 const Icon = badge.icon;
@@ -120,14 +121,14 @@ export function AchievementBadges({ streak, totalWeeklyHours, todayBlockCount, t
                       <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/40 bg-muted/30 opacity-50 cursor-default">
                         <Icon className="w-4 h-4 text-muted-foreground" />
                         <div>
-                          <p className="text-xs font-semibold leading-tight text-muted-foreground">{badge.title}</p>
-                          <p className="text-[10px] text-muted-foreground/70">{badge.requirement}</p>
+                          <p className="text-xs font-semibold leading-tight text-muted-foreground">{t(`badges.items.${badge.id}.title`)}</p>
+                          <p className="text-[10px] text-muted-foreground/70">{t(`badges.items.${badge.id}.req`)}</p>
                         </div>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className="font-medium">{badge.title}</p>
-                      <p className="text-xs text-muted-foreground">{badge.description}</p>
+                      <p className="font-medium">{t(`badges.items.${badge.id}.title`)}</p>
+                      <p className="text-xs text-muted-foreground">{t(`badges.items.${badge.id}.desc`)}</p>
                     </TooltipContent>
                   </Tooltip>
                 );

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, FileText, Sparkles, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { InstructorSidebar, InstructorSidebarContent } from "@/components/layout/InstructorSidebar";
@@ -13,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 type UploadState = "idle" | "parsing" | "preview";
 
 const SyllabusUpload = () => {
+  const { t } = useTranslation("instructor");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -20,62 +22,62 @@ const SyllabusUpload = () => {
 
   // Mock course outline data
   const mockCourseOutline = {
-    courseName: "ISTQB Foundation Level - Complete Course",
+    courseName: t("syllabus.mock.courseName"),
     chapters: [
       {
         id: "ch1",
         title: "Fundamentals of Testing",
-        estimatedTime: "3 hours",
+        estimatedMinutes: 180,
         topics: [
-          { id: "t1", title: "What is Testing?", duration: "25 min", hasQuiz: true, hasFlashcards: true },
-          { id: "t2", title: "Why is Testing Necessary?", duration: "30 min", hasQuiz: true, hasFlashcards: true },
-          { id: "t3", title: "Testing Principles", duration: "35 min", hasQuiz: true, hasFlashcards: true },
-          { id: "t4", title: "Test Process", duration: "40 min", hasQuiz: true, hasFlashcards: false },
-          { id: "t5", title: "Psychology of Testing", duration: "20 min", hasQuiz: false, hasFlashcards: true },
+          { id: "t1", title: "What is Testing?", durationMinutes: 25, hasQuiz: true, hasFlashcards: true },
+          { id: "t2", title: "Why is Testing Necessary?", durationMinutes: 30, hasQuiz: true, hasFlashcards: true },
+          { id: "t3", title: "Testing Principles", durationMinutes: 35, hasQuiz: true, hasFlashcards: true },
+          { id: "t4", title: "Test Process", durationMinutes: 40, hasQuiz: true, hasFlashcards: false },
+          { id: "t5", title: "Psychology of Testing", durationMinutes: 20, hasQuiz: false, hasFlashcards: true },
         ],
       },
       {
         id: "ch2",
         title: "Testing Throughout the Software Lifecycle",
-        estimatedTime: "4 hours",
+        estimatedMinutes: 240,
         topics: [
-          { id: "t6", title: "Software Development Models", duration: "45 min", hasQuiz: true, hasFlashcards: true },
-          { id: "t7", title: "Test Levels", duration: "50 min", hasQuiz: true, hasFlashcards: true },
-          { id: "t8", title: "Test Types", duration: "40 min", hasQuiz: true, hasFlashcards: true },
-          { id: "t9", title: "Maintenance Testing", duration: "25 min", hasQuiz: true, hasFlashcards: false },
+          { id: "t6", title: "Software Development Models", durationMinutes: 45, hasQuiz: true, hasFlashcards: true },
+          { id: "t7", title: "Test Levels", durationMinutes: 50, hasQuiz: true, hasFlashcards: true },
+          { id: "t8", title: "Test Types", durationMinutes: 40, hasQuiz: true, hasFlashcards: true },
+          { id: "t9", title: "Maintenance Testing", durationMinutes: 25, hasQuiz: true, hasFlashcards: false },
         ],
       },
       {
         id: "ch3",
         title: "Static Testing",
-        estimatedTime: "2.5 hours",
+        estimatedMinutes: 150,
         topics: [
-          { id: "t10", title: "Static Testing Basics", duration: "30 min", hasQuiz: true, hasFlashcards: true },
-          { id: "t11", title: "Review Process", duration: "45 min", hasQuiz: true, hasFlashcards: true },
-          { id: "t12", title: "Review Types", duration: "35 min", hasQuiz: true, hasFlashcards: false },
+          { id: "t10", title: "Static Testing Basics", durationMinutes: 30, hasQuiz: true, hasFlashcards: true },
+          { id: "t11", title: "Review Process", durationMinutes: 45, hasQuiz: true, hasFlashcards: true },
+          { id: "t12", title: "Review Types", durationMinutes: 35, hasQuiz: true, hasFlashcards: false },
         ],
       },
       {
         id: "ch4",
         title: "Test Design Techniques",
-        estimatedTime: "5 hours",
+        estimatedMinutes: 300,
         topics: [
-          { id: "t13", title: "Categories of Test Techniques", duration: "20 min", hasQuiz: false, hasFlashcards: true },
-          { id: "t14", title: "Black-box Test Techniques", duration: "60 min", hasQuiz: true, hasFlashcards: true },
-          { id: "t15", title: "White-box Test Techniques", duration: "45 min", hasQuiz: true, hasFlashcards: true },
-          { id: "t16", title: "Experience-based Techniques", duration: "30 min", hasQuiz: true, hasFlashcards: true },
+          { id: "t13", title: "Categories of Test Techniques", durationMinutes: 20, hasQuiz: false, hasFlashcards: true },
+          { id: "t14", title: "Black-box Test Techniques", durationMinutes: 60, hasQuiz: true, hasFlashcards: true },
+          { id: "t15", title: "White-box Test Techniques", durationMinutes: 45, hasQuiz: true, hasFlashcards: true },
+          { id: "t16", title: "Experience-based Techniques", durationMinutes: 30, hasQuiz: true, hasFlashcards: true },
         ],
       },
       {
         id: "ch5",
         title: "Test Management",
-        estimatedTime: "4 hours",
+        estimatedMinutes: 240,
         topics: [
-          { id: "t17", title: "Test Organization", duration: "35 min", hasQuiz: true, hasFlashcards: true },
-          { id: "t18", title: "Test Planning and Estimation", duration: "50 min", hasQuiz: true, hasFlashcards: true },
-          { id: "t19", title: "Test Monitoring and Control", duration: "40 min", hasQuiz: true, hasFlashcards: false },
-          { id: "t20", title: "Configuration Management", duration: "25 min", hasQuiz: false, hasFlashcards: true },
-          { id: "t21", title: "Risk and Testing", duration: "45 min", hasQuiz: true, hasFlashcards: true },
+          { id: "t17", title: "Test Organization", durationMinutes: 35, hasQuiz: true, hasFlashcards: true },
+          { id: "t18", title: "Test Planning and Estimation", durationMinutes: 50, hasQuiz: true, hasFlashcards: true },
+          { id: "t19", title: "Test Monitoring and Control", durationMinutes: 40, hasQuiz: true, hasFlashcards: false },
+          { id: "t20", title: "Configuration Management", durationMinutes: 25, hasQuiz: false, hasFlashcards: true },
+          { id: "t21", title: "Risk and Testing", durationMinutes: 45, hasQuiz: true, hasFlashcards: true },
         ],
       },
     ],
@@ -92,15 +94,15 @@ const SyllabusUpload = () => {
 
   const handleConfirm = () => {
     toast({
-      title: "Course created successfully!",
-      description: "Your ISTQB course has been generated and is ready for review.",
+      title: t("syllabus.courseCreated"),
+      description: t("syllabus.courseCreatedDesc"),
     });
   };
 
   const handleEdit = () => {
     toast({
-      title: "Edit mode",
-      description: "You can now modify the course outline.",
+      title: t("syllabus.editMode"),
+      description: t("syllabus.editModeDesc"),
     });
   };
 
@@ -120,8 +122,8 @@ const SyllabusUpload = () => {
 
       <main className={cn(
         "pt-20 pb-12 px-4 sm:px-6 transition-all duration-300",
-        sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
-        "ml-0"
+        sidebarCollapsed ? "lg:ms-20" : "lg:ms-64",
+        "ms-0"
       )}>
         <div className="max-w-4xl mx-auto">
           {/* Back Button */}
@@ -129,8 +131,8 @@ const SyllabusUpload = () => {
             to="/"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
+            <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
+            {t("syllabus.backToDashboard")}
           </Link>
 
           {/* Page Header */}
@@ -140,9 +142,9 @@ const SyllabusUpload = () => {
                 <FileText className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">Upload Syllabus</h1>
+                <h1 className="text-2xl font-bold">{t("syllabus.title")}</h1>
                 <p className="text-muted-foreground">
-                  Let AI transform your syllabus into an interactive course
+                  {t("syllabus.subtitle")}
                 </p>
               </div>
             </div>
@@ -165,9 +167,9 @@ const SyllabusUpload = () => {
                         <Sparkles className="w-5 h-5 text-accent" />
                       </div>
                       <div>
-                        <h3 className="font-medium mb-1">AI-Powered Analysis</h3>
+                        <h3 className="font-medium mb-1">{t("syllabus.aiAnalysis")}</h3>
                         <p className="text-sm text-muted-foreground">
-                          Our AI analyzes your syllabus structure and automatically generates chapters, topics, quizzes, and flashcards.
+                          {t("syllabus.aiAnalysisDesc")}
                         </p>
                       </div>
                     </div>
@@ -179,9 +181,9 @@ const SyllabusUpload = () => {
                         <HelpCircle className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-medium mb-1">Supported Formats</h3>
+                        <h3 className="font-medium mb-1">{t("syllabus.formats")}</h3>
                         <p className="text-sm text-muted-foreground">
-                          Upload PDF, Word documents (.docx, .doc), or plain text files. We handle the rest!
+                          {t("syllabus.formatsDesc")}
                         </p>
                       </div>
                     </div>
@@ -213,7 +215,7 @@ const SyllabusUpload = () => {
                     onClick={handleReset}
                     className="text-muted-foreground"
                   >
-                    Upload a different file
+                    {t("syllabus.uploadDifferent")}
                   </Button>
                 </div>
               </>

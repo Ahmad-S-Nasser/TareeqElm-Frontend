@@ -1,0 +1,396 @@
+{
+  "notAvailable": "Not available yet",
+  "notAssigned": "Not assigned",
+  "unassigned": "Unassigned",
+  "activity": {
+    "enrolled": "{{actor}} enrolled in {{target}}",
+    "completed": "{{actor}} completed {{target}}",
+    "joinedAs": "{{actor}} joined as {{role}}",
+    "joined": "{{actor}} joined the platform",
+    "other": "New activity from {{actor}}"
+  },
+  "dashboard": {
+    "liveOverview": "Live overview",
+    "title": "Organization control",
+    "subtitle": "Full campus intelligence · {{date}}",
+    "newDepartment": "New department",
+    "addTitle": "Add a new department",
+    "addDescription": "Create a new department under the organization.",
+    "deptName": "Department name",
+    "deptNamePlaceholder": "e.g. Mathematics",
+    "headLabel": "Head of department",
+    "headPlaceholder": "e.g. Dr. John Nash",
+    "addDepartment": "Add department",
+    "deptCreated": "Department created",
+    "createFailed": "Could not create the department",
+    "nameRequired": "Department name is required",
+    "loadFailed": "Could not load the dashboard.",
+    "departments": "Departments",
+    "avgCompletion": "Avg. completion",
+    "activeCourses": "Active courses",
+    "trainers": "Trainers",
+    "totalTrainers": "Total trainers",
+    "instructors": "Instructors",
+    "enrolledAcross": "Enrolled across departments",
+    "activeOrgWide": "Active organization-wide",
+    "offeringThisTerm": "Offered this term",
+    "globalTrack": "Organization-wide progress",
+    "vsLastMonth": "{{value}}% vs last month",
+    "deptPerformance": "Department performance",
+    "noDepartments": "No departments yet. Use \"New department\" to add one.",
+    "deptMeta": "{{head}} · {{courses}} · {{trainers}}",
+    "coursesCount_one": "{{count}} course",
+    "coursesCount_other": "{{count}} courses",
+    "trainersCount_one": "{{count}} trainer",
+    "trainersCount_other": "{{count}} trainers",
+    "quickInsights": "Quick insights",
+    "topDept": "Top performing department",
+    "score": "{{value}} score",
+    "registered": "Registered",
+    "liveActivity": "Live activity",
+    "noActivity": "No recent activity.",
+    "aiInsights": "AI academic insights",
+    "aiNotAvailable": "Not available yet. Insights will appear here once analysis is available."
+  },
+  "aiInsights": {
+    "title": "Academic insights",
+    "subtitle": "Analysis of academic performance patterns across the platform",
+    "body": "Automated insights are not available yet. Department performance is shown on the dashboard."
+  },
+  "enrollment": {
+    "title": "Enrollment management",
+    "subtitle": "Approve, reject, and track course enrollment requests",
+    "body": "Trainers currently enroll in open courses directly, so there are no enrollment requests to review."
+  },
+  "exams": {
+    "title": "Exams management",
+    "subtitle": "Schedule exams, track grades and pass rates",
+    "body": "Exam scheduling and grading are not part of the platform yet. Quiz results are available to instructors on their own courses."
+  },
+  "roles": {
+    "title": "Roles and permissions",
+    "subtitle": "The access levels available across the platform",
+    "descriptions": {
+      "admin": "Full access to all platform features, user management and administrative tools",
+      "organization": "Manage departments, terms, sections, announcements and the shared content library",
+      "instructor": "Create and manage courses and quizzes, and track trainer progress",
+      "trainer": "Access courses, take quizzes, and track learning progress"
+    },
+    "customNotAvailable": "Custom roles and per-permission editing are not available yet. Assign roles to users from the admin user management page."
+  },
+  "terms": {
+    "title": "Academic terms",
+    "subtitle": "Manage semesters, assign courses, and track academic periods",
+    "newTerm": "New term",
+    "createTitle": "Create an academic term",
+    "createDescription": "Set up a new semester or term period.",
+    "termName": "Term name",
+    "termNamePlaceholder": "e.g. Fall 2026",
+    "type": "Type",
+    "year": "Year",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "createTerm": "Create term",
+    "created": "Term created",
+    "updated": "Term updated",
+    "createFailed": "Could not create the term",
+    "updateFailed": "Could not update the term",
+    "missingFields": "Please fill in all required fields",
+    "loadFailed": "Could not load academic terms.",
+    "empty": "No academic terms yet. Create one to get started.",
+    "dateRange": "{{start}} — {{end}}",
+    "archive": "Archive",
+    "activate": "Activate",
+    "types": {
+      "fall": "Fall semester",
+      "spring": "Spring semester",
+      "summer": "Summer term"
+    },
+    "status": {
+      "active": "Active",
+      "upcoming": "Upcoming",
+      "archived": "Archived"
+    },
+    "stats": {
+      "active": "Active terms",
+      "upcoming": "Upcoming",
+      "archived": "Archived"
+    }
+  },
+  "analytics": {
+    "title": "Analytics and reports",
+    "subtitle": "Insights into organization performance and trainer enrollment.",
+    "loadFailed": "Could not load analytics.",
+    "tabs": {
+      "enrollment": "Enrollment",
+      "academic": "Academic performance",
+      "financial": "Financials"
+    },
+    "totalTrainers": "Total trainers",
+    "activeInstructors": "Active instructors",
+    "completionRate": "Course completion rate",
+    "trendsNotAvailable": "Enrollment trends over time will appear here once they are tracked.",
+    "trainersByDept": "Trainers by department",
+    "trainersByDeptDesc": "Current trainer count per department.",
+    "trainersSeries": "Trainers",
+    "noDeptData": "No department data yet.",
+    "deptPerformance": "Department performance",
+    "deptPerformanceDesc": "Performance score by department.",
+    "performanceSeries": "Performance %",
+    "coursesByDept": "Courses by department",
+    "coursesByDeptDesc": "Share of courses per department.",
+    "financialNotAvailable": "Financial data is not tracked by the platform yet."
+  },
+  "announcements": {
+    "title": "Announcements",
+    "subtitle": "Broadcast announcements to trainers, instructors, and departments",
+    "new": "New announcement",
+    "createTitle": "Create an announcement",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Announcement title...",
+    "message": "Message",
+    "messagePlaceholder": "Write your announcement...",
+    "audience": "Audience",
+    "audiences": {
+      "all": "All users",
+      "trainers": "All trainers",
+      "instructors": "All instructors",
+      "department": "A specific department",
+      "course": "A specific course"
+    },
+    "audienceShort": {
+      "all": "Everyone",
+      "trainers": "Trainers",
+      "instructors": "Instructors",
+      "department": "Department",
+      "course": "Course"
+    },
+    "everyone": "Everyone",
+    "audienceWithDetail": "{{audience}}: {{detail}}",
+    "departmentName": "Department name",
+    "courseName": "Course name",
+    "namePlaceholder": "Enter the name...",
+    "publish": "Publish",
+    "published": "Announcement published",
+    "publishFailed": "Could not publish the announcement",
+    "updateFailed": "Could not update the announcement",
+    "missingFields": "Please enter a title and a message",
+    "loadFailed": "Could not load announcements.",
+    "empty": "No announcements yet. Create one to get started.",
+    "by": "by {{name}}",
+    "pin": "Pin announcement",
+    "unpin": "Unpin announcement"
+  },
+  "library": {
+    "title": "Content library",
+    "subtitle": "Shared academic resources organized by department and course",
+    "upload": "Upload content",
+    "uploadFiles": "Upload files",
+    "department": "Department",
+    "general": "General",
+    "courseOptional": "Course (optional)",
+    "coursePlaceholder": "e.g. Data Structures",
+    "selectFiles": "Click to select files",
+    "allowed": "PDF, PPTX, DOCX, images, videos (max {{size}} MB)",
+    "uploading": "Uploading...",
+    "uploaded": "Files uploaded",
+    "uploadedDesc_one": "{{count}} file uploaded successfully.",
+    "uploadedDesc_other": "{{count}} files uploaded successfully.",
+    "uploadFailed": "Upload failed",
+    "uploadFailedShort": "upload failed",
+    "deleted": "File deleted",
+    "deleteFailed": "Delete failed",
+    "deleteError": "Could not delete the file",
+    "confirmDelete": "Delete \"{{name}}\"?",
+    "search": "Search files...",
+    "loadFailed": "Could not load content.",
+    "empty": "No files yet. Upload content to get started.",
+    "uploadedBy": "Uploaded by {{name}}",
+    "view": "View file",
+    "stats": {
+      "files": "Total files",
+      "departments": "Departments",
+      "size": "Total size",
+      "types": "File types"
+    },
+    "size": {
+      "bytes": "{{value}} B",
+      "kb": "{{value}} KB",
+      "mb": "{{value}} MB"
+    },
+    "types": {
+      "pdf": "PDF",
+      "video": "Video",
+      "image": "Image",
+      "presentation": "Presentation",
+      "document": "Document",
+      "other": "File"
+    }
+  },
+  "courses": {
+    "title": "Course catalog",
+    "subtitle": "Oversee all courses offered across departments.",
+    "search": "Search courses...",
+    "filter": "Filter",
+    "actionsMenu": "Course actions",
+    "table": {
+      "title": "Course title",
+      "category": "Category",
+      "instructor": "Instructor",
+      "trainers": "Trainers"
+    },
+    "status": {
+      "Published": "Published",
+      "Draft": "Draft",
+      "Archived": "Archived"
+    },
+    "loadFailed": "Could not load courses.",
+    "empty": "No courses found.",
+    "uncategorized": "Uncategorized",
+    "noInstructor": "Not assigned",
+    "viewSyllabus": "View syllabus",
+    "syllabus": "Course syllabus",
+    "syllabusSubtitle": "{{title}} — {{instructor}}",
+    "enrolledTrainers": "Enrolled trainers",
+    "outline": "Course outline",
+    "noCurriculum": "No curriculum has been added yet.",
+    "chapter": "Chapter {{number}}",
+    "lessonsCount_one": "{{count}} lesson",
+    "lessonsCount_other": "{{count}} lessons"
+  },
+  "departments": {
+    "title": "Departments",
+    "subtitle": "Manage organization departments and their heads.",
+    "add": "Add department",
+    "search": "Search departments or heads...",
+    "filters": "Filters",
+    "loadFailed": "Could not load departments.",
+    "actionsMenu": "Department actions",
+    "confirmDelete": "Delete {{name}}?",
+    "created": "Department created",
+    "createFailed": "Could not create the department",
+    "deleted": "Department deleted",
+    "deleteFailed": "Could not delete the department",
+    "nameRequired": "Department name is required",
+    "head": "Head: {{name}}",
+    "courses": "Courses",
+    "trainers": "Trainers",
+    "performance": "Performance score",
+    "viewDetails": "View department details",
+    "noneFound": "No departments found",
+    "noneHint": "Try adjusting your search or add a new department."
+  },
+  "instructors": {
+    "title": "Organization instructors",
+    "subtitle": "Manage the global instructor registry and teaching assignments.",
+    "add": "Add new instructor",
+    "search": "Search by name, email or department...",
+    "filterDepartments": "Departments",
+    "filterStatus": "Active status",
+    "loadFailed": "Could not load instructors.",
+    "actionsMenu": "Actions for {{name}}",
+    "activeCourses": "Active courses",
+    "profile": "Profile",
+    "assigned": "Assigned",
+    "noneFound": "No instructors found",
+    "noneHint": "We couldn't find any instructors matching your criteria. Try adjusting your search term."
+  },
+  "trainers": {
+    "title": "Organization trainers",
+    "subtitle": "Global trainer registry and organizational performance tracking.",
+    "add": "Enroll new trainer",
+    "search": "Search by name, email or department...",
+    "filterYear": "Year",
+    "loadFailed": "Could not load trainers.",
+    "active": "Active",
+    "progress": "Academic progress",
+    "viewProfile": "View academic profile",
+    "noneFound": "No trainers found",
+    "noneHint": "We couldn't find any trainers matching your criteria. Try adjusting your search term."
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "Generate and download detailed academic performance reports",
+    "loadFailed": "Could not load department data.",
+    "empty": "No department data yet.",
+    "deptPerformance": "Department performance",
+    "performanceSeries": "Performance %",
+    "trainersByDept": "Trainers by department",
+    "pieLabel": "{{name}}: {{value}}",
+    "deptSummary": "Department summary",
+    "trainersCount_one": "{{count}} trainer",
+    "trainersCount_other": "{{count}} trainers",
+    "performanceLabel": "performance",
+    "cards": {
+      "trainerPerformance": {
+        "title": "Trainer performance report",
+        "description": "Detailed grade distribution, pass/fail rates, and trainer progress across all courses"
+      },
+      "courseCompletion": {
+        "title": "Course completion statistics",
+        "description": "Completion rates, dropout analysis, and time-to-completion metrics by course"
+      },
+      "departmentAnalytics": {
+        "title": "Department analytics",
+        "description": "Cross-department performance comparison, resource utilization, and growth trends"
+      },
+      "instructorActivity": {
+        "title": "Instructor activity report",
+        "description": "Teaching hours, trainer engagement scores, course ratings, and content uploads"
+      }
+    }
+  },
+  "sections": {
+    "title": "Sections and classes",
+    "subtitle": "Manage course sections, instructors, and class schedules",
+    "search": "Search by course or section...",
+    "loadFailed": "Could not load sections.",
+    "empty": "No sections yet.",
+    "capacity": "Capacity {{value}}",
+    "stats": {
+      "sections": "Total sections",
+      "capacity": "Total capacity",
+      "courses": "Courses"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage organization profile, billing, and system preferences.",
+    "saved": "Settings saved",
+    "savedDescription": "Your organization preferences have been updated.",
+    "saveChanges": "Save changes",
+    "savePreferences": "Save preferences",
+    "tabs": {
+      "general": "General",
+      "billing": "Billing",
+      "notifications": "Notifications"
+    },
+    "profile": {
+      "title": "Organization profile",
+      "description": "Update your institution's public information.",
+      "name": "Organization name",
+      "domain": "Custom domain",
+      "address": "Address"
+    },
+    "billing": {
+      "title": "Subscription and billing",
+      "description": "Manage your subscription plan and payment methods.",
+      "plan": "Enterprise plan",
+      "renews": "Active • Renews on {{date}}",
+      "manage": "Manage",
+      "paymentMethod": "Payment method",
+      "card": "Visa ending in {{last4}}",
+      "update": "Update"
+    },
+    "notifications": {
+      "title": "Notification preferences",
+      "description": "Configure how and when you receive alerts.",
+      "systemAlerts": "System alerts",
+      "systemAlertsHint": "Receive emails about critical system updates.",
+      "applications": "New instructor applications",
+      "applicationsHint": "Notify when a new instructor applies.",
+      "approvals": "Course approvals",
+      "approvalsHint": "Notify when courses are submitted for approval."
+    }
+  }
+}

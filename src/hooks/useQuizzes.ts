@@ -5,7 +5,7 @@ import { useAuth } from './useAuth';
 export interface QuizSummary {
   Id: string;
   CourseId: string;
-  CourseTitle: string;
+  CourseTitle: string | null;
   Title: string;
   QuestionCount: number;
   PassingScore: number;

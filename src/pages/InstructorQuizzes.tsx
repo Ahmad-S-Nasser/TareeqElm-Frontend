@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { InstructorPageLayout } from "@/components/instructor/InstructorPageLayout";
 import { FileQuestion, Plus, Sparkles, Clock, BarChart3, Loader2 } from "lucide-react";
@@ -48,6 +50,8 @@ interface QuizResult {
 }
 
 const InstructorQuizzes = () => {
+  const { t } = useTranslation("instructor");
+  const { formatDate, formatNumber, formatPercent } = useFormatters();
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [material, setMaterial] = useState("");
   const [numQuestions, setNumQuestions] = useState(5);
@@ -79,9 +83,9 @@ const InstructorQuizzes = () => {
     onSuccess: (data) => {
       setGenerated(data.Questions || []);
       setGenerator(data.Generator);
-      toast({ title: "Questions ready", description: `${(data.Questions || []).length} suggested questions. Review them before saving.` });
+      toast({ title: t("quizzes.questionsReady"), description: t("quizzes.questionsReadyDesc", { count: (data.Questions || []).length }) });
     },
-    onError: (e) => toast({ title: "Generation Failed", description: getApiError(e), variant: "destructive" }),
+    onError: (e) => toast({ title: t("quizzes.generationFailed"), description: getApiError(e), variant: "destructive" }),
   });
 
   const saveMutation = useMutation({
@@ -99,7 +103,7 @@ const InstructorQuizzes = () => {
         })),
       }),
     onSuccess: () => {
-      toast({ title: "Quiz Saved!", description: `"${quizTitle}" with ${generated.length} questions.` });
+      toast({ title: t("quizzes.saved"), description: t("quizzes.savedDesc", { title: quizTitle, count: generated.length }) });
       setAiDialogOpen(false);
       setGenerated([]);
       setGenerator(null);
@@ -107,7 +111,7 @@ const InstructorQuizzes = () => {
       setQuizTitle("");
       queryClient.invalidateQueries({ queryKey: ["instructor-quizzes"] });
     },
-    onError: (e) => toast({ title: "Save Failed", description: getApiError(e), variant: "destructive" }),
+    onError: (e) => toast({ title: t("quizzes.saveFailed"), description: getApiError(e), variant: "destructive" }),
   });
 
   const generating = generateMutation.isPending;
@@ -115,7 +119,7 @@ const InstructorQuizzes = () => {
 
   const handleGenerate = () => {
     if (material.trim().length < 20) {
-      toast({ title: "Provide course material", description: "Paste at least 20 characters of material.", variant: "destructive" });
+      toast({ title: t("quizzes.provideMaterial"), description: t("quizzes.provideMaterialDesc"), variant: "destructive" });
       return;
     }
     setGenerated([]);
@@ -124,7 +128,7 @@ const InstructorQuizzes = () => {
 
   const handleSaveQuiz = () => {
     if (!selectedCourseId || !quizTitle || generated.length === 0) {
-      toast({ title: "Fill all fields", description: "Select course, title, and generate questions first.", variant: "destructive" });
+      toast({ title: t("quizzes.fillAll"), description: t("quizzes.fillAllDesc"), variant: "destructive" });
       return;
     }
     saveMutation.mutate();
@@ -139,16 +143,16 @@ const InstructorQuizzes = () => {
               <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center shadow-glow-accent">
                 <FileQuestion className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-2xl font-bold">Quizzes & Exams</h1>
+              <h1 className="text-2xl font-bold">{t("quizzes.title")}</h1>
             </div>
-            <p className="text-muted-foreground">Create, schedule, and review assessments</p>
+            <p className="text-muted-foreground">{t("quizzes.subtitle")}</p>
           </div>
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => setAiDialogOpen(true)}>
-              <Sparkles className="w-4 h-4 mr-2" /> Generate Quiz
+              <Sparkles className="w-4 h-4 me-2" /> {t("quizzes.generate")}
             </Button>
             <Button className="gradient-accent text-white shadow-glow-accent" onClick={() => setAiDialogOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" /> Create Quiz
+              <Plus className="w-4 h-4 me-2" /> {t("quizzes.create")}
             </Button>
           </div>
         </div>
@@ -160,32 +164,32 @@ const InstructorQuizzes = () => {
           <div className="col-span-full flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
         ) : quizzesError ? (
           <div className="col-span-full text-center py-12">
-            <p className="text-destructive">{getApiError(quizzesError, "Failed to load quizzes.")}</p>
+            <p className="text-destructive">{getApiError(quizzesError, t("quizzes.loadFailed"))}</p>
           </div>
         ) : quizzes.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <FileQuestion className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">No quizzes yet. Create one or generate suggested questions from your material.</p>
+            <p className="text-muted-foreground">{t("quizzes.empty")}</p>
           </div>
         ) : (
           quizzes.map((q) => (
             <Card key={q.Id} className="shadow-soft border-border/50 hover:shadow-elevated transition-shadow cursor-pointer" onClick={() => setResultsQuiz(q)}>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="text-xs">Quiz</Badge>
+                  <Badge variant="outline" className="text-xs">{t("quizzes.badge")}</Badge>
                   {q.TimeLimitMinutes && (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" /> {q.TimeLimitMinutes}m
+                      <Clock className="w-3 h-3" /> {t("quizzes.minutesShort", { value: formatNumber(q.TimeLimitMinutes) })}
                     </div>
                   )}
                 </div>
                 <CardTitle className="text-sm mt-2">{q.Title}</CardTitle>
-                <CardDescription className="text-xs">{q.CourseTitle || "—"}</CardDescription>
+                <CardDescription className="text-xs">{q.CourseTitle ?? t("common:deletedCourse")}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{q.QuestionCount} questions</span>
-                  {q.PassingScore != null && <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> Pass: {q.PassingScore}%</span>}
+                  <span>{t("quizzes.questionsCount", { count: q.QuestionCount })}</span>
+                  {q.PassingScore != null && <span className="flex items-center gap-1"><BarChart3 className="w-3 h-3" /> {t("quizzes.pass", { value: formatPercent(q.PassingScore) })}</span>}
                 </div>
               </CardContent>
             </Card>
@@ -197,50 +201,50 @@ const InstructorQuizzes = () => {
       <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" /> Quiz Generator</DialogTitle>
-            <DialogDescription>Paste course material to get suggested quiz questions. Review them before saving.</DialogDescription>
+            <DialogTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" /> {t("quizzes.generatorTitle")}</DialogTitle>
+            <DialogDescription>{t("quizzes.generatorDesc")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-1 block">Select Course</label>
+              <label className="text-sm font-medium mb-1 block">{t("quizzes.selectCourse")}</label>
               <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                <SelectTrigger><SelectValue placeholder="Choose a course" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("quizzes.chooseCourse")} /></SelectTrigger>
                 <SelectContent>
                   {courses.map((c) => <SelectItem key={c.Id} value={c.Id}>{c.Title}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Quiz Title</label>
-              <Input value={quizTitle} onChange={(e) => setQuizTitle(e.target.value)} placeholder="e.g. Chapter 3 Quiz" />
+              <label className="text-sm font-medium mb-1 block">{t("quizzes.quizTitle")}</label>
+              <Input value={quizTitle} onChange={(e) => setQuizTitle(e.target.value)} placeholder={t("quizzes.quizTitlePlaceholder")} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Course Material</label>
-              <Textarea value={material} onChange={(e) => setMaterial(e.target.value)} placeholder="Paste lecture notes, textbook content, or lesson summaries here…" rows={6} />
+              <label className="text-sm font-medium mb-1 block">{t("quizzes.material")}</label>
+              <Textarea value={material} onChange={(e) => setMaterial(e.target.value)} placeholder={t("quizzes.materialPlaceholder")} rows={6} />
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Number of Questions</label>
+              <label className="text-sm font-medium mb-1 block">{t("quizzes.numQuestions")}</label>
               <Select value={String(numQuestions)} onValueChange={(v) => setNumQuestions(Number(v))}>
                 <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {[3, 5, 10, 15, 20].map((n) => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
+                  {[3, 5, 10, 15, 20].map((n) => <SelectItem key={n} value={String(n)}>{formatNumber(n)}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <Button onClick={handleGenerate} disabled={generating} className="w-full gradient-accent text-white">
-              {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-              {generating ? "Generating…" : "Generate Questions"}
+              {generating ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Sparkles className="w-4 h-4 me-2" />}
+              {generating ? t("quizzes.generating") : t("quizzes.generateQuestions")}
             </Button>
 
             {generated.length > 0 && (
               <div className="space-y-3 pt-2">
-                <h3 className="text-sm font-semibold">Suggested Questions ({generated.length}){generator === "template" ? " - built from templates" : ""}</h3>
+                <h3 className="text-sm font-semibold">{t("quizzes.suggested", { count: generated.length })}{generator === "template" ? ` - ${t("quizzes.fromTemplates")}` : ""}</h3>
                 {generated.map((q, i) => (
                   <Card key={i} className="border-border/50">
                     <CardContent className="pt-4 space-y-2">
                       <div className="flex items-start justify-between">
-                        <p className="text-sm font-medium">Q{i + 1}. {q.QuestionText}</p>
+                        <p className="text-sm font-medium">{t("quizzes.questionLabel", { number: i + 1, text: q.QuestionText })}</p>
                       </div>
                       <div className="grid grid-cols-2 gap-1">
                         {q.Options.map((opt, j) => (
@@ -249,13 +253,13 @@ const InstructorQuizzes = () => {
                           </div>
                         ))}
                       </div>
-                      <p className="text-xs text-muted-foreground">Points: {q.Points} | Correct: {q.Options[q.CorrectOptionIndex]}</p>
+                      <p className="text-xs text-muted-foreground">{t("quizzes.pointsCorrect", { points: q.Points, answer: q.Options[q.CorrectOptionIndex] })}</p>
                     </CardContent>
                   </Card>
                 ))}
                 <Button onClick={handleSaveQuiz} disabled={saving} className="w-full">
-                  {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />}
-                  Save Quiz to Course
+                  {saving ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Plus className="w-4 h-4 me-2" />}
+                  {t("quizzes.saveQuiz")}
                 </Button>
               </div>
             )}
@@ -267,26 +271,26 @@ const InstructorQuizzes = () => {
       <Dialog open={!!resultsQuiz} onOpenChange={(open) => !open && setResultsQuiz(null)}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{resultsQuiz?.Title} - Results</DialogTitle>
-            <DialogDescription>{resultsQuiz?.CourseTitle}</DialogDescription>
+            <DialogTitle>{t("quizzes.resultsTitle", { title: resultsQuiz?.Title })}</DialogTitle>
+            <DialogDescription>{resultsQuiz ? (resultsQuiz.CourseTitle ?? t("common:deletedCourse")) : ""}</DialogDescription>
           </DialogHeader>
           {resultsLoading ? (
             <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
           ) : resultsError ? (
-            <p className="text-sm text-destructive text-center py-6">{getApiError(resultsError, "Failed to load results.")}</p>
+            <p className="text-sm text-destructive text-center py-6">{getApiError(resultsError, t("quizzes.resultsFailed"))}</p>
           ) : results.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-6">No trainer has taken this quiz yet.</p>
+            <p className="text-sm text-muted-foreground text-center py-6">{t("quizzes.noResults")}</p>
           ) : (
             <div className="space-y-2">
               {results.map((r) => (
                 <div key={r.Id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 text-sm">
                   <div>
-                    <p className="font-medium">{r.TrainerName}</p>
-                    <p className="text-xs text-muted-foreground">{new Date(r.TakenAt).toLocaleDateString()}</p>
+                    <p className="font-medium">{r.TrainerName ?? t("common:deletedUser")}</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(r.TakenAt)}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span>{Math.round(r.Percentage)}% ({r.Score}/{r.TotalPoints})</span>
-                    <Badge variant={r.Passed ? "default" : "destructive"}>{r.Passed ? "Passed" : "Failed"}</Badge>
+                    <span><bdi>{formatPercent(Math.round(r.Percentage))} ({formatNumber(r.Score)}/{formatNumber(r.TotalPoints)})</bdi></span>
+                    <Badge variant={r.Passed ? "default" : "destructive"}>{r.Passed ? t("quizzes.passed") : t("quizzes.failed")}</Badge>
                   </div>
                 </div>
               ))}

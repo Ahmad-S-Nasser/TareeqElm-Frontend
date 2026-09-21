@@ -12,12 +12,14 @@ import {
 } from "@/components/ui/select";
 import { Building2, Globe, Palette, Bot, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 const AdminSettings = () => {
+    const { t } = useTranslation("admin");
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const { toast } = useToast();
 
-    const [orgName, setOrgName] = useState("Acme Corporation");
+    const [orgName, setOrgName] = useState("");
     const [timezone, setTimezone] = useState("UTC+2");
     const [language, setLanguage] = useState("en");
     const [accent, setAccent] = useState("#f43f5e");
@@ -26,45 +28,45 @@ const AdminSettings = () => {
     const [notifyAtRisk, setNotifyAtRisk] = useState(true);
 
     const handleSave = () => {
-        toast({ title: "Settings Saved", description: "Your organisation settings have been updated." });
+        toast({ title: t("settings.toast.saved"), description: t("settings.toast.savedDescription") });
     };
 
     const timezones = ["UTC-8", "UTC-5", "UTC+0", "UTC+1", "UTC+2", "UTC+3", "UTC+5:30", "UTC+8", "UTC+9", "UTC+10"];
-    const languages = [{ val: "en", label: "English" }, { val: "ar", label: "Arabic" }, { val: "fr", label: "French" }, { val: "de", label: "German" }, { val: "es", label: "Spanish" }];
+    const languages = ["en", "ar", "fr", "de", "es"];
     const accentColors = ["#f43f5e", "#6366f1", "#10b981", "#f59e0b", "#3b82f6", "#8b5cf6"];
 
     return (
         <div className="min-h-screen bg-background">
             <AdminSidebar onCollapse={setSidebarCollapsed} />
             <Header sidebarCollapsed={sidebarCollapsed} userRole="Admin" mobileSidebar={<AdminSidebarContent collapsed={false} />} />
-            <main className={cn("pt-20 pb-12 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64")}>
+            <main className={cn("pt-20 pb-12 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ms-20" : "lg:ms-64")}>
                 <div className="max-w-3xl mx-auto space-y-6">
                     <div>
-                        <h1 className="text-3xl font-black">Settings</h1>
-                        <p className="text-muted-foreground text-sm mt-1">Configure your organisation workspace</p>
+                        <h1 className="text-3xl font-black">{t("settings.title")}</h1>
+                        <p className="text-muted-foreground text-sm mt-1">{t("settings.subtitle")}</p>
                     </div>
 
                     {/* Organization */}
                     <Card className="border-border/50">
                         <CardHeader>
                             <CardTitle className="text-sm font-bold flex items-center gap-2">
-                                <Building2 className="w-4 h-4 text-rose-500" /> Organisation
+                                <Building2 className="w-4 h-4 text-rose-500" /> {t("settings.org.title")}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="org-name">Organisation Name</Label>
-                                <Input id="org-name" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
+                                <Label htmlFor="org-name">{t("settings.org.name")}</Label>
+                                <Input id="org-name" placeholder={t("settings.org.namePlaceholder")} value={orgName} onChange={(e) => setOrgName(e.target.value)} />
                             </div>
                             <div className="space-y-2">
-                                <Label>Logo</Label>
+                                <Label>{t("settings.org.logo")}</Label>
                                 <div className="flex items-center gap-4">
                                     <div className="w-16 h-16 rounded-xl bg-rose-500/10 border-2 border-dashed border-rose-300 flex items-center justify-center text-rose-400 font-black text-xl cursor-pointer hover:bg-rose-500/20 transition-colors">
-                                        {orgName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+                                        {orgName.split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "?"}
                                     </div>
                                     <div>
-                                        <Button variant="outline" size="sm" onClick={() => toast({ title: "Logo Upload", description: "Logo upload coming soon." })}>Upload Logo</Button>
-                                        <p className="text-xs text-muted-foreground mt-1">PNG, JPG · 512×512px recommended</p>
+                                        <Button variant="outline" size="sm" onClick={() => toast({ title: t("settings.toast.logo"), description: t("settings.toast.logoDescription") })}>{t("settings.org.uploadLogo")}</Button>
+                                        <p className="text-xs text-muted-foreground mt-1">{t("settings.org.logoHint")}</p>
                                     </div>
                                 </div>
                             </div>
@@ -75,23 +77,23 @@ const AdminSettings = () => {
                     <Card className="border-border/50">
                         <CardHeader>
                             <CardTitle className="text-sm font-bold flex items-center gap-2">
-                                <Globe className="w-4 h-4 text-primary" /> Locale & Region
+                                <Globe className="w-4 h-4 text-primary" /> {t("settings.locale.title")}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Timezone</Label>
+                                    <Label>{t("settings.locale.timezone")}</Label>
                                     <Select value={timezone} onValueChange={setTimezone}>
                                         <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>{timezones.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{timezones.map(tz => <SelectItem key={tz} value={tz}><bdi dir="ltr">{tz}</bdi></SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Language</Label>
+                                    <Label>{t("settings.locale.language")}</Label>
                                     <Select value={language} onValueChange={setLanguage}>
                                         <SelectTrigger><SelectValue /></SelectTrigger>
-                                        <SelectContent>{languages.map(l => <SelectItem key={l.val} value={l.val}>{l.label}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{languages.map(l => <SelectItem key={l} value={l}>{t(`settings.languages.${l}`)}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
                             </div>
@@ -102,26 +104,28 @@ const AdminSettings = () => {
                     <Card className="border-border/50">
                         <CardHeader>
                             <CardTitle className="text-sm font-bold flex items-center gap-2">
-                                <Palette className="w-4 h-4 text-purple-500" /> Branding
+                                <Palette className="w-4 h-4 text-purple-500" /> {t("settings.branding.title")}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Accent Color</Label>
+                                <Label>{t("settings.branding.accent")}</Label>
                                 <div className="flex items-center gap-3 flex-wrap">
                                     {accentColors.map((c) => (
                                         <button
                                             key={c}
+                                            type="button"
+                                            aria-label={t("settings.branding.pickColor", { color: c })}
                                             onClick={() => setAccent(c)}
                                             className={cn("w-9 h-9 rounded-xl transition-all duration-200 shadow-sm", accent === c ? "ring-2 ring-offset-2 ring-foreground scale-110" : "hover:scale-105")}
                                             style={{ backgroundColor: c }}
                                         />
                                     ))}
-                                    <input type="color" value={accent} onChange={(e) => setAccent(e.target.value)} className="w-9 h-9 rounded-xl cursor-pointer border border-border" title="Custom color" />
+                                    <input type="color" value={accent} onChange={(e) => setAccent(e.target.value)} className="w-9 h-9 rounded-xl cursor-pointer border border-border" title={t("settings.branding.customColor")} aria-label={t("settings.branding.customColor")} />
                                 </div>
                                 <div className="flex items-center gap-2 mt-2">
                                     <div className="w-4 h-4 rounded-full" style={{ backgroundColor: accent }} />
-                                    <span className="text-xs text-muted-foreground font-mono">{accent}</span>
+                                    <span dir="ltr" className="text-xs text-muted-foreground font-mono">{accent}</span>
                                 </div>
                             </div>
                         </CardContent>
@@ -131,28 +135,28 @@ const AdminSettings = () => {
                     <Card className="border-border/50">
                         <CardHeader>
                             <CardTitle className="text-sm font-bold flex items-center gap-2">
-                                <Bot className="w-4 h-4 text-emerald-500" /> AI & Notifications
+                                <Bot className="w-4 h-4 text-emerald-500" /> {t("settings.ai.title")}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-5">
                             {[
-                                { label: "Enable AI Assistant", sub: "Allow employees to use the AI Q&A chat in all courses", val: aiEnabled, set: setAiEnabled },
-                                { label: "Notify on Course Completion", sub: "Send admin alerts when employees complete a course", val: notifyOnCompletion, set: setNotifyOnCompletion },
-                                { label: "Alert on At-Risk Employees", sub: "Flag employees scoring below 50% for review", val: notifyAtRisk, set: setNotifyAtRisk },
+                                { key: "enable", label: t("settings.ai.enable"), sub: t("settings.ai.enableSub"), val: aiEnabled, set: setAiEnabled },
+                                { key: "completion", label: t("settings.ai.notifyCompletion"), sub: t("settings.ai.notifyCompletionSub"), val: notifyOnCompletion, set: setNotifyOnCompletion },
+                                { key: "atRisk", label: t("settings.ai.notifyAtRisk"), sub: t("settings.ai.notifyAtRiskSub"), val: notifyAtRisk, set: setNotifyAtRisk },
                             ].map((s) => (
-                                <div key={s.label} className="flex items-center justify-between">
+                                <div key={s.key} className="flex items-center justify-between gap-4">
                                     <div>
                                         <p className="font-medium text-sm">{s.label}</p>
                                         <p className="text-xs text-muted-foreground">{s.sub}</p>
                                     </div>
-                                    <Switch checked={s.val} onCheckedChange={s.set} />
+                                    <Switch checked={s.val} onCheckedChange={s.set} aria-label={s.label} />
                                 </div>
                             ))}
                         </CardContent>
                     </Card>
 
                     <Button className="w-full bg-rose-500 hover:bg-rose-600 text-white border-0 py-5 text-base font-semibold" onClick={handleSave}>
-                        <Save className="w-5 h-5 mr-2" /> Save Settings
+                        <Save className="w-5 h-5 me-2" /> {t("settings.save")}
                     </Button>
                 </div>
             </main>

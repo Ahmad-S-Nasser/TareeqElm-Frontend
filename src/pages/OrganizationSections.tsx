@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Layers, Users, Clock, Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import api, { getApiError } from "@/lib/api";
+import { useFormatters } from "@/lib/format";
 import { useQuery } from "@tanstack/react-query";
 
 interface Section {
@@ -22,6 +24,8 @@ interface Section {
 }
 
 const OrganizationSections = () => {
+    const { t } = useTranslation(["organization", "common"]);
+    const { formatNumber } = useFormatters();
     const [search, setSearch] = useState("");
 
     const { data: sections = [], isLoading, isError, error } = useQuery({
@@ -35,7 +39,7 @@ const OrganizationSections = () => {
     );
 
     const grouped = filtered.reduce<Record<string, Section[]>>((acc, s) => {
-        const name = s.CourseTitle || "Unknown Course";
+        const name = s.CourseTitle ?? t("common:deletedCourse");
         (acc[name] ||= []).push(s);
         return acc;
     }, {});
@@ -48,22 +52,22 @@ const OrganizationSections = () => {
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                             <Layers className="w-5 h-5 text-primary" />
                         </div>
-                        Sections & Classes
+                        {t("sections.title")}
                     </h1>
-                    <p className="text-muted-foreground mt-1">Manage course sections, instructors, and class schedules</p>
+                    <p className="text-muted-foreground mt-1">{t("sections.subtitle")}</p>
                 </div>
             </div>
 
             <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Search by course or section..." className="pl-10" value={search} onChange={e => setSearch(e.target.value)} />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input placeholder={t("sections.search")} className="ps-10" value={search} onChange={e => setSearch(e.target.value)} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                    { label: "Total Sections", value: sections.length, color: "text-primary" },
-                    { label: "Total Capacity", value: sections.reduce((sum, c) => sum + c.Capacity, 0), color: "text-emerald-500" },
-                    { label: "Courses", value: new Set(sections.map((c) => c.CourseId)).size, color: "text-amber-500" },
+                    { label: t("sections.stats.sections"), value: formatNumber(sections.length), color: "text-primary" },
+                    { label: t("sections.stats.capacity"), value: formatNumber(sections.reduce((sum, c) => sum + c.Capacity, 0)), color: "text-emerald-500" },
+                    { label: t("sections.stats.courses"), value: formatNumber(new Set(sections.map((c) => c.CourseId)).size), color: "text-amber-500" },
                 ].map(s => (
                     <Card key={s.label} className="border-border/50">
                         <CardContent className="p-5">
@@ -77,9 +81,9 @@ const OrganizationSections = () => {
             {isLoading ? (
                 <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
             ) : isError ? (
-                <Card className="border-border/50"><CardContent className="p-12 text-center text-destructive">{getApiError(error, "Could not load sections.")}</CardContent></Card>
+                <Card className="border-border/50"><CardContent className="p-12 text-center text-destructive">{getApiError(error, t("sections.loadFailed"))}</CardContent></Card>
             ) : Object.keys(grouped).length === 0 ? (
-                <Card className="border-border/50"><CardContent className="p-12 text-center text-muted-foreground">No sections yet.</CardContent></Card>
+                <Card className="border-border/50"><CardContent className="p-12 text-center text-muted-foreground">{t("sections.empty")}</CardContent></Card>
             ) : (
                 Object.entries(grouped).map(([course, secs]) => (
                     <div key={course} className="space-y-3">
@@ -90,16 +94,16 @@ const OrganizationSections = () => {
                                     <CardHeader className="pb-2">
                                         <div className="flex items-center justify-between">
                                             <CardTitle className="text-sm font-bold">{sec.SectionLabel}</CardTitle>
-                                            {sec.TermName && <span className="text-xs text-muted-foreground">{sec.TermName}</span>}
+                                            {(sec.TermName || sec.TermId) && <span className="text-xs text-muted-foreground">{sec.TermName ?? t("common:deletedEntity")}</span>}
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                             {sec.Schedule && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{sec.Schedule}</span>}
-                                            {sec.InstructorName && <span>{sec.InstructorName}</span>}
+                                            {(sec.InstructorName || sec.InstructorId) && <span>{sec.InstructorName ?? t("common:deletedUser")}</span>}
                                         </div>
                                         <div className="flex items-center justify-between text-xs">
-                                            <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />Capacity {sec.Capacity}</span>
+                                            <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{t("sections.capacity", { value: formatNumber(sec.Capacity) })}</span>
                                         </div>
                                     </CardContent>
                                 </Card>

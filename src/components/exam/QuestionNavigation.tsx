@@ -1,4 +1,6 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 import { Question, QuestionStatus } from "./types";
 import { Flag, Check } from "lucide-react";
 
@@ -15,6 +17,8 @@ export function QuestionNavigation({
     getQuestionStatus,
     onQuestionClick,
 }: QuestionNavigationProps) {
+    const { t } = useTranslation("quizzes");
+    const { formatNumber } = useFormatters();
     const getStatusStyles = (status: QuestionStatus) => {
         switch (status) {
             case "current":
@@ -30,10 +34,10 @@ export function QuestionNavigation({
 
     const getStatusIcon = (status: QuestionStatus) => {
         if (status === "answered") {
-            return <Check className="w-3 h-3 absolute -top-1 -right-1 bg-success text-white rounded-full p-0.5" />;
+            return <Check className="w-3 h-3 absolute -top-1 -end-1 bg-success text-white rounded-full p-0.5" />;
         }
         if (status === "flagged") {
-            return <Flag className="w-3 h-3 absolute -top-1 -right-1 bg-warning text-white rounded-full p-0.5" />;
+            return <Flag className="w-3 h-3 absolute -top-1 -end-1 bg-warning text-white rounded-full p-0.5" />;
         }
         return null;
     };
@@ -42,7 +46,7 @@ export function QuestionNavigation({
         <div className="rounded-2xl bg-card border border-border/50 shadow-soft p-4">
             <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                Question Navigator
+                {t("exam.navigator")}
             </h3>
 
             <div className="grid grid-cols-5 gap-2">
@@ -58,7 +62,7 @@ export function QuestionNavigation({
                                 getStatusStyles(status)
                             )}
                         >
-                            {question.number}
+                            {formatNumber(question.number)}
                             {getStatusIcon(status)}
                         </button>
                     );
@@ -70,19 +74,19 @@ export function QuestionNavigation({
                 <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="flex items-center gap-2">
                         <div className="w-4 h-4 rounded bg-primary" />
-                        <span className="text-muted-foreground">Current</span>
+                        <span className="text-muted-foreground">{t("exam.current")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-4 h-4 rounded bg-success/20 border border-success/30" />
-                        <span className="text-muted-foreground">Answered</span>
+                        <span className="text-muted-foreground">{t("exam.answered")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-4 h-4 rounded bg-warning/20 border border-warning/30" />
-                        <span className="text-muted-foreground">Flagged</span>
+                        <span className="text-muted-foreground">{t("exam.flagged")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="w-4 h-4 rounded bg-muted/50" />
-                        <span className="text-muted-foreground">Unanswered</span>
+                        <span className="text-muted-foreground">{t("exam.unanswered")}</span>
                     </div>
                 </div>
             </div>

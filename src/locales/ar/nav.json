@@ -1,0 +1,163 @@
+{
+  "header": {
+    "search": "بحث...",
+    "searchShortcut": "⌘K",
+    "openMenu": "فتح القائمة",
+    "guest": "زائر",
+    "myAccount": "حسابي",
+    "myProfile": "ملفي الشخصي",
+    "settings": "الإعدادات",
+    "notifications": "الإشعارات",
+    "logOut": "تسجيل الخروج"
+  },
+  "sidebar": {
+    "applicant": {
+      "dashboard": "لوحة التحكم",
+      "browseCourses": "استعراض الدورات",
+      "myCourses": "دوراتي",
+      "flashcards": "البطاقات",
+      "quizzes": "الاختبارات",
+      "mockExams": "الاختبارات التجريبية",
+      "analytics": "التحليلات",
+      "aiTutor": "المعلّم الذكي",
+      "aiCoach": "المدرّب الذكي",
+      "timeBlocking": "تنظيم الوقت",
+      "spacedRepetition": "التكرار المتباعد",
+      "achievements": "الإنجازات",
+      "myProfile": "ملفي الشخصي",
+      "notifications": "الإشعارات",
+      "uploadSyllabus": "رفع المنهج",
+      "progress": "التقدّم",
+      "instructorView": "عرض المدرّس",
+      "settings": "الإعدادات"
+    },
+    "instructor": {
+      "dashboard": "لوحة التحكم",
+      "myCourses": "دوراتي",
+      "createCourse": "إنشاء دورة",
+      "curriculum": "المنهج",
+      "trainers": "المتدرّبون",
+      "assignments": "الواجبات",
+      "quizzesExams": "الاختبارات والامتحانات",
+      "discussions": "النقاشات",
+      "announcements": "الإعلانات",
+      "flashcards": "البطاقات",
+      "analytics": "التحليلات",
+      "leaderboard": "لوحة المتصدرين",
+      "contentTools": "أدوات المحتوى",
+      "aiAssistant": "المساعد الذكي",
+      "notifications": "الإشعارات",
+      "settings": "الإعدادات"
+    },
+    "organization": {
+      "overview": "نظرة عامة",
+      "departments": "الأقسام",
+      "academicTerms": "الفصول الدراسية",
+      "sections": "الشعب",
+      "instructors": "المدرّسون",
+      "trainers": "المتدرّبون",
+      "courses": "الدورات",
+      "enrollment": "التسجيل",
+      "exams": "الامتحانات",
+      "announcements": "الإعلانات",
+      "contentLibrary": "مكتبة المحتوى",
+      "analytics": "التحليلات",
+      "reports": "التقارير",
+      "aiInsights": "رؤى الذكاء الاصطناعي",
+      "rolesPermissions": "الأدوار والصلاحيات",
+      "settings": "الإعدادات"
+    },
+    "admin": {
+      "dashboard": "لوحة التحكم",
+      "users": "المستخدمون",
+      "courses": "الدورات",
+      "enrollments": "التسجيلات",
+      "analytics": "التحليلات",
+      "settings": "الإعدادات"
+    },
+    "brand": {
+      "applicant": "طريق علم",
+      "organization": "إدارة المؤسسة",
+      "admin": "إدارة النظام"
+    },
+    "portal": {
+      "applicant": "بوابة المتدرّب",
+      "instructor": "بوابة المدرّس",
+      "generic": "التعلّم الذكي"
+    },
+    "signOut": "تسجيل الخروج",
+    "collapse": "طيّ الشريط الجانبي",
+    "expand": "توسيع الشريط الجانبي"
+  },
+  "search": {
+    "placeholder": "ابحث في الدورات والدروس والبطاقات والمدرّسين...",
+    "esc": "Esc",
+    "noResults": "لا توجد نتائج",
+    "tryDifferent": "جرّب كلمات مختلفة",
+    "startTyping": "ابدأ الكتابة للبحث في المنصة",
+    "tip": "نصيحة: اضغط {{shortcut}} لفتح البحث في أي وقت",
+    "categories": {
+      "course": "الدورات",
+      "lesson": "الدروس",
+      "flashcard": "البطاقات",
+      "instructor": "المدرّسون",
+      "trainer": "المتدرّبون",
+      "department": "الأقسام"
+    },
+    "items": {
+      "1": {
+        "title": "مستوى ISTQB الأساسي",
+        "subtitle": "تحضير كامل للشهادة • 48 درسًا"
+      },
+      "2": {
+        "title": "تقنيات تصميم الاختبارات",
+        "subtitle": "اختبار الصندوق الأسود والصندوق الأبيض"
+      },
+      "3": {
+        "title": "أساسيات الاختبار الرشيق",
+        "subtitle": "الاختبار في بيئات العمل الرشيقة"
+      },
+      "4": {
+        "title": "تقسيم فئات التكافؤ",
+        "subtitle": "الفصل 4 • تصميم الاختبارات"
+      },
+      "5": {
+        "title": "اختبار انتقال الحالات",
+        "subtitle": "الفصل 4 • تصميم الاختبارات"
+      },
+      "6": {
+        "title": "اختبار جدول القرارات",
+        "subtitle": "الفصل 4 • تصميم الاختبارات"
+      },
+      "7": {
+        "title": "تحليل القيم الحدّية",
+        "subtitle": "12 بطاقة • مستحقة للمراجعة"
+      },
+      "8": {
+        "title": "د. أحمد حسن",
+        "subtitle": "اختبار البرمجيات • 3 دورات"
+      },
+      "9": {
+        "title": "سارة الراشد",
+        "subtitle": "تصميم تجربة المستخدم • دورتان"
+      },
+      "10": {
+        "title": "علوم الحاسب",
+        "subtitle": "12 دورة • 450 متدرّبًا"
+      },
+      "11": {
+        "title": "تصميم واجهات وتجربة المستخدم",
+        "subtitle": "8 دورات • 280 متدرّبًا"
+      }
+    }
+  },
+  "ui": {
+    "more": "المزيد",
+    "morePages": "المزيد من الصفحات",
+    "previousPage": "الانتقال إلى الصفحة السابقة",
+    "nextPage": "الانتقال إلى الصفحة التالية",
+    "previousSlide": "الشريحة السابقة",
+    "nextSlide": "الشريحة التالية",
+    "toggleSidebar": "تبديل الشريط الجانبي"
+  }
+}

@@ -19,24 +19,29 @@ import {
     Users, Star, MoreHorizontal,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 
 type CourseStatus = "Draft" | "Processing" | "Active";
 type Course = {
-    id: number; title: string; description: string;
+    id: number; seed?: number; title: string; description: string;
     audience: string; duration: string; status: CourseStatus;
     enrolled: number; completion: number; aiScore: number;
     processing?: number;
 };
 
+// Demo data: `seed` courses take their texts from admin:courses.seed.<n>.* so they follow the active language.
 const initialCourses: Course[] = [
-    { id: 1, title: "React Fundamentals", description: "Core concepts of React for frontend developers", audience: "Engineering", duration: "6h", status: "Active", enrolled: 48, completion: 82, aiScore: 91 },
-    { id: 2, title: "Python for Data Science", description: "Python basics and data manipulation", audience: "Analytics Team", duration: "8h", status: "Active", enrolled: 36, completion: 74, aiScore: 88 },
-    { id: 3, title: "Leadership Essentials", description: "Soft skills for new managers", audience: "All Managers", duration: "4h", status: "Active", enrolled: 64, completion: 91, aiScore: 94 },
-    { id: 4, title: "Excel & Data Analysis", description: "Spreadsheet mastery", audience: "Finance & Ops", duration: "5h", status: "Active", enrolled: 29, completion: 65, aiScore: 79 },
-    { id: 5, title: "Cybersecurity Basics", description: "Security awareness for all staff", audience: "All Employees", duration: "3h", status: "Processing", enrolled: 0, completion: 0, aiScore: 0, processing: 65 },
+    { id: 1, seed: 1, title: "", description: "", audience: "", duration: "", status: "Active", enrolled: 48, completion: 82, aiScore: 91 },
+    { id: 2, seed: 2, title: "", description: "", audience: "", duration: "", status: "Active", enrolled: 36, completion: 74, aiScore: 88 },
+    { id: 3, seed: 3, title: "", description: "", audience: "", duration: "", status: "Active", enrolled: 64, completion: 91, aiScore: 94 },
+    { id: 4, seed: 4, title: "", description: "", audience: "", duration: "", status: "Active", enrolled: 29, completion: 65, aiScore: 79 },
+    { id: 5, seed: 5, title: "", description: "", audience: "", duration: "", status: "Processing", enrolled: 0, completion: 0, aiScore: 0, processing: 65 },
 ];
 
 const AdminCourses = () => {
+    const { t } = useTranslation(["admin", "common"]);
+    const { formatNumber, formatPercent } = useFormatters();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [courses, setCourses] = useState<Course[]>(initialCourses);
     const [search, setSearch] = useState("");
@@ -46,23 +51,25 @@ const AdminCourses = () => {
     const [newCourse, setNewCourse] = useState({ title: "", description: "", audience: "", duration: "" });
     const { toast } = useToast();
 
-    const filtered = courses.filter((c) => c.title.toLowerCase().includes(search.toLowerCase()));
+    const text = (c: Course, field: "title" | "description" | "audience" | "duration") =>
+        c.seed ? t(`courses.seed.${c.seed}.${field}`) : c[field];
+    const filtered = courses.filter((c) => text(c, "title").toLowerCase().includes(search.toLowerCase()));
 
     const handleCreateCourse = () => {
         if (!newCourse.title) {
-            toast({ variant: "destructive", title: "Title required" });
+            toast({ variant: "destructive", title: t("courses.toast.titleRequired") });
             return;
         }
         const created: Course = { id: Date.now(), ...newCourse, status: "Draft", enrolled: 0, completion: 0, aiScore: 0 };
         setCourses([...courses, created]);
         setIsCreateOpen(false);
         setNewCourse({ title: "", description: "", audience: "", duration: "" });
-        toast({ title: "Course Created", description: `"${created.title}" added. Upload content to activate it.` });
+        toast({ title: t("courses.toast.created"), description: t("courses.toast.createdDescription", { title: created.title }) });
     };
 
     const handleUpload = (files: FileList | null, courseId: number) => {
         if (!files?.length) return;
-        toast({ title: "Upload Started", description: `Processing ${files[0].name}` });
+        toast({ title: t("courses.toast.uploadStarted"), description: t("courses.toast.uploadStartedDescription", { file: files[0].name }) });
         setCourses(prev => prev.map(c => c.id === courseId ? { ...c, status: "Processing" as CourseStatus, processing: 0 } : c));
         setUploadCourseId(null);
         let pct = 0;
@@ -71,7 +78,7 @@ const AdminCourses = () => {
             if (pct >= 100) {
                 clearInterval(iv);
                 setCourses(prev => prev.map(c => c.id === courseId ? { ...c, status: "Active" as CourseStatus, processing: 100, enrolled: 0, completion: 0, aiScore: 85 } : c));
-                toast({ title: "AI Processing Complete!", description: "Content indexed. Draft questions ready." });
+                toast({ title: t("courses.toast.processed"), description: t("courses.toast.processedDescription") });
             } else {
                 setCourses(prev => prev.map(c => c.id === courseId ? { ...c, processing: pct } : c));
             }
@@ -87,41 +94,41 @@ const AdminCourses = () => {
         <div className="min-h-screen bg-background">
             <AdminSidebar onCollapse={setSidebarCollapsed} />
             <Header sidebarCollapsed={sidebarCollapsed} userRole="Admin" mobileSidebar={<AdminSidebarContent collapsed={false} />} />
-            <main className={cn("pt-20 pb-12 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64")}>
+            <main className={cn("pt-20 pb-12 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ms-20" : "lg:ms-64")}>
                 <div className="max-w-7xl mx-auto space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-black">Course Management</h1>
-                            <p className="text-muted-foreground text-sm mt-1">Create and manage your training library</p>
+                            <h1 className="text-3xl font-black">{t("courses.title")}</h1>
+                            <p className="text-muted-foreground text-sm mt-1">{t("courses.subtitle")}</p>
                         </div>
                         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                             <DialogTrigger asChild>
-                                <Button className="bg-rose-500 hover:bg-rose-600 text-white border-0"><Plus className="w-4 h-4 mr-2" /> Create Course</Button>
+                                <Button className="bg-rose-500 hover:bg-rose-600 text-white border-0"><Plus className="w-4 h-4 me-2" /> {t("courses.create")}</Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[480px]">
                                 <DialogHeader>
-                                    <DialogTitle>Create New Course</DialogTitle>
-                                    <DialogDescription>Set up the basic information for your training course.</DialogDescription>
+                                    <DialogTitle>{t("courses.createDialog.title")}</DialogTitle>
+                                    <DialogDescription>{t("courses.createDialog.description")}</DialogDescription>
                                 </DialogHeader>
                                 <div className="space-y-4 py-4">
-                                    <div className="space-y-2"><Label>Course Title</Label><Input placeholder="e.g. Project Management Basics" value={newCourse.title} onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })} /></div>
-                                    <div className="space-y-2"><Label>Description</Label><Textarea placeholder="What will employees learn?" rows={3} value={newCourse.description} onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })} /></div>
+                                    <div className="space-y-2"><Label>{t("courses.fields.title")}</Label><Input placeholder={t("courses.fields.titlePlaceholder")} value={newCourse.title} onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })} /></div>
+                                    <div className="space-y-2"><Label>{t("courses.fields.description")}</Label><Textarea placeholder={t("courses.fields.descriptionPlaceholder")} rows={3} value={newCourse.description} onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })} /></div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2"><Label>Target Audience</Label><Input placeholder="e.g. All Managers" value={newCourse.audience} onChange={(e) => setNewCourse({ ...newCourse, audience: e.target.value })} /></div>
-                                        <div className="space-y-2"><Label>Duration</Label><Input placeholder="e.g. 4h" value={newCourse.duration} onChange={(e) => setNewCourse({ ...newCourse, duration: e.target.value })} /></div>
+                                        <div className="space-y-2"><Label>{t("courses.fields.audience")}</Label><Input placeholder={t("courses.fields.audiencePlaceholder")} value={newCourse.audience} onChange={(e) => setNewCourse({ ...newCourse, audience: e.target.value })} /></div>
+                                        <div className="space-y-2"><Label>{t("courses.fields.duration")}</Label><Input placeholder={t("courses.fields.durationPlaceholder")} value={newCourse.duration} onChange={(e) => setNewCourse({ ...newCourse, duration: e.target.value })} /></div>
                                     </div>
                                 </div>
                                 <DialogFooter>
-                                    <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                                    <Button onClick={handleCreateCourse} className="bg-rose-500 hover:bg-rose-600 text-white border-0">Create Course</Button>
+                                    <Button variant="outline" onClick={() => setIsCreateOpen(false)}>{t("common:actions.cancel")}</Button>
+                                    <Button onClick={handleCreateCourse} className="bg-rose-500 hover:bg-rose-600 text-white border-0">{t("courses.create")}</Button>
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
                     </div>
 
                     <div className="relative max-w-sm">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input className="pl-9" placeholder="Search courses…" value={search} onChange={(e) => setSearch(e.target.value)} />
+                        <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input className="ps-9" placeholder={t("courses.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -137,29 +144,29 @@ const AdminCourses = () => {
                                         )}><BookOpen className="w-6 h-6" /></div>
                                         <div className="flex items-center gap-2">
                                             <Badge variant="outline" className={cn("text-xs font-semibold", statusColor(course.status))}>
-                                                {course.status === "Processing" ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Processing</> : course.status === "Active" ? <><CheckCircle2 className="w-3 h-3 mr-1" />Active</> : course.status}
+                                                {course.status === "Processing" ? <><Loader2 className="w-3 h-3 me-1 animate-spin" />{t("courses.status.Processing")}</> : course.status === "Active" ? <><CheckCircle2 className="w-3 h-3 me-1" />{t("courses.status.Active")}</> : t("courses.status.Draft")}
                                             </Badge>
-                                            <Button variant="ghost" size="icon" className="w-7 h-7"><MoreHorizontal className="w-4 h-4" /></Button>
+                                            <Button variant="ghost" size="icon" className="w-7 h-7" aria-label={t("courses.moreActions")}><MoreHorizontal className="w-4 h-4" /></Button>
                                         </div>
                                     </div>
-                                    <h3 className="font-bold text-base mb-1">{course.title}</h3>
-                                    <p className="text-sm text-muted-foreground flex-1 mb-3">{course.description}</p>
+                                    <h3 className="font-bold text-base mb-1">{text(course, "title")}</h3>
+                                    <p className="text-sm text-muted-foreground flex-1 mb-3">{text(course, "description")}</p>
                                     <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
-                                        {course.audience && <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{course.audience}</span>}
-                                        {course.duration && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{course.duration}</span>}
+                                        {text(course, "audience") && <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{text(course, "audience")}</span>}
+                                        {text(course, "duration") && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{text(course, "duration")}</span>}
                                     </div>
                                     {course.status === "Processing" && (
                                         <div className="mb-3">
                                             <div className="flex justify-between text-xs mb-1">
-                                                <span className="text-amber-600 font-medium flex items-center gap-1"><Sparkles className="w-3 h-3" />AI Indexing…</span>
-                                                <span>{course.processing ?? 0}%</span>
+                                                <span className="text-amber-600 font-medium flex items-center gap-1"><Sparkles className="w-3 h-3" />{t("courses.aiIndexing")}</span>
+                                                <span>{formatPercent(course.processing ?? 0)}</span>
                                             </div>
                                             <Progress value={course.processing ?? 0} className="h-1.5" />
                                         </div>
                                     )}
                                     {course.status === "Active" && (
                                         <div className="grid grid-cols-3 gap-2 mb-3">
-                                            {[{ l: "Enrolled", v: course.enrolled }, { l: "Done", v: `${course.completion}%` }, { l: "Score", v: `${course.aiScore}%` }].map((s) => (
+                                            {[{ l: t("courses.stat.enrolled"), v: formatNumber(course.enrolled) }, { l: t("courses.stat.done"), v: formatPercent(course.completion) }, { l: t("courses.stat.score"), v: formatPercent(course.aiScore) }].map((s) => (
                                                 <div key={s.l} className="text-center bg-muted/40 rounded-lg py-1.5"><p className="font-bold text-sm">{s.v}</p><p className="text-xs text-muted-foreground">{s.l}</p></div>
                                             ))}
                                         </div>
@@ -167,12 +174,12 @@ const AdminCourses = () => {
                                     <div className="flex gap-2 mt-auto pt-3 border-t border-border/40">
                                         <Dialog open={uploadCourseId === course.id} onOpenChange={(o) => setUploadCourseId(o ? course.id : null)}>
                                             <DialogTrigger asChild>
-                                                <Button variant="outline" size="sm" className="flex-1"><Upload className="w-3.5 h-3.5 mr-1.5" /> Upload</Button>
+                                                <Button variant="outline" size="sm" className="flex-1"><Upload className="w-3.5 h-3.5 me-1.5" /> {t("courses.upload")}</Button>
                                             </DialogTrigger>
                                             <DialogContent>
                                                 <DialogHeader>
-                                                    <DialogTitle>Upload Content</DialogTitle>
-                                                    <DialogDescription>AI will index this material automatically for "{course.title}".</DialogDescription>
+                                                    <DialogTitle>{t("courses.uploadDialog.title")}</DialogTitle>
+                                                    <DialogDescription>{t("courses.uploadDialog.description", { course: text(course, "title") })}</DialogDescription>
                                                 </DialogHeader>
                                                 <div
                                                     className={cn("border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors", dragOver ? "border-rose-400 bg-rose-50 dark:bg-rose-950/20" : "border-border/50 hover:border-rose-300")}
@@ -182,19 +189,19 @@ const AdminCourses = () => {
                                                     onClick={() => document.getElementById(`fi-${course.id}`)?.click()}
                                                 >
                                                     <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-                                                    <p className="font-semibold">Drag & drop or click to browse</p>
-                                                    <p className="text-sm text-muted-foreground mt-1">PDF, Slides, Videos, Documents</p>
+                                                    <p className="font-semibold">{t("courses.uploadDialog.drop")}</p>
+                                                    <p className="text-sm text-muted-foreground mt-1">{t("courses.uploadDialog.types")}</p>
                                                     <div className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground">
-                                                        {[FileText, Video].map((Icon, i) => (<span key={i} className="flex items-center gap-1"><Icon className="w-3.5 h-3.5" />{["PDF", "Video"][i]}</span>))}
+                                                        {[FileText, Video].map((Icon, i) => (<span key={i} className="flex items-center gap-1"><Icon className="w-3.5 h-3.5" />{[t("courses.uploadDialog.pdf"), t("courses.uploadDialog.video")][i]}</span>))}
                                                     </div>
                                                     <input id={`fi-${course.id}`} type="file" multiple className="hidden" onChange={(e) => handleUpload(e.target.files, course.id)} />
                                                 </div>
-                                                <DialogFooter><Button variant="outline" onClick={() => setUploadCourseId(null)}>Close</Button></DialogFooter>
+                                                <DialogFooter><Button variant="outline" onClick={() => setUploadCourseId(null)}>{t("common:actions.close")}</Button></DialogFooter>
                                             </DialogContent>
                                         </Dialog>
                                         {course.status === "Active" && (
-                                            <Button variant="ghost" size="sm" className="text-amber-600 hover:bg-amber-50" onClick={() => toast({ title: "Questions Regenerated", description: "New draft questions are ready." })}>
-                                                <Star className="w-3.5 h-3.5 mr-1" /> Questions
+                                            <Button variant="ghost" size="sm" className="text-amber-600 hover:bg-amber-50" onClick={() => toast({ title: t("courses.toast.regenerated"), description: t("courses.toast.regeneratedDescription") })}>
+                                                <Star className="w-3.5 h-3.5 me-1" /> {t("courses.questions")}
                                             </Button>
                                         )}
                                     </div>
@@ -202,7 +209,7 @@ const AdminCourses = () => {
                             </Card>
                         ))}
                         {filtered.length === 0 && (
-                            <div className="col-span-full text-center py-16 text-muted-foreground"><BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" /><p className="font-semibold">No courses found</p></div>
+                            <div className="col-span-full text-center py-16 text-muted-foreground"><BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" /><p className="font-semibold">{t("courses.empty")}</p></div>
                         )}
                     </div>
                 </div>

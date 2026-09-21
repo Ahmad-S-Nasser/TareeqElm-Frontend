@@ -45,6 +45,7 @@ npm run dev        # http://localhost:3001
 | `npm run build:dev` | Development-mode build |
 | `npm run preview` | Serve the production build locally |
 | `npm run lint` | ESLint (0 errors and 0 warnings is the target) |
+| `npm run i18n:check` | Verify `en`/`ar` locale files have identical keys and no empty values |
 | `npx tsc --noEmit -p tsconfig.app.json` | Type check (TypeScript `strict` is on) |
 
 ## Development test accounts
@@ -78,6 +79,14 @@ public/              Static assets (favicon, robots.txt)
 ```
 
 API access goes through `src/lib/api.ts`: it adds the bearer token, signs the user out on an expired session (401), and `getApiError` turns any failure into a readable message.
+
+## Internationalisation
+
+The app is bilingual: English (`en`, default) and Arabic (`ar`, RTL, Western digits, Cairo font). Translations live in
+`src/locales/{en,ar}/<namespace>.json` and load lazily; the user's choice is stored in `localStorage` (`tareeqelm_lang`)
+and drives `<html lang dir>` and the `Accept-Language` header. Use `useTranslation('<ns>')` for text, the helpers in
+`src/lib/format.ts` (`useFormatters()`) for numbers and dates, and logical Tailwind classes (`ms-`/`me-`/`ps-`/`pe-`/`start-`/`end-`)
+for layout. Full guide: [`src/i18n/README.md`](src/i18n/README.md).
 
 ## Branding TODO
 

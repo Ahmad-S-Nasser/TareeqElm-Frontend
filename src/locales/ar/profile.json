@@ -1,0 +1,117 @@
+{
+  "loadFailed": "تعذّر تحميل ملفك الشخصي.",
+  "statsLoadFailed": "تعذّر تحميل إحصاءات التعلّم.",
+  "greeting": "مرحبًا، {{name}}",
+  "enrolled": "مسجّل",
+  "completed": "مكتمل",
+  "statistics": {
+    "title": "إحصاءات التعلّم",
+    "studyHours": "إجمالي ساعات الدراسة",
+    "studyHoursValue": "{{value}} س",
+    "streak": "أيام الدراسة المتتالية",
+    "completedCourses": "الدورات المكتملة",
+    "quizAverage": "متوسط الاختبارات",
+    "flashcards": "البطاقات",
+    "achievements": "الإنجازات",
+    "achievementsValue": "{{earned}} / {{total}}"
+  },
+  "achievements": {
+    "title": "الإنجازات",
+    "earned": "تم الحصول عليه",
+    "items": {
+      "firstSteps": {
+        "name": "الخطوات الأولى",
+        "description": "أكمل أول درس لك"
+      },
+      "streakStarter": {
+        "name": "بداية الاستمرارية",
+        "description": "حافظ على سلسلة دراسة مدتها 7 أيام"
+      },
+      "quizMaster": {
+        "name": "خبير الاختبارات",
+        "description": "احصل على 100% في اختبار"
+      },
+      "knowledgeSeeker": {
+        "name": "طالب المعرفة",
+        "description": "أكمل 10 دروس"
+      },
+      "studyMarathon": {
+        "name": "ماراثون الدراسة",
+        "description": "ادرس أكثر من 50 ساعة إجمالًا"
+      },
+      "courseChampion": {
+        "name": "بطل الدورات",
+        "description": "أكمل دورة كاملة"
+      },
+      "quizPasser": {
+        "name": "ناجح في الاختبارات",
+        "description": "اجتز 5 اختبارات"
+      },
+      "flashcardPro": {
+        "name": "محترف البطاقات",
+        "description": "راجع 100 بطاقة"
+      }
+    }
+  },
+  "onboarding": {
+    "steps": "الخطوة {{current}} من {{total}}",
+    "welcome": {
+      "title": "مرحبًا بك في طريق علم، {{name}}!",
+      "titleAnonymous": "مرحبًا بك في طريق علم!",
+      "description": "منصتك التعليمية المدعومة بالذكاء الاصطناعي. لنُعِدّ تجربتك المخصّصة في بضع خطوات فقط.",
+      "start": "ابدأ الآن"
+    },
+    "role": {
+      "title": "ما دورك؟",
+      "subtitle": "اختر طريقة استخدامك للمنصة"
+    },
+    "roles": {
+      "applicant": "تصفّح الدورات والبطاقات واستفد من التدريس الذكي",
+      "instructor": "أنشئ الدورات وأدِرها وتابع تقدّم المتدرّبين",
+      "organization": "أدِر الأقسام والمدرّسين والتحليلات",
+      "organizationLabel": "مؤسسة / مسؤول"
+    },
+    "goals": {
+      "title": "ما أهدافك؟",
+      "subtitle": "اختر كل ما ينطبق عليك لنخصّص تجربتك",
+      "exams": {
+        "label": "الاستعداد للاختبارات",
+        "description": "استعد للاختبارات بالتدريب والتوجيه الذكي"
+      },
+      "consistency": {
+        "label": "تحسين الانتظام في الدراسة",
+        "description": "كوّن عادات يومية وحافظ على سلسلة دراسة متواصلة"
+      },
+      "subjects": {
+        "label": "تعلّم مواضيع جديدة",
+        "description": "استكشف دورات في تخصصات متعددة"
+      },
+      "progress": {
+        "label": "متابعة التقدّم في التعلّم",
+        "description": "تابع أداءك بتحليلات مفصّلة"
+      }
+    },
+    "ready": {
+      "title": "تجربتك الذكية جاهزة!",
+      "description": "أعددنا لك بيئة تعلّم مخصّصة بناءً على تفضيلاتك.",
+      "coach": {
+        "label": "المدرّب الذكي للدراسة",
+        "description": "احصل على إرشاد واستراتيجيات دراسة مخصّصة"
+      },
+      "courses": {
+        "label": "دورات مقترحة",
+        "descriptionTrainer": "دورات منتقاة بحسب أهدافك",
+        "descriptionOther": "دورات شائعة في مجالك"
+      },
+      "schedule": {
+        "label": "جدول دراسة ذكي",
+        "description": "فترات دراسة يولّدها الذكاء الاصطناعي بحسب أوقات نشاطك"
+      },
+      "spaced": {
+        "label": "التكرار المتباعد",
+        "description": "نظام بطاقات بفترات مراجعة ذكية"
+      }
+    },
+    "launch": "انتقل إلى لوحة التحكم"
+  }
+}

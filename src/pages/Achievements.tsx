@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -24,6 +26,8 @@ const Achievements = () => {
   const [activeTab, setActiveTab] = useState("all");
   const { achievements, earned, loading, error, newlyUnlocked, dismissNewlyUnlocked, totalXP, levelInfo } = useAchievements();
   const navigate = useNavigate();
+  const { t } = useTranslation("dashboard");
+  const { formatNumber, formatPercent } = useFormatters();
 
   const categories = ['all', 'streak', 'study', 'mastery', 'productivity'] as const;
   const filtered = activeTab === 'all' ? achievements : achievements.filter(a => a.category === activeTab);
@@ -38,16 +42,16 @@ const Achievements = () => {
         onDismiss={dismissNewlyUnlocked}
       />
 
-      <main className={cn("pt-20 pb-8 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64", "ml-0")}>
+      <main className={cn("pt-20 pb-8 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ms-20" : "lg:ms-64", "ms-0")}>
         {loading ? (
           <div className="max-w-5xl mx-auto flex flex-col items-center justify-center py-24">
             <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-            <p className="text-muted-foreground">Loading achievements...</p>
+            <p className="text-muted-foreground">{t("achievements.loading")}</p>
           </div>
         ) : error ? (
           <div className="max-w-5xl mx-auto text-center py-24">
             <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-3" />
-            <p className="font-medium mb-1">Could not load achievements</p>
+            <p className="font-medium mb-1">{t("achievements.loadFailed")}</p>
             <p className="text-sm text-muted-foreground">{error}</p>
           </div>
         ) : (
@@ -59,8 +63,8 @@ const Achievements = () => {
                 <Award className="w-5 h-5 text-amber-500" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">Achievements</h1>
-                <p className="text-muted-foreground text-sm">{earned.length} of {achievements.length} unlocked</p>
+                <h1 className="text-2xl font-bold">{t("achievements.title")}</h1>
+                <p className="text-muted-foreground text-sm">{t("achievements.unlockedOf", { earned: formatNumber(earned.length), total: formatNumber(achievements.length) })}</p>
               </div>
             </div>
           </section>
@@ -75,19 +79,19 @@ const Achievements = () => {
                       <Star className="w-7 h-7 text-primary-foreground" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">Level {levelInfo.level}</p>
+                      <p className="text-2xl font-bold">{t("achievements.level", { level: formatNumber(levelInfo.level) })}</p>
                       <p className="text-sm text-muted-foreground">{levelInfo.title}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-primary">{totalXP}</p>
-                    <p className="text-xs text-muted-foreground">Total XP</p>
+                  <div className="text-end">
+                    <p className="text-2xl font-bold text-primary">{formatNumber(totalXP)}</p>
+                    <p className="text-xs text-muted-foreground">{t("achievements.totalXP")}</p>
                   </div>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-xs text-muted-foreground">Progress to Level {levelInfo.level + 1}</p>
-                    <p className="text-xs font-medium">{levelInfo.currentXP} / {levelInfo.xpForNext} XP</p>
+                    <p className="text-xs text-muted-foreground">{t("achievements.progressToLevel", { level: formatNumber(levelInfo.level + 1) })}</p>
+                    <p className="text-xs font-medium">{t("achievements.xpOf", { current: formatNumber(levelInfo.currentXP), total: formatNumber(levelInfo.xpForNext) })}</p>
                   </div>
                   <Progress value={(levelInfo.currentXP / levelInfo.xpForNext) * 100} className="h-3" />
                 </div>
@@ -99,8 +103,8 @@ const Achievements = () => {
           <Card className="animate-slide-up" style={{ animationDelay: "100ms" }}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-3">
-                <p className="text-sm font-medium">Badge Progress</p>
-                <Badge variant="secondary">{Math.round((earned.length / achievements.length) * 100)}%</Badge>
+                <p className="text-sm font-medium">{t("achievements.badgeProgress")}</p>
+                <Badge variant="secondary">{formatPercent((earned.length / achievements.length) * 100)}</Badge>
               </div>
               <Progress value={(earned.length / achievements.length) * 100} className="h-3" />
               <div className="grid grid-cols-4 gap-4 mt-4">
@@ -110,8 +114,8 @@ const Achievements = () => {
                   const style = tierStyles[tier];
                   return (
                     <div key={tier} className={cn("rounded-xl p-3 text-center border", style.bg, style.border)}>
-                      <p className={cn("text-lg font-bold", style.text)}>{count}/{total}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{tier}</p>
+                      <p className={cn("text-lg font-bold", style.text)}><bdi>{formatNumber(count)}/{formatNumber(total)}</bdi></p>
+                      <p className="text-xs text-muted-foreground">{t(`achievements.tiers.${tier}`)}</p>
                     </div>
                   );
                 })}
@@ -122,7 +126,7 @@ const Achievements = () => {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid grid-cols-5 w-full max-w-lg">
               {categories.map(cat => (
-                <TabsTrigger key={cat} value={cat} className="capitalize text-xs">{cat}</TabsTrigger>
+                <TabsTrigger key={cat} value={cat} className="text-xs">{t(`achievements.categories.${cat}`)}</TabsTrigger>
               ))}
             </TabsList>
 
@@ -139,14 +143,14 @@ const Achievements = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-semibold truncate">{a.title}</p>
-                            <Badge variant="outline" className={cn("text-[10px] shrink-0 capitalize", style.text)}>{a.tier}</Badge>
+                            <Badge variant="outline" className={cn("text-[10px] shrink-0", style.text)}>{t(`achievements.tiers.${a.tier}`)}</Badge>
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5">{a.description}</p>
                           <div className="mt-2">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-[10px] text-muted-foreground">{a.requirement}</span>
                               <span className="text-[10px] font-medium">
-                                {a.unlocked ? <span className="text-primary">+{a.xp} XP</span> : `${a.progress}%`}
+                                {a.unlocked ? <span className="text-primary">+{t("achievements.xp", { count: formatNumber(a.xp) })}</span> : formatPercent(a.progress)}
                               </span>
                             </div>
                             <Progress value={a.progress} className="h-1.5" />

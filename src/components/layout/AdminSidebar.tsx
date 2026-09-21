@@ -11,6 +11,8 @@ import {
     ListChecks,
     Shield,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -22,16 +24,17 @@ interface SidebarProps {
 }
 
 const menuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
-    { icon: Users, label: "Users", path: "/admin/users" },
-    { icon: BookOpen, label: "Courses", path: "/admin/courses" },
-    { icon: ListChecks, label: "Enrollments", path: "/admin/enrollments" },
-    { icon: BarChart2, label: "Analytics", path: "/admin/analytics" },
-    { icon: Settings, label: "Settings", path: "/admin/settings" },
+    { icon: LayoutDashboard, labelKey: "dashboard", path: "/admin" },
+    { icon: Users, labelKey: "users", path: "/admin/users" },
+    { icon: BookOpen, labelKey: "courses", path: "/admin/courses" },
+    { icon: ListChecks, labelKey: "enrollments", path: "/admin/enrollments" },
+    { icon: BarChart2, labelKey: "analytics", path: "/admin/analytics" },
+    { icon: Settings, labelKey: "settings", path: "/admin/settings" },
 ];
 
 export const AdminSidebarContent = ({ collapsed }: { collapsed: boolean }) => {
     const location = useLocation();
+    const { t } = useTranslation("nav");
     const { signOut } = useAuth();
     const navigate = useNavigate();
 
@@ -41,7 +44,7 @@ export const AdminSidebarContent = ({ collapsed }: { collapsed: boolean }) => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-card/50 backdrop-blur-xl border-r border-border/50">
+        <div className="flex flex-col h-full bg-card/50 backdrop-blur-xl border-e border-border/50">
             <div className={cn(
                 "p-6 flex items-center gap-3",
                 collapsed ? "justify-center px-2" : ""
@@ -51,7 +54,7 @@ export const AdminSidebarContent = ({ collapsed }: { collapsed: boolean }) => {
                 </div>
                 {!collapsed && (
                     <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-rose-500 to-orange-400">
-                        AdminAI
+                        {t("sidebar.brand.admin")}
                     </span>
                 )}
             </div>
@@ -75,7 +78,7 @@ export const AdminSidebarContent = ({ collapsed }: { collapsed: boolean }) => {
                                 )}
                             >
                                 <Icon className={cn("w-5 h-5", isActive && "text-rose-500")} />
-                                {!collapsed && <span>{item.label}</span>}
+                                {!collapsed && <span>{t(`sidebar.admin.${item.labelKey}`)}</span>}
                             </Button>
                         </Link>
                     );
@@ -92,14 +95,16 @@ export const AdminSidebarContent = ({ collapsed }: { collapsed: boolean }) => {
                     onClick={handleSignOut}
                 >
                     <LogOut className="w-5 h-5" />
-                    {!collapsed && <span>Sign Out</span>}
+                    {!collapsed && <span>{t("sidebar.signOut")}</span>}
                 </Button>
+                {!collapsed && <LanguageSwitcher className="mt-3 lg:hidden" />}
             </div>
         </div>
     );
 };
 
 export const AdminSidebar = ({ onCollapse }: SidebarProps) => {
+    const { t } = useTranslation("nav");
     const [collapsed, setCollapsed] = useState(false);
 
     useEffect(() => {
@@ -111,7 +116,7 @@ export const AdminSidebar = ({ onCollapse }: SidebarProps) => {
             {/* Desktop Sidebar */}
             <aside
                 className={cn(
-                    "fixed left-0 top-0 h-screen z-40 hidden lg:block transition-all duration-300",
+                    "fixed start-0 top-0 h-screen z-40 hidden lg:block transition-all duration-300",
                     collapsed ? "w-20" : "w-64"
                 )}
             >
@@ -120,13 +125,14 @@ export const AdminSidebar = ({ onCollapse }: SidebarProps) => {
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute -right-4 top-8 w-8 h-8 rounded-full border bg-background shadow-md z-50 hover:bg-accent"
+                    className="absolute -end-4 top-8 w-8 h-8 rounded-full border bg-background shadow-md z-50 hover:bg-accent"
+                    aria-label={t(collapsed ? "sidebar.expand" : "sidebar.collapse")}
                     onClick={() => setCollapsed(!collapsed)}
                 >
                     {collapsed ? (
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-4 h-4 rtl:rotate-180" />
                     ) : (
-                        <ChevronLeft className="w-4 h-4" />
+                        <ChevronLeft className="w-4 h-4 rtl:rotate-180" />
                     )}
                 </Button>
             </aside>

@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import {
 import { FolderOpen, Search, FileText, Video, Image, Presentation, Upload, Download, Eye, Clock, Loader2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import api, { getApiError } from "@/lib/api";
+import { useFormatters } from "@/lib/format";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface ContentItem {
@@ -41,12 +43,6 @@ const typeColor: Record<string, string> = {
     document: "text-primary bg-primary/10",
 };
 
-const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-};
-
 const OrganizationContentLibrary = () => {
     const [search, setSearch] = useState("");
     const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -54,8 +50,18 @@ const OrganizationContentLibrary = () => {
     const [uploadCourse, setUploadCourse] = useState("");
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { t } = useTranslation(["organization", "common"]);
+    const { formatDate, formatNumber } = useFormatters();
     const { toast } = useToast();
     const queryClient = useQueryClient();
+
+    const formatFileSize = (bytes: number): string => {
+        if (bytes < 1024) return t("library.size.bytes", { value: formatNumber(bytes) });
+        const opts = { maximumFractionDigits: 1 };
+        if (bytes < 1024 * 1024) return t("library.size.kb", { value: formatNumber(bytes / 1024, opts) });
+        return t("library.size.mb", { value: formatNumber(bytes / (1024 * 1024), opts) });
+    };
+    const deptLabel = (name: string | null) => (!name || name === "General" ? t("library.general") : name);
 
     const { data: content = [], isLoading, isError, error } = useQuery({
         queryKey: ["content-library"],
@@ -71,9 +77,9 @@ const OrganizationContentLibrary = () => {
         mutationFn: async (id: string) => { await api.delete(`/content-library/${id}`); },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["content-library"] });
-            toast({ title: "File deleted" });
+            toast({ title: t("library.deleted") });
         },
-        onError: (err: unknown) => toast({ variant: "destructive", title: "Delete failed", description: getApiError(err, "Could not delete file") }),
+        onError: (err: unknown) => toast({ variant: "destructive", title: t("library.deleteFailed"), description: getApiError(err, t("library.deleteError")) }),
     });
 
     const handleUpload = async (files: FileList | null) => {
@@ -90,12 +96,12 @@ const OrganizationContentLibrary = () => {
                 await api.post("/content-library", form, { headers: { "Content-Type": "multipart/form-data" } });
                 ok++;
             } catch (err) {
-                failures.push(`${file.name}: ${getApiError(err, "upload failed")}`);
+                failures.push(`${file.name}: ${getApiError(err, t("library.uploadFailedShort"))}`);
             }
         }
         queryClient.invalidateQueries({ queryKey: ["content-library"] });
-        if (ok > 0) toast({ title: "Files Uploaded", description: `${ok} file(s) uploaded successfully.` });
-        if (failures.length > 0) toast({ variant: "destructive", title: "Upload Failed", description: failures.join("\n") });
+        if (ok > 0) toast({ title: t("library.uploaded"), description: t("library.uploadedDesc", { count: ok }) });
+        if (failures.length > 0) toast({ variant: "destructive", title: t("library.uploadFailed"), description: failures.join("\n") });
         if (failures.length === 0) setIsUploadOpen(false);
         if (fileInputRef.current) fileInputRef.current.value = "";
         setUploading(false);
@@ -116,23 +122,23 @@ const OrganizationContentLibrary = () => {
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                             <FolderOpen className="w-5 h-5 text-primary" />
                         </div>
-                        Content Library
+                        {t("library.title")}
                     </h1>
-                    <p className="text-muted-foreground mt-1">Shared academic resources organized by department and course</p>
+                    <p className="text-muted-foreground mt-1">{t("library.subtitle")}</p>
                 </div>
                 <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
                     <DialogTrigger asChild>
-                        <Button className="gap-2"><Upload className="w-4 h-4" /> Upload Content</Button>
+                        <Button className="gap-2"><Upload className="w-4 h-4" /> {t("library.upload")}</Button>
                     </DialogTrigger>
                     <DialogContent>
-                        <DialogHeader><DialogTitle>Upload Files</DialogTitle></DialogHeader>
+                        <DialogHeader><DialogTitle>{t("library.uploadFiles")}</DialogTitle></DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                                <Label>Department</Label>
+                                <Label>{t("library.department")}</Label>
                                 <Select value={uploadDept} onValueChange={setUploadDept}>
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="General">General</SelectItem>
+                                        <SelectItem value="General">{t("library.general")}</SelectItem>
                                         {departmentList.filter(d => d.Name !== "General").map(d => (
                                             <SelectItem key={d.Id} value={d.Name}>{d.Name}</SelectItem>
                                         ))}
@@ -140,16 +146,16 @@ const OrganizationContentLibrary = () => {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label>Course (optional)</Label>
-                                <Input value={uploadCourse} onChange={e => setUploadCourse(e.target.value)} placeholder="e.g. Data Structures" />
+                                <Label>{t("library.courseOptional")}</Label>
+                                <Input value={uploadCourse} onChange={e => setUploadCourse(e.target.value)} placeholder={t("library.coursePlaceholder")} />
                             </div>
                             <div
                                 className="border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                                <p className="text-sm font-medium">Click to select files</p>
-                                <p className="text-xs text-muted-foreground mt-1">PDF, PPTX, DOCX, images, videos (max 20MB)</p>
+                                <p className="text-sm font-medium">{t("library.selectFiles")}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{t("library.allowed", { size: formatNumber(20) })}</p>
                             </div>
                             <input
                                 ref={fileInputRef}
@@ -161,8 +167,8 @@ const OrganizationContentLibrary = () => {
                             />
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsUploadOpen(false)}>Cancel</Button>
-                            {uploading && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin" /> Uploading...</div>}
+                            <Button variant="outline" onClick={() => setIsUploadOpen(false)}>{t("common:actions.cancel")}</Button>
+                            {uploading && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin" /> {t("library.uploading")}</div>}
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -170,10 +176,10 @@ const OrganizationContentLibrary = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 {[
-                    { label: "Total Files", value: content.length },
-                    { label: "Departments", value: departments.length },
-                    { label: "Total Size", value: formatFileSize(content.reduce((sum, c) => sum + (c.FileSizeBytes || 0), 0)) },
-                    { label: "File Types", value: [...new Set(content.map((c) => c.FileType))].length },
+                    { label: t("library.stats.files"), value: formatNumber(content.length) },
+                    { label: t("library.stats.departments"), value: formatNumber(departments.length) },
+                    { label: t("library.stats.size"), value: formatFileSize(content.reduce((sum, c) => sum + (c.FileSizeBytes || 0), 0)) },
+                    { label: t("library.stats.types"), value: formatNumber([...new Set(content.map((c) => c.FileType))].length) },
                 ].map(s => (
                     <Card key={s.label} className="border-border/50">
                         <CardContent className="p-4">
@@ -185,21 +191,21 @@ const OrganizationContentLibrary = () => {
             </div>
 
             <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Search files..." className="pl-10" value={search} onChange={e => setSearch(e.target.value)} />
+                <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input placeholder={t("library.search")} className="ps-10" value={search} onChange={e => setSearch(e.target.value)} />
             </div>
 
             {isLoading ? (
                 <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
             ) : isError ? (
-                <Card className="border-border/50"><CardContent className="p-12 text-center text-destructive">{getApiError(error, "Could not load content.")}</CardContent></Card>
+                <Card className="border-border/50"><CardContent className="p-12 text-center text-destructive">{getApiError(error, t("library.loadFailed"))}</CardContent></Card>
             ) : filtered.length === 0 ? (
-                <Card className="border-border/50"><CardContent className="p-12 text-center text-muted-foreground">No files yet. Upload content to get started.</CardContent></Card>
+                <Card className="border-border/50"><CardContent className="p-12 text-center text-muted-foreground">{t("library.empty")}</CardContent></Card>
             ) : (
                 <Tabs defaultValue="all">
                     <TabsList>
-                        <TabsTrigger value="all">All</TabsTrigger>
-                        {departments.map(d => <TabsTrigger key={d} value={d}>{d}</TabsTrigger>)}
+                        <TabsTrigger value="all">{t("common:labels.all")}</TabsTrigger>
+                        {departments.map(d => <TabsTrigger key={d} value={d}>{deptLabel(d)}</TabsTrigger>)}
                     </TabsList>
                     {["all", ...departments].map(tab => (
                         <TabsContent key={tab} value={tab} className="space-y-3 mt-4">
@@ -214,20 +220,21 @@ const OrganizationContentLibrary = () => {
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-semibold text-sm truncate">{item.Name}</p>
                                                 <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                                                    <Badge variant="outline" className="text-xs">{item.Department || "General"}</Badge>
+                                                    <Badge variant="outline" className="text-xs">{deptLabel(item.Department)}</Badge>
                                                     {item.CourseName && <span>{item.CourseName}</span>}
-                                                    <span>{formatFileSize(item.FileSizeBytes)}</span>
+                                                    <span>{t(`library.types.${item.FileType}`, { defaultValue: t("library.types.other") })} · {formatFileSize(item.FileSizeBytes)}</span>
+                                                    <span>{t("library.uploadedBy", { name: item.UploadedByName ?? t("common:deletedUser") })}</span>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-4 text-xs text-muted-foreground shrink-0">
-                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{new Date(item.CreatedAt).toLocaleDateString()}</span>
+                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{formatDate(item.CreatedAt)}</span>
                                                                                                 <Button variant="ghost" size="icon" asChild>
-                                                    <a href={fileUrl(item.FilePath)} target="_blank" rel="noopener noreferrer"><Eye className="w-4 h-4" /></a>
+                                                    <a href={fileUrl(item.FilePath)} target="_blank" rel="noopener noreferrer" aria-label={t("library.view")} title={t("library.view")}><Eye className="w-4 h-4" /></a>
                                                 </Button>
                                                 <Button variant="ghost" size="icon" asChild>
-                                                    <a href={fileUrl(item.FilePath)} download><Download className="w-4 h-4" /></a>
+                                                    <a href={fileUrl(item.FilePath)} download aria-label={t("common:actions.download")} title={t("common:actions.download")}><Download className="w-4 h-4" /></a>
                                                 </Button>
-                                                <Button variant="ghost" size="icon" disabled={deleteMutation.isPending} onClick={() => { if (window.confirm(`Delete "${item.Name}"?`)) deleteMutation.mutate(item.Id); }}>
+                                                <Button variant="ghost" size="icon" disabled={deleteMutation.isPending} aria-label={t("common:actions.delete")} title={t("common:actions.delete")} onClick={() => { if (window.confirm(t("library.confirmDelete", { name: item.Name }))) deleteMutation.mutate(item.Id); }}>
                                                     <Trash2 className="w-4 h-4 text-destructive" />
                                                 </Button>
                                             </div>

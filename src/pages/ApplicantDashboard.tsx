@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useAuth } from "@/hooks/useAuth";
+import { useFormatters } from "@/lib/format";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -26,12 +29,15 @@ import { Flame, Target, Clock, Trophy, Loader2, Brain, RotateCcw, Star, Bell, Aw
 const ApplicantDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation("dashboard");
+  const { user } = useAuth();
+  const { formatNumber, formatPercent } = useFormatters();
 
   const [todaysPlanItems, setTodaysPlanItems] = useState([
-    { id: "1", title: "Review Test Design", duration: "25 min", type: "lesson" as const, completed: true },
-    { id: "2", title: "Practice: Black-box", duration: "15 min", type: "quiz" as const, completed: true },
-    { id: "3", title: "Flashcard Review", duration: "10 min", type: "flashcard" as const, completed: false },
-    { id: "4", title: "AI Review Session", duration: "30 min", type: "ai-review" as const, completed: false },
+    { id: "1", title: "plan.items.reviewTestDesign", minutes: 25, type: "lesson" as const, completed: true },
+    { id: "2", title: "plan.items.practiceBlackBox", minutes: 15, type: "quiz" as const, completed: true },
+    { id: "3", title: "plan.items.flashcardReview", minutes: 10, type: "flashcard" as const, completed: false },
+    { id: "4", title: "plan.items.aiReview", minutes: 30, type: "ai-review" as const, completed: false },
   ]);
 
   const handleTogglePlanItem = (id: string) => {
@@ -55,14 +61,14 @@ const ApplicantDashboard = () => {
       <ApplicantSidebar onCollapse={setSidebarCollapsed} />
       <Header sidebarCollapsed={sidebarCollapsed} mobileSidebar={<ApplicantSidebarContent onItemClick={() => console.log('Mobile sidebar clicked')} />} />
 
-      <main className={cn("pt-20 pb-24 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64", "ml-0")}>
+      <main className={cn("pt-20 pb-24 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ms-20" : "lg:ms-64", "ms-0")}>
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Welcome + Level */}
           <section className="animate-slide-up">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold mb-1">Welcome back! 👋</h1>
-                <p className="text-muted-foreground">Ready to continue your learning journey?</p>
+                <h1 className="text-2xl font-bold mb-1">{t("welcomeBack", { name: user?.FullName ?? "" })} 👋</h1>
+                <p className="text-muted-foreground">{t("welcomeSubtitle")}</p>
               </div>
               {levelInfo && (
                 <div className="hidden sm:flex items-center gap-3 bg-card border border-border/50 rounded-xl px-4 py-2.5 shadow-sm cursor-pointer hover:border-primary/30 transition-all" onClick={() => navigate('/achievements')}>
@@ -70,16 +76,16 @@ const ApplicantDashboard = () => {
                     <Star className="w-4 h-4 text-primary-foreground" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Lvl {levelInfo.level} · {levelInfo.title}</p>
+                    <p className="text-xs text-muted-foreground">{t("levelShort", { level: formatNumber(levelInfo.level), title: levelInfo.title })}</p>
                     <div className="flex items-center gap-2">
                       <Progress value={(levelInfo.currentXP / levelInfo.xpForNext) * 100} className="h-1.5 w-20" />
-                      <span className="text-[10px] text-muted-foreground">{totalXP} XP</span>
+                      <span className="text-[10px] text-muted-foreground">{t("xp", { count: formatNumber(totalXP) })}</span>
                     </div>
                   </div>
                   {unreadCount > 0 && (
-                    <Button variant="ghost" size="icon" className="relative ml-1" onClick={() => navigate('/notifications')}>
+                    <Button variant="ghost" size="icon" className="relative ms-1" aria-label={t("notificationsAria")} onClick={() => navigate('/notifications')}>
                       <Bell className="w-4 h-4" />
-                      <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">{unreadCount}</span>
+                      <span className="absolute -top-0.5 -end-0.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[10px] flex items-center justify-center">{formatNumber(unreadCount)}</span>
                     </Button>
                   )}
                 </div>
@@ -91,33 +97,33 @@ const ApplicantDashboard = () => {
           <section className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-slide-up" style={{ animationDelay: "100ms" }}>
             <StatsCard
               icon={Flame}
-              title="Study Streak"
-              value={`${trainerData?.Streak ?? 0} days`}
+              title={t("stats.streak")}
+              value={t("stats.days", { count: trainerData?.Streak ?? 0 })}
               trend={trainerData?.Streak ? { value: trainerData.Streak, positive: true } : undefined}
               variant="warning"
               onClick={() => navigate('/achievements')}
             />
             <StatsCard
               icon={Target}
-              title="Focus Score"
-              value={`${trainerData?.AvgFocusScore ?? 0}%`}
+              title={t("stats.focusScore")}
+              value={formatPercent(trainerData?.AvgFocusScore ?? 0)}
               trend={{ value: 8, positive: true }}
               variant="success"
               onClick={() => navigate('/analytics')}
             />
             <StatsCard
               icon={Clock}
-              title="Study Hours"
-              value={`${trainerData?.TotalStudyHours ?? 0}h`}
-              subtitle="Total"
+              title={t("stats.studyHours")}
+              value={t("stats.hoursValue", { value: formatNumber(trainerData?.TotalStudyHours ?? 0) })}
+              subtitle={t("stats.total")}
               variant="primary"
               onClick={() => navigate('/analytics')}
             />
             <StatsCard
               icon={Trophy}
-              title="Badges Earned"
-              value={`${earned.length}`}
-              subtitle={`${totalXP} XP`}
+              title={t("stats.badgesEarned")}
+              value={formatNumber(earned.length)}
+              subtitle={t("xp", { count: formatNumber(totalXP) })}
               variant="accent"
               onClick={() => navigate('/achievements')}
             />
@@ -128,16 +134,16 @@ const ApplicantDashboard = () => {
             <section className="flex gap-2 flex-wrap animate-slide-up" style={{ animationDelay: "150ms" }}>
               {trainerData.FlashcardsDue > 0 && (
                 <Button variant="outline" size="sm" className="gap-1.5 border-rose-500/30 text-rose-600 hover:bg-rose-500/5" onClick={() => navigate('/spaced-repetition')}>
-                  <RotateCcw className="w-3.5 h-3.5" /> {trainerData.FlashcardsDue} cards due
+                  <RotateCcw className="w-3.5 h-3.5" /> {t("chips.cardsDue", { count: trainerData.FlashcardsDue })}
                 </Button>
               )}
               {trainerData.TimeBlocksToday === 0 && (
                 <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/time-blocking')}>
-                  <Clock className="w-3.5 h-3.5" /> Plan today
+                  <Clock className="w-3.5 h-3.5" /> {t("chips.planToday")}
                 </Button>
               )}
               <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/ai-coach')}>
-                <Brain className="w-3.5 h-3.5" /> Ask AI Coach
+                <Brain className="w-3.5 h-3.5" /> {t("chips.askCoach")}
               </Button>
             </section>
           )}
@@ -148,25 +154,25 @@ const ApplicantDashboard = () => {
             <div className="lg:col-span-2 space-y-6 animate-slide-up" style={{ animationDelay: "200ms" }}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="rounded-2xl bg-card border border-border/50 shadow-card p-6 flex flex-col items-center justify-center cursor-pointer hover:shadow-elevated transition-all" onClick={() => navigate("/analytics")}>
-                  <p className="text-sm text-muted-foreground mb-2">Exam Readiness</p>
+                  <p className="text-sm text-muted-foreground mb-2">{t("readiness.title")}</p>
                   <ReadinessGauge percentage={readinessPercentage} />
-                  <p className="text-sm text-muted-foreground mt-2">Overall Progress</p>
+                  <p className="text-sm text-muted-foreground mt-2">{t("readiness.overall")}</p>
                 </div>
-                <ExamCountdown examName="ISTQB Foundation Level" date={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)} onStartPractice={() => navigate("/mock-exam")} />
+                <ExamCountdown examName={t("exam.defaultName")} date={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)} onStartPractice={() => navigate("/mock-exam")} />
               </div>
 
               {/* Enrolled Courses */}
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">My Courses</h2>
-                  <button onClick={() => navigate("/catalog")} className="text-sm text-primary hover:underline">Browse All</button>
+                  <h2 className="text-lg font-semibold">{t("myCourses")}</h2>
+                  <button onClick={() => navigate("/catalog")} className="text-sm text-primary hover:underline">{t("browseAll")}</button>
                 </div>
                 {loading ? (
                   <div className="flex items-center justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
                 ) : courses.length === 0 ? (
                   <div className="rounded-2xl bg-card border border-border/50 shadow-card p-8 text-center">
-                    <p className="text-muted-foreground mb-4">You haven't enrolled in any courses yet</p>
-                    <button onClick={() => navigate("/catalog")} className="text-primary font-medium hover:underline">Browse Course Catalog →</button>
+                    <p className="text-muted-foreground mb-4">{t("noCourses")}</p>
+                    <button onClick={() => navigate("/catalog")} className="text-primary font-medium hover:underline">{t("browseCatalog")} <span className="inline-block rtl:rotate-180">→</span></button>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -177,7 +183,7 @@ const ApplicantDashboard = () => {
                         Description={course.Description || ""} 
                         Progress={course.Enrollment?.ProgressPercentage || 0} 
                         Lessons={course.LessonsCount || 0} 
-                        Duration={`${course.DurationHours || 0}h`} 
+                        Duration={t("stats.hoursValue", { value: formatNumber(course.DurationHours || 0) })} 
                         onClick={() => navigate(`/courses/${course.Id}`)} 
                       />
                     ))}

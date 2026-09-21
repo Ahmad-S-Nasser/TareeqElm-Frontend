@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -44,6 +45,7 @@ const TrainerNotifications = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [filter, setFilter] = useState<string>("all");
   const navigate = useNavigate();
+  const { t } = useTranslation("dashboard");
   const { notifications, loading, error, unreadCount, markRead, markAllRead, pushEnabled, requestPushPermission } = useSmartNotifications();
 
   const filteredNotifications = filter === "all"
@@ -51,13 +53,13 @@ const TrainerNotifications = () => {
     : notifications.filter(n => n.type === filter);
 
   const filterOptions = [
-    { value: "all", label: "All" },
-    { value: "flashcards_due", label: "Flashcards" },
-    { value: "streak_risk", label: "Streaks" },
-    { value: "goal_unmet", label: "Goals" },
-    { value: "focus_drop", label: "Focus" },
-    { value: "study_reminder", label: "Reminders" },
-    { value: "achievement", label: "Achievements" },
+    { value: "all", labelKey: "all" },
+    { value: "flashcards_due", labelKey: "flashcards" },
+    { value: "streak_risk", labelKey: "streaks" },
+    { value: "goal_unmet", labelKey: "goals" },
+    { value: "focus_drop", labelKey: "focus" },
+    { value: "study_reminder", labelKey: "reminders" },
+    { value: "achievement", labelKey: "achievements" },
   ];
 
   return (
@@ -71,7 +73,7 @@ const TrainerNotifications = () => {
 
       <main className={cn(
         "pt-20 pb-8 px-4 sm:px-6 transition-all duration-300",
-        sidebarCollapsed ? "lg:ml-20" : "lg:ml-64", "ml-0"
+        sidebarCollapsed ? "lg:ms-20" : "lg:ms-64", "ms-0"
       )}>
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
@@ -80,16 +82,16 @@ const TrainerNotifications = () => {
                 <Bell className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">Smart Notifications</h1>
+                <h1 className="text-2xl font-bold">{t("notifications.title")}</h1>
                 <p className="text-muted-foreground text-sm">
-                  {unreadCount > 0 ? `${unreadCount} unread alert${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
+                  {unreadCount > 0 ? t("notifications.unread", { count: unreadCount }) : t("notifications.allCaughtUp")}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <BellRing className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Push</span>
+                <span className="text-sm text-muted-foreground">{t("notifications.push")}</span>
                 <Switch
                   checked={pushEnabled}
                   onCheckedChange={() => !pushEnabled && requestPushPermission()}
@@ -97,7 +99,7 @@ const TrainerNotifications = () => {
               </div>
               {unreadCount > 0 && (
                 <Button variant="outline" size="sm" onClick={markAllRead}>
-                  <Check className="w-4 h-4 mr-1" /> Mark all read
+                  <Check className="w-4 h-4 me-1" /> {t("notifications.markAllRead")}
                 </Button>
               )}
             </div>
@@ -113,7 +115,7 @@ const TrainerNotifications = () => {
                 className="h-8 text-xs"
                 onClick={() => setFilter(opt.value)}
               >
-                {opt.label}
+                {t(`notifications.filters.${opt.labelKey}`)}
               </Button>
             ))}
           </div>
@@ -121,13 +123,13 @@ const TrainerNotifications = () => {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16">
               <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
-              <p className="text-sm text-muted-foreground">Loading notifications...</p>
+              <p className="text-sm text-muted-foreground">{t("notifications.loading")}</p>
             </div>
           ) : error ? (
             <Card>
               <CardContent className="p-12 text-center">
                 <AlertCircle className="w-12 h-12 mx-auto mb-3 text-destructive" />
-                <p className="font-medium">Could not load notifications</p>
+                <p className="font-medium">{t("notifications.loadFailed")}</p>
                 <p className="text-sm text-muted-foreground mt-1">{error}</p>
               </CardContent>
             </Card>
@@ -136,16 +138,16 @@ const TrainerNotifications = () => {
               <CardContent className="p-12 text-center">
                 <Bell className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
                 <p className="text-muted-foreground font-medium">
-                  {filter === "all" ? "No notifications right now" : `No ${filter.replace('_', ' ')} notifications`}
+                  {filter === "all" ? t("notifications.emptyAll") : t("notifications.emptyFiltered")}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {filter === "all"
-                    ? "Smart alerts will appear based on your study activity"
-                    : "Try a different filter or check back later"
+                    ? t("notifications.emptyAllHint")
+                    : t("notifications.emptyFilteredHint")
                   }
                 </p>
                 <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate("/")}>
-                  Back to Dashboard
+                  {t("notifications.backToDashboard")}
                 </Button>
               </CardContent>
             </Card>
@@ -174,7 +176,7 @@ const TrainerNotifications = () => {
                         <div className="flex items-center gap-2 mb-1">
                           <p className={cn("text-sm font-medium", !n.read && "font-semibold")}>{n.title}</p>
                           <Badge variant="outline" className={cn("text-[10px]", priorityBadge[n.priority])}>
-                            {n.priority}
+                            {t(`notifications.priority.${n.priority}`)}
                           </Badge>
                           {!n.read && <span className="w-2 h-2 rounded-full bg-primary shrink-0" />}
                         </div>
@@ -187,7 +189,7 @@ const TrainerNotifications = () => {
                           className="shrink-0"
                           onClick={(e) => { e.stopPropagation(); navigate(n.actionUrl!); }}
                         >
-                          {n.actionLabel || 'Go'} <ArrowRight className="w-3 h-3 ml-1" />
+                          {n.actionLabel || t("notifications.go")} <ArrowRight className="w-3 h-3 ms-1 rtl:rotate-180" />
                         </Button>
                       )}
                     </CardContent>

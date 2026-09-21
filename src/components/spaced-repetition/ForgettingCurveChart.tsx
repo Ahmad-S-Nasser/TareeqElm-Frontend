@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { TrendingDown } from "lucide-react";
@@ -15,6 +17,9 @@ interface ForgettingCurveChartProps {
 }
 
 export function ForgettingCurveChart({ cards }: ForgettingCurveChartProps) {
+  const { t, i18n } = useTranslation("learning");
+  const { formatNumber, formatPercent } = useFormatters();
+  const rtl = i18n.dir() === "rtl";
   const chartData = useMemo(() => {
     // Generate forgetting curve projection for the next 30 days
     const days = 30;
@@ -43,7 +48,7 @@ export function ForgettingCurveChart({ cards }: ForgettingCurveChartProps) {
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
           <TrendingDown className="w-4 h-4 text-destructive" />
-          Forgetting Curve Projection
+          {t("spaced.curve.title")}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4">
@@ -60,18 +65,19 @@ export function ForgettingCurveChart({ cards }: ForgettingCurveChartProps) {
                   <stop offset="95%" stopColor="hsl(var(--success))" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} label={{ value: "Days", position: "insideBottom", offset: -5, fontSize: 11 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} unit="%" domain={[0, 100]} width={35} />
+              <XAxis dataKey="day" reversed={rtl} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v: number) => formatNumber(v)} label={{ value: t("spaced.curve.days"), position: "insideBottom", offset: -5, fontSize: 11 }} />
+              <YAxis orientation={rtl ? "right" : "left"} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} tickFormatter={(v: number) => formatPercent(v)} domain={[0, 100]} width={40} />
               <Tooltip
                 contentStyle={{
                   background: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "0.75rem",
                   fontSize: "12px",
+                  textAlign: rtl ? "right" : "left",
                 }}
-                formatter={(value: number, name: string) => [`${value}%`, name === "retention" ? "Without Review" : "With Spaced Review"]}
+                formatter={(value: number, name: string) => [formatPercent(value), name === "retention" ? t("spaced.curve.withoutReviewFull") : t("spaced.curve.withReviewFull")]}
               />
-              <ReferenceLine y={70} stroke="hsl(var(--warning))" strokeDasharray="3 3" label={{ value: "70% threshold", fontSize: 10, fill: "hsl(var(--warning))" }} />
+              <ReferenceLine y={70} stroke="hsl(var(--warning))" strokeDasharray="3 3" label={{ value: t("spaced.curve.threshold", { percent: formatPercent(70) }), fontSize: 10, fill: "hsl(var(--warning))" }} />
               <Area type="monotone" dataKey="retention" stroke="hsl(var(--destructive))" fill="url(#retentionGrad)" strokeWidth={2} dot={false} />
               <Area type="monotone" dataKey="withReview" stroke="hsl(var(--success))" fill="url(#reviewGrad)" strokeWidth={2} dot={false} />
             </AreaChart>
@@ -79,10 +85,10 @@ export function ForgettingCurveChart({ cards }: ForgettingCurveChartProps) {
         </div>
         <div className="flex justify-center gap-6 mt-2">
           <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <span className="w-3 h-0.5 bg-destructive rounded" /> Without review
+            <span className="w-3 h-0.5 bg-destructive rounded" /> {t("spaced.curve.withoutReview")}
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <span className="w-3 h-0.5 bg-success rounded" /> With spaced review
+            <span className="w-3 h-0.5 bg-success rounded" /> {t("spaced.curve.withReview")}
           </div>
         </div>
       </CardContent>

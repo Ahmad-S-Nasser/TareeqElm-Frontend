@@ -1,0 +1,117 @@
+{
+  "loadFailed": "Could not load your profile.",
+  "statsLoadFailed": "Could not load your learning statistics.",
+  "greeting": "Hello, {{name}}",
+  "enrolled": "Enrolled",
+  "completed": "Completed",
+  "statistics": {
+    "title": "Learning statistics",
+    "studyHours": "Total study hours",
+    "studyHoursValue": "{{value}} h",
+    "streak": "Study streak",
+    "completedCourses": "Completed courses",
+    "quizAverage": "Quiz average",
+    "flashcards": "Flashcards",
+    "achievements": "Achievements",
+    "achievementsValue": "{{earned}} / {{total}}"
+  },
+  "achievements": {
+    "title": "Achievements",
+    "earned": "Earned",
+    "items": {
+      "firstSteps": {
+        "name": "First Steps",
+        "description": "Complete your first lesson"
+      },
+      "streakStarter": {
+        "name": "Streak Starter",
+        "description": "Maintain a 7-day streak"
+      },
+      "quizMaster": {
+        "name": "Quiz Master",
+        "description": "Score 100% on a quiz"
+      },
+      "knowledgeSeeker": {
+        "name": "Knowledge Seeker",
+        "description": "Complete 10 lessons"
+      },
+      "studyMarathon": {
+        "name": "Study Marathon",
+        "description": "Study for 50+ hours total"
+      },
+      "courseChampion": {
+        "name": "Course Champion",
+        "description": "Complete a full course"
+      },
+      "quizPasser": {
+        "name": "Quiz Passer",
+        "description": "Pass 5 quizzes"
+      },
+      "flashcardPro": {
+        "name": "Flashcard Pro",
+        "description": "Review 100 flashcards"
+      }
+    }
+  },
+  "onboarding": {
+    "steps": "Step {{current}} of {{total}}",
+    "welcome": {
+      "title": "Welcome to TareeqElm, {{name}}!",
+      "titleAnonymous": "Welcome to TareeqElm!",
+      "description": "Your AI-powered learning platform. Let's set up your personalized experience in just a few steps.",
+      "start": "Get started"
+    },
+    "role": {
+      "title": "What is your role?",
+      "subtitle": "Choose how you will use the platform"
+    },
+    "roles": {
+      "applicant": "Access courses, flashcards and AI tutoring",
+      "instructor": "Create and manage courses, track trainer progress",
+      "organization": "Manage departments, instructors and analytics",
+      "organizationLabel": "Organization / Admin"
+    },
+    "goals": {
+      "title": "What are your goals?",
+      "subtitle": "Select all that apply — we will personalize your experience",
+      "exams": {
+        "label": "Prepare for exams",
+        "description": "Get exam-ready with practice tests and AI coaching"
+      },
+      "consistency": {
+        "label": "Improve study consistency",
+        "description": "Build daily habits and maintain streaks"
+      },
+      "subjects": {
+        "label": "Learn new subjects",
+        "description": "Explore courses across multiple disciplines"
+      },
+      "progress": {
+        "label": "Track learning progress",
+        "description": "Monitor performance with detailed analytics"
+      }
+    },
+    "ready": {
+      "title": "Your AI experience is ready!",
+      "description": "Based on your preferences, we have prepared a personalized learning environment for you.",
+      "coach": {
+        "label": "AI study coach",
+        "description": "Get personalized guidance and study strategies"
+      },
+      "courses": {
+        "label": "Suggested courses",
+        "descriptionTrainer": "Curated courses based on your goals",
+        "descriptionOther": "Popular courses in your domain"
+      },
+      "schedule": {
+        "label": "Smart study schedule",
+        "description": "AI-generated time blocks optimized for your peak hours"
+      },
+      "spaced": {
+        "label": "Spaced repetition",
+        "description": "Flashcard system with intelligent review intervals"
+      }
+    },
+    "launch": "Launch my dashboard"
+  }
+}

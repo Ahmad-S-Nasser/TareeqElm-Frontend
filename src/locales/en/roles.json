@@ -1,0 +1,46 @@
+{
+  "applicant": {
+    "name": "Trainer",
+    "plural": "Trainers",
+    "description": "Learn from courses, track your progress and practise with quizzes.",
+    "count_zero": "No trainers",
+    "count_one": "{{count}} trainer",
+    "count_two": "{{count}} trainers",
+    "count_few": "{{count}} trainers",
+    "count_many": "{{count}} trainers",
+    "count_other": "{{count}} trainers"
+  },
+  "instructor": {
+    "name": "Instructor",
+    "plural": "Instructors",
+    "description": "Create and teach courses, and follow your trainers' progress.",
+    "count_zero": "No instructors",
+    "count_one": "{{count}} instructor",
+    "count_two": "{{count}} instructors",
+    "count_few": "{{count}} instructors",
+    "count_many": "{{count}} instructors",
+    "count_other": "{{count}} instructors"
+  },
+  "organization": {
+    "name": "Organization",
+    "plural": "Organizations",
+    "description": "Manage the departments, members and training programmes of your organization.",
+    "count_zero": "No organizations",
+    "count_one": "{{count}} organization",
+    "count_two": "{{count}} organizations",
+    "count_few": "{{count}} organizations",
+    "count_many": "{{count}} organizations",
+    "count_other": "{{count}} organizations"
+  },
+  "admin": {
+    "name": "Admin",
+    "plural": "Admins",
+    "description": "Manage users, organizations, courses and platform settings.",
+    "count_zero": "No admins",
+    "count_one": "{{count}} admin",
+    "count_two": "{{count}} admins",
+    "count_few": "{{count}} admins",
+    "count_many": "{{count}} admins",
+    "count_other": "{{count}} admins"
+  }
+}

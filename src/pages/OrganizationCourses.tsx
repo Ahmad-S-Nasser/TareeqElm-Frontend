@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { useQuery } from "@tanstack/react-query";
 import api, { getApiError } from "@/lib/api";
+import { useFormatters } from "@/lib/format";
 import {
     BookOpen,
     Search,
@@ -63,6 +65,8 @@ const getStatusColor = (status: string) => {
 };
 
 const OrganizationCourses = () => {
+    const { t } = useTranslation(["organization", "common"]);
+    const { formatNumber } = useFormatters();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [syllabusCourse, setSyllabusCourse] = useState<Course | null>(null);
@@ -94,18 +98,18 @@ const OrganizationCourses = () => {
 
             <main className={cn(
                 "pt-20 pb-8 px-4 sm:px-6 transition-all duration-300",
-                sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
-                "ml-0"
+                sidebarCollapsed ? "lg:ms-20" : "lg:ms-64",
+                "ms-0"
             )}>
                 <div className="max-w-7xl mx-auto space-y-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-slide-up">
                         <div>
                             <h1 className="text-3xl font-bold flex items-center gap-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
                                 <BookOpen className="w-8 h-8 text-primary" />
-                                Course Catalog
+                                {t("courses.title")}
                             </h1>
                             <p className="text-muted-foreground mt-1">
-                                Oversee all courses offered across departments.
+                                {t("courses.subtitle")}
                             </p>
                         </div>
                     </div>
@@ -113,16 +117,16 @@ const OrganizationCourses = () => {
                     {/* Filters */}
                     <div className="flex items-center gap-4 bg-card p-4 rounded-xl border border-border/50 shadow-soft animate-slide-up" style={{ animationDelay: "100ms" }}>
                         <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input
-                                placeholder="Search courses..."
-                                className="pl-9 bg-background/50 focus-visible:ring-primary"
+                                placeholder={t("courses.search")}
+                                className="ps-9 bg-background/50 focus-visible:ring-primary"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
                         <Button variant="outline">
-                            Filter
+                            {t("courses.filter")}
                         </Button>
                     </div>
 
@@ -130,12 +134,12 @@ const OrganizationCourses = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                                    <TableHead>Course Title</TableHead>
-                                    <TableHead>Category</TableHead>
-                                    <TableHead>Instructor</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Trainers</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead>{t("courses.table.title")}</TableHead>
+                                    <TableHead>{t("courses.table.category")}</TableHead>
+                                    <TableHead>{t("courses.table.instructor")}</TableHead>
+                                    <TableHead>{t("common:labels.status")}</TableHead>
+                                    <TableHead>{t("courses.table.trainers")}</TableHead>
+                                    <TableHead className="text-end">{t("common:labels.actions")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -143,10 +147,10 @@ const OrganizationCourses = () => {
                                     <TableRow><TableCell colSpan={6} className="text-center py-10"><Loader2 className="w-6 h-6 animate-spin text-primary inline" /></TableCell></TableRow>
                                 )}
                                 {isError && (
-                                    <TableRow><TableCell colSpan={6} className="text-center py-10 text-destructive">{getApiError(error, "Could not load courses.")}</TableCell></TableRow>
+                                    <TableRow><TableCell colSpan={6} className="text-center py-10 text-destructive">{getApiError(error, t("courses.loadFailed"))}</TableCell></TableRow>
                                 )}
                                 {!isLoading && !isError && filteredCourses.length === 0 && (
-                                    <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">No courses found.</TableCell></TableRow>
+                                    <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">{t("courses.empty")}</TableCell></TableRow>
                                 )}
                                 {filteredCourses.map((course) => (
                                     <TableRow key={course.Id} className="hover:bg-muted/30 transition-colors">
@@ -160,26 +164,26 @@ const OrganizationCourses = () => {
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className="text-xs font-normal">
-                                                {course.Category || "Uncategorized"}
+                                                {course.Category || t("courses.uncategorized")}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>{course.InstructorName || "-"}</TableCell>
+                                        <TableCell>{course.InstructorName ?? t("courses.noInstructor")}</TableCell>
                                         <TableCell>
-                                            <Badge className={cn("text-xs capitalize", getStatusColor(course.Status))} variant="secondary">
-                                                {course.Status}
+                                            <Badge className={cn("text-xs", getStatusColor(course.Status))} variant="secondary">
+                                                {t(`courses.status.${course.Status}`, { defaultValue: course.Status })}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>{course.EnrolledCount}</TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell>{formatNumber(course.EnrolledCount)}</TableCell>
+                                        <TableCell className="text-end">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon">
+                                                    <Button variant="ghost" size="icon" aria-label={t("courses.actionsMenu")}>
                                                         <MoreHorizontal className="w-4 h-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuItem onClick={() => setSyllabusCourse(course)}>
-                                                        <FileText className="w-4 h-4 mr-2" /> View Syllabus
+                                                        <FileText className="w-4 h-4 me-2" /> {t("courses.viewSyllabus")}
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -196,31 +200,31 @@ const OrganizationCourses = () => {
             <Dialog open={!!syllabusCourse} onOpenChange={(open) => !open && setSyllabusCourse(null)}>
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
-                        <DialogTitle>Course Syllabus</DialogTitle>
-                        <DialogDescription>{syllabusCourse?.Title} — {syllabusCourse?.InstructorName}</DialogDescription>
+                        <DialogTitle>{t("courses.syllabus")}</DialogTitle>
+                        <DialogDescription>{t("courses.syllabusSubtitle", { title: syllabusCourse?.Title, instructor: syllabusCourse?.InstructorName ?? t("courses.noInstructor") })}</DialogDescription>
                     </DialogHeader>
                     <div className="py-4 space-y-4">
                         <div className="grid grid-cols-2 gap-3">
                             <div className="p-3 rounded-lg bg-muted/40">
-                                <p className="text-xs text-muted-foreground">Category</p>
-                                <p className="font-semibold text-sm">{syllabusCourse?.Category || "Uncategorized"}</p>
+                                <p className="text-xs text-muted-foreground">{t("courses.table.category")}</p>
+                                <p className="font-semibold text-sm">{syllabusCourse?.Category || t("courses.uncategorized")}</p>
                             </div>
                             <div className="p-3 rounded-lg bg-muted/40">
-                                <p className="text-xs text-muted-foreground">Enrolled Trainers</p>
-                                <p className="font-semibold text-sm">{syllabusCourse?.EnrolledCount}</p>
+                                <p className="text-xs text-muted-foreground">{t("courses.enrolledTrainers")}</p>
+                                <p className="font-semibold text-sm">{formatNumber(syllabusCourse?.EnrolledCount ?? 0)}</p>
                             </div>
                         </div>
                         <div className="border rounded-lg p-4 space-y-3">
-                            <h4 className="font-semibold text-sm">Course Outline</h4>
+                            <h4 className="font-semibold text-sm">{t("courses.outline")}</h4>
                             <div className="space-y-2 text-sm">
                                 {curriculumLoading && <Loader2 className="w-5 h-5 animate-spin text-primary" />}
                                 {!curriculumLoading && curriculum.length === 0 && (
-                                    <p className="text-muted-foreground">No curriculum has been added yet.</p>
+                                    <p className="text-muted-foreground">{t("courses.noCurriculum")}</p>
                                 )}
                                 {curriculum.map((chapter, i) => (
                                     <div key={chapter.Id} className="flex items-center gap-3 py-1.5 border-b border-border/30 last:border-0">
-                                        <span className="text-xs font-mono text-muted-foreground w-20 shrink-0">Chapter {i + 1}</span>
-                                        <span>{chapter.Title} <span className="text-xs text-muted-foreground">({chapter.Lessons.length} lessons)</span></span>
+                                        <span className="text-xs font-mono text-muted-foreground w-20 shrink-0">{t("courses.chapter", { number: formatNumber(i + 1) })}</span>
+                                        <span>{chapter.Title} <span className="text-xs text-muted-foreground">({t("courses.lessonsCount", { count: chapter.Lessons.length })})</span></span>
                                     </div>
                                 ))}
                             </div>

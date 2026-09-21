@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from './useAuth';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
+import { formatPercent } from '@/lib/format';
 import { getApiError } from '@/lib/api';
 import { useActivitySummaryQuery, useTrainerStatsQuery } from './useTrainerApi';
 
@@ -17,6 +20,7 @@ export interface SmartNotification {
 
 export const useSmartNotifications = () => {
   const { user } = useAuth();
+  const { t } = useTranslation('dashboard');
   const [pushEnabled, setPushEnabled] = useState(false);
 
   useEffect(() => {
@@ -70,39 +74,41 @@ export const useSmartNotifications = () => {
     if (summary.CardsDue > 0) {
       list.push({
         id: 'flashcards-due', type: 'flashcards_due',
-        title: `${summary.CardsDue} Flashcards Due`,
-        message: summary.CardsDue > 5 ? `You have ${summary.CardsDue} flashcards waiting for review. Reviewing now prevents forgetting!` : `${summary.CardsDue} cards are ready for review. A quick session will strengthen your memory.`,
-        priority: summary.CardsDue > 10 ? 'high' : 'medium', read: false, createdAt, actionUrl: '/spaced-repetition', actionLabel: 'Review Now',
+        title: t('notifications.items.flashcardsDue.title', { count: summary.CardsDue }),
+        message: summary.CardsDue > 5
+          ? t('notifications.items.flashcardsDue.messageMany', { count: summary.CardsDue })
+          : t('notifications.items.flashcardsDue.messageFew', { count: summary.CardsDue }),
+        priority: summary.CardsDue > 10 ? 'high' : 'medium', read: false, createdAt, actionUrl: '/spaced-repetition', actionLabel: t('notifications.items.flashcardsDue.action'),
       });
     }
 
     // 2. Weekly goal check
     if (trainer.SessionsThisWeek < 3 && now.getDay() >= 3) {
-      list.push({ id: 'goal-unmet', type: 'goal_unmet', title: 'Weekly Study Goal at Risk', message: `Only ${trainer.SessionsThisWeek} study sessions this week. Try to fit in ${5 - trainer.SessionsThisWeek} more to stay on track.`, priority: 'high', read: false, createdAt, actionUrl: '/time-blocking', actionLabel: 'Plan Session' });
+      list.push({ id: 'goal-unmet', type: 'goal_unmet', title: t('notifications.items.goalUnmet.title'), message: t('notifications.items.goalUnmet.message', { count: trainer.SessionsThisWeek, remaining: 5 - trainer.SessionsThisWeek }), priority: 'high', read: false, createdAt, actionUrl: '/time-blocking', actionLabel: t('notifications.items.goalUnmet.action') });
     }
 
     // 3. Focus drop
     if (trainer.SessionsThisWeek >= 3 && trainer.AvgFocusScore > 0 && trainer.AvgFocusScore < 60) {
-      list.push({ id: 'focus-drop', type: 'focus_drop', title: 'Focus Score Dropping', message: 'Your recent study sessions have had a low focus score. Try the Pomodoro technique for longer, deeper focus.', priority: 'medium', read: false, createdAt, actionUrl: '/time-blocking', actionLabel: 'Start Pomodoro' });
+      list.push({ id: 'focus-drop', type: 'focus_drop', title: t('notifications.items.focusDrop.title'), message: t('notifications.items.focusDrop.message'), priority: 'medium', read: false, createdAt, actionUrl: '/time-blocking', actionLabel: t('notifications.items.focusDrop.action') });
     }
 
     // 4. Streak risk: an active streak and no review activity yet today, late in the day
     if (summary.Streak > 0 && trainer.CardsReviewedToday === 0 && now.getHours() >= 18) {
-      list.push({ id: 'streak-risk', type: 'streak_risk', title: `🔥 ${summary.Streak}-Day Streak at Risk!`, message: 'Complete one lesson or review session today to keep your streak alive!', priority: 'high', read: false, createdAt, actionUrl: '/courses', actionLabel: 'Continue Learning' });
+      list.push({ id: 'streak-risk', type: 'streak_risk', title: t('notifications.items.streakRisk.title', { count: summary.Streak }), message: t('notifications.items.streakRisk.message'), priority: 'high', read: false, createdAt, actionUrl: '/courses', actionLabel: t('notifications.items.streakRisk.action') });
     }
 
     // 5. Morning planning
     if (now.getHours() < 10 && trainer.TimeBlocksToday === 0) {
-      list.push({ id: 'morning-plan', type: 'study_reminder', title: 'Good Morning! Plan Your Day', message: 'Start your day right — create a study schedule to maximize productivity.', priority: 'low', read: false, createdAt, actionUrl: '/time-blocking', actionLabel: 'Plan Day' });
+      list.push({ id: 'morning-plan', type: 'study_reminder', title: t('notifications.items.morningPlan.title'), message: t('notifications.items.morningPlan.message'), priority: 'low', read: false, createdAt, actionUrl: '/time-blocking', actionLabel: t('notifications.items.morningPlan.action') });
     }
 
     // 6. Quiz performance
     if (summary.QuizzesTaken >= 2 && trainer.QuizAverage < 60) {
-      list.push({ id: 'quiz-drop', type: 'focus_drop', title: 'Quiz Scores Need Attention', message: `Your quiz average is ${Math.round(trainer.QuizAverage)}%. Consider reviewing weak topics with the AI Coach.`, priority: 'medium', read: false, createdAt, actionUrl: '/ai-coach', actionLabel: 'Get Help' });
+      list.push({ id: 'quiz-drop', type: 'focus_drop', title: t('notifications.items.quizDrop.title'), message: t('notifications.items.quizDrop.message', { score: formatPercent(trainer.QuizAverage) }), priority: 'medium', read: false, createdAt, actionUrl: '/ai-coach', actionLabel: t('notifications.items.quizDrop.action') });
     }
 
     return list;
-  }, [user, summary, trainer, dataUpdatedAt]);
+  }, [user, summary, trainer, dataUpdatedAt, t]);
 
   const notifications = useMemo(
     () => generated.map(n => (readIds.has(n.id) ? { ...n, read: true } : n)),
@@ -121,7 +127,7 @@ export const useSmartNotifications = () => {
 
   const loading = !!user && (summaryQuery.isLoading || statsQuery.isLoading);
   const queryError = summaryQuery.error || statsQuery.error;
-  const error = queryError ? getApiError(queryError, 'Failed to load notifications.') : null;
+  const error = queryError ? getApiError(queryError, i18n.t('dashboard:notifications.loadFailed')) : null;
 
   const markRead = useCallback((id: string) => {
     setReadIds(prev => new Set(prev).add(id));

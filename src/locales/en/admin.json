@@ -1,0 +1,363 @@
+{
+  "dashboard": {
+    "pageTitle": "System Control Center",
+    "liveBadge": "Live admin dashboard",
+    "subtitle": "Global Intelligence Platform · {{date}}",
+    "allCourses": "All courses",
+    "userManagement": "User management",
+    "loadFailed": "Could not load the dashboard.",
+    "hero": {
+      "totalUsers": "Total users",
+      "activeCourses": "Active courses",
+      "avgCompletion": "Avg. completion",
+      "atRisk": "At risk"
+    },
+    "cards": {
+      "totalUsers": {
+        "title": "Total users",
+        "sub": "Across the platform"
+      },
+      "activeCourses": {
+        "title": "Active courses",
+        "sub": "Published and running"
+      },
+      "avgCompletion": {
+        "title": "Avg. completion",
+        "sub": "Global average"
+      },
+      "atRisk": {
+        "title": "At-risk trainers",
+        "sub": "Below 50% progress"
+      }
+    },
+    "vsLastMonth": "{{value}} vs last month",
+    "coursePerformance": "Course performance",
+    "noCourseData": "No course data yet.",
+    "avgScore": "{{score}} avg. score",
+    "courseStats": "{{enrolled}} enrolled · {{completion}} completed",
+    "quickActions": "Quick actions",
+    "quick": {
+      "users": "User management",
+      "courses": "Content library",
+      "analytics": "System analytics"
+    },
+    "liveActivity": "Live activity",
+    "noActivity": "No recent activity."
+  },
+  "activity": {
+    "enrolled": "{{actor}} enrolled in {{target}}",
+    "completed": "{{actor}} completed {{target}}",
+    "joined": "{{actor}} joined as {{role}}",
+    "joinedNoRole": "{{actor}} joined the platform",
+    "unknown": "New activity"
+  },
+  "audit": {
+    "actions": {
+      "user_create": "created a user",
+      "user_update": "updated a user",
+      "user_delete": "deleted a user",
+      "user_role_change": "changed a user role",
+      "user_activate": "activated a user",
+      "user_deactivate": "deactivated a user",
+      "user_password_reset": "reset a user password",
+      "course_create": "created a course",
+      "course_update": "updated a course",
+      "course_delete": "deleted a course",
+      "course_publish": "published a course",
+      "course_archive": "archived a course",
+      "unknown": "performed an action"
+    },
+    "line": "{{actor}} {{action}} · {{target}}"
+  },
+  "users": {
+    "title": "User management",
+    "subtitle": "Create users, assign roles and manage access",
+    "add": "Add user",
+    "stats": {
+      "total": "Total users",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "searchPlaceholder": "Search by name or email…",
+    "allRoles": "All roles",
+    "table": {
+      "name": "Name",
+      "department": "Department",
+      "role": "Role",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "loadFailed": "Could not load users.",
+    "empty": "No users match your search.",
+    "noDepartment": "None",
+    "editAria": "Edit {{name}}",
+    "pageInfo_one": "Page {{page}} of {{pages}} · {{count}} user",
+    "pageInfo_other": "Page {{page}} of {{pages}} · {{count}} users",
+    "add_dialog": {
+      "title": "Add a new user",
+      "description": "Create an account and set an initial password."
+    },
+    "fields": {
+      "fullName": "Full name",
+      "fullNamePlaceholder": "Jane Smith",
+      "email": "Email",
+      "emailPlaceholder": "jane@example.com",
+      "initialPassword": "Initial password",
+      "passwordPlaceholder": "At least 8 characters",
+      "role": "Role",
+      "department": "Department",
+      "status": "Status",
+      "resetPassword": "Reset password (optional)",
+      "resetPasswordPlaceholder": "Leave blank to keep the current password"
+    },
+    "edit_dialog": {
+      "title": "Edit user",
+      "selfNote": "You cannot change your own role or deactivate yourself.",
+      "saveChanges": "Save changes"
+    },
+    "toast": {
+      "created": "User created",
+      "createdDescription": "{{name}} can now sign in with the password you set.",
+      "createFailed": "Could not create user",
+      "updated": "{{name}} updated",
+      "updateFailed": "Could not update user",
+      "missingFields": "Missing fields",
+      "missingFieldsDescription": "Name and email are required.",
+      "passwordShort": "Password too short",
+      "passwordShortDescription": "Use at least 8 characters."
+    }
+  },
+  "enrollments": {
+    "title": "Enrollment management",
+    "subtitle": "Enrollment counts per course. Trainers enroll themselves in published courses.",
+    "coursesCount": "Courses",
+    "totalEnrollments": "Total enrollments",
+    "searchPlaceholder": "Search courses or instructors…",
+    "loadFailed": "Could not load courses.",
+    "empty": "No courses found.",
+    "enrolled_one": "{{count}} enrolled",
+    "enrolled_other": "{{count}} enrolled",
+    "note": "Direct assignment and open-enrollment controls are not available yet.",
+    "status": {
+      "Draft": "Draft",
+      "Published": "Published",
+      "Archived": "Archived",
+      "unknown": "Unknown"
+    }
+  },
+  "courses": {
+    "title": "Course management",
+    "subtitle": "Create and manage your training library",
+    "create": "Create course",
+    "createDialog": {
+      "title": "Create a new course",
+      "description": "Set up the basic information for your training course."
+    },
+    "fields": {
+      "title": "Course title",
+      "titlePlaceholder": "e.g. Project Management Basics",
+      "description": "Description",
+      "descriptionPlaceholder": "What will employees learn?",
+      "audience": "Target audience",
+      "audiencePlaceholder": "e.g. All Managers",
+      "duration": "Duration",
+      "durationPlaceholder": "e.g. 4h"
+    },
+    "searchPlaceholder": "Search courses…",
+    "status": {
+      "Draft": "Draft",
+      "Processing": "Processing",
+      "Active": "Active"
+    },
+    "aiIndexing": "AI indexing…",
+    "stat": {
+      "enrolled": "Enrolled",
+      "done": "Done",
+      "score": "Score"
+    },
+    "upload": "Upload",
+    "questions": "Questions",
+    "moreActions": "More actions",
+    "uploadDialog": {
+      "title": "Upload content",
+      "description": "AI will index this material automatically for \"{{course}}\".",
+      "drop": "Drag and drop or click to browse",
+      "types": "PDF, slides, videos, documents",
+      "pdf": "PDF",
+      "video": "Video"
+    },
+    "empty": "No courses found",
+    "toast": {
+      "titleRequired": "Title required",
+      "created": "Course created",
+      "createdDescription": "\"{{title}}\" added. Upload content to activate it.",
+      "uploadStarted": "Upload started",
+      "uploadStartedDescription": "Processing {{file}}",
+      "processed": "AI processing complete",
+      "processedDescription": "Content indexed. Draft questions are ready.",
+      "regenerated": "Questions regenerated",
+      "regeneratedDescription": "New draft questions are ready."
+    },
+    "seed": {
+      "1": {
+        "title": "React Fundamentals",
+        "description": "Core concepts of React for frontend developers",
+        "audience": "Engineering",
+        "duration": "6h"
+      },
+      "2": {
+        "title": "Python for Data Science",
+        "description": "Python basics and data manipulation",
+        "audience": "Analytics Team",
+        "duration": "8h"
+      },
+      "3": {
+        "title": "Leadership Essentials",
+        "description": "Soft skills for new managers",
+        "audience": "All Managers",
+        "duration": "4h"
+      },
+      "4": {
+        "title": "Excel & Data Analysis",
+        "description": "Spreadsheet mastery",
+        "audience": "Finance & Ops",
+        "duration": "5h"
+      },
+      "5": {
+        "title": "Cybersecurity Basics",
+        "description": "Security awareness for all staff",
+        "audience": "All Employees",
+        "duration": "3h"
+      }
+    }
+  },
+  "analytics": {
+    "title": "Analytics & insights",
+    "subtitle": "Performance trends, skill gaps and decision data",
+    "export": "Export report",
+    "vsLastMonth": "{{value}} vs last month",
+    "kpi": {
+      "completion": "Organization completion rate",
+      "score": "Avg. assessment score",
+      "improvement": "Pre to post improvement",
+      "atRisk": "At-risk employees"
+    },
+    "topics": {
+      "title": "Topic difficulty trends",
+      "avg": "{{value}} avg.",
+      "struggling": "{{value}} struggling"
+    },
+    "departments": {
+      "title": "Department comparison",
+      "atRisk": "{{count}} at risk",
+      "doneScore": "{{completion}} done · {{score}} score"
+    },
+    "flagged": {
+      "title": "Employees flagged for low performance",
+      "employee": "Employee",
+      "course": "Course",
+      "score": "Score",
+      "completion": "Completion",
+      "action": "Action",
+      "followUp": "Follow up"
+    },
+    "toast": {
+      "exported": "Report exported",
+      "exportedDescription": "{{file}} downloaded.",
+      "sessionPlanned": "Session planned",
+      "sessionPlannedDescription": "Follow-up session scheduled for {{name}}."
+    },
+    "csv": {
+      "department": "Department",
+      "completion": "Completion %",
+      "avgScore": "Avg. score",
+      "employees": "Employees",
+      "atRisk": "At risk"
+    },
+    "seed": {
+      "topics": {
+        "1": "React Hooks",
+        "2": "Python Data Structures",
+        "3": "Conflict Resolution",
+        "4": "Excel Pivot Tables",
+        "5": "Security Protocols"
+      },
+      "departments": {
+        "Engineering": "Engineering",
+        "Finance": "Finance",
+        "Operations": "Operations",
+        "DesignAndProduct": "Design & Product",
+        "SalesAndMarketing": "Sales & Marketing",
+        "All": "All",
+        "Analytics": "Analytics",
+        "IT": "IT",
+        "Sales": "Sales"
+      },
+      "people": {
+        "1": "Tom Chen",
+        "2": "Carlos Rivera",
+        "3": "Alice Mercer"
+      },
+      "courses": {
+        "1": "React Fundamentals",
+        "2": "Leadership Essentials",
+        "3": "Excel & Data Analysis"
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Configure your organization workspace",
+    "org": {
+      "title": "Organization",
+      "name": "Organization name",
+      "namePlaceholder": "Acme Corporation",
+      "logo": "Logo",
+      "uploadLogo": "Upload logo",
+      "logoHint": "PNG, JPG · 512×512 px recommended"
+    },
+    "locale": {
+      "title": "Locale and region",
+      "timezone": "Time zone",
+      "language": "Language"
+    },
+    "languages": {
+      "en": "English",
+      "ar": "Arabic",
+      "fr": "French",
+      "de": "German",
+      "es": "Spanish"
+    },
+    "branding": {
+      "title": "Branding",
+      "accent": "Accent color",
+      "customColor": "Custom color",
+      "pickColor": "Choose color {{color}}"
+    },
+    "ai": {
+      "title": "AI and notifications",
+      "enable": "Enable AI assistant",
+      "enableSub": "Allow employees to use the AI Q&A chat in all courses",
+      "notifyCompletion": "Notify on course completion",
+      "notifyCompletionSub": "Send admin alerts when employees complete a course",
+      "notifyAtRisk": "Alert on at-risk employees",
+      "notifyAtRiskSub": "Flag employees scoring below 50% for review"
+    },
+    "save": "Save settings",
+    "toast": {
+      "saved": "Settings saved",
+      "savedDescription": "Your organization settings have been updated.",
+      "logo": "Logo upload",
+      "logoDescription": "Logo upload is coming soon."
+    }
+  },
+  "statistics": {
+    "streakValue_one": "{{count}} day",
+    "streakValue_other": "{{count}} days",
+    "cardsValue_one": "{{count}} card",
+    "cardsValue_other": "{{count}} cards"
+  }
+}

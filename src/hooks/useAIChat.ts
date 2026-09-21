@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './useAuth';
+import i18n from '@/i18n';
 import { useToast } from './use-toast';
 import api, { getApiError } from '@/lib/api';
 import { useTrainerStatsQuery } from './useTrainerApi';
@@ -10,9 +12,12 @@ export interface ChatMessage {
     content: string;
     timestamp: string;
     tab?: string;
+    /** Localized system messages are stored as a kind and translated when read. */
+    kind?: 'welcome' | 'cleared';
 }
 
 export const useAIChat = () => {
+    const { t } = useTranslation('dashboard');
     const { user } = useAuth();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -31,9 +36,10 @@ export const useAIChat = () => {
             } else {
                 setMessages([
                     {
-                        id: '1',
+                        id: 'welcome',
                         role: 'assistant',
-                        content: 'Hi! I am your AI Tutor. I can help you understand complex topics, create study plans, or quiz you on your courses. What shall we learn today?',
+                        kind: 'welcome',
+                        content: '',
                         timestamp: new Date().toISOString()
                     }
                 ]);
@@ -50,6 +56,17 @@ export const useAIChat = () => {
 
     const { data: trainerData } = useTrainerStatsQuery();
 
+    // System messages (welcome / cleared) follow the active language.
+    const localized = useMemo(
+        () =>
+            messages.map(m => {
+                if (m.kind === 'welcome' || m.id === '1' || m.id === 'welcome') return { ...m, content: t('tutor.welcome') };
+                if (m.kind === 'cleared') return { ...m, content: t('tutor.cleared') };
+                return m;
+            }),
+        [messages, t]
+    );
+
     const sendMessage = useCallback(async (content: string, tab: string = "chat") => {
         if (!content.trim() || isLoading) return;
 
@@ -61,7 +78,7 @@ export const useAIChat = () => {
             tab
         };
 
-        const history = [...messages, userMessage];
+        const history = [...localized, userMessage];
         setMessages(history);
         setIsLoading(true);
 
@@ -82,21 +99,22 @@ export const useAIChat = () => {
             setMessages(prev => [...prev, assistantMessage]);
         } catch (error) {
             toast({
-                title: "AI Tutor Error",
-                description: getApiError(error, "Failed to get a response from the AI Tutor."),
+                title: i18n.t('dashboard:tutor.errorTitle'),
+                description: getApiError(error, i18n.t('dashboard:tutor.errorFallback')),
                 variant: "destructive"
             });
         } finally {
             setIsLoading(false);
         }
-    }, [messages, isLoading, trainerData, toast]);
+    }, [localized, isLoading, trainerData, toast]);
 
     const clearHistory = useCallback(() => {
         setMessages([
             {
                 id: crypto.randomUUID(),
                 role: 'assistant',
-                content: 'Chat history cleared. How else can I help you today?',
+                kind: 'cleared',
+                content: '',
                 timestamp: new Date().toISOString()
             }
         ]);
@@ -106,7 +124,7 @@ export const useAIChat = () => {
     }, [user]);
 
     return {
-        messages,
+        messages: localized,
         isLoading,
         sendMessage,
         clearHistory

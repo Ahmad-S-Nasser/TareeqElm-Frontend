@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -34,6 +36,8 @@ import {
 const QuizRunner = () => {
   const { quizId } = useParams<{ quizId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation(["quizzes", "common"]);
+  const { formatNumber, formatPercent } = useFormatters();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const quizQuery = useQuizDetailQuery(quizId);
@@ -108,7 +112,7 @@ const QuizRunner = () => {
       return (
         <div className="flex flex-col items-center justify-center py-24" role="status">
           <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground">Loading quiz...</p>
+          <p className="text-muted-foreground">{t("runner.loading")}</p>
         </div>
       );
     }
@@ -124,24 +128,24 @@ const QuizRunner = () => {
             <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-3" />
           )}
           <p className="font-medium mb-1">
-            {notEnrolled ? "Enroll in the course first" : notFound ? "Quiz not found" : "Could not load the quiz"}
+            {notEnrolled ? t("runner.enrollFirst") : notFound ? t("runner.notFound") : t("runner.loadFailedTitle")}
           </p>
           <p className="text-sm text-muted-foreground mb-4">
             {notEnrolled
-              ? "You need to be enrolled in this course to take its quizzes."
+              ? t("runner.enrollFirstDesc")
               : notFound
-                ? "This quiz does not exist or is no longer available."
-                : getApiError(quizQuery.error, "Failed to load the quiz.")}
+                ? t("runner.notFoundDesc")
+                : getApiError(quizQuery.error, t("runner.loadFailed"))}
           </p>
           <div className="flex justify-center gap-2">
-            {notEnrolled && <Button onClick={() => navigate("/catalog")}>Browse the catalog</Button>}
+            {notEnrolled && <Button onClick={() => navigate("/catalog")}>{t("browseCatalog")}</Button>}
             {!notEnrolled && !notFound && (
               <Button variant="outline" onClick={() => quizQuery.refetch()}>
-                Try again
+                {t("common:actions.retry")}
               </Button>
             )}
             <Button variant="outline" onClick={() => navigate("/quizzes")}>
-              Back to quizzes
+              {t("backToQuizzes")}
             </Button>
           </div>
         </div>
@@ -159,14 +163,14 @@ const QuizRunner = () => {
               ) : (
                 <XCircle className="w-12 h-12 text-destructive" />
               )}
-              <h2 className="text-2xl font-bold">{result.Passed ? "You passed!" : "Not passed this time"}</h2>
-              <p className="text-4xl font-bold">{Math.round(result.Percentage)}%</p>
+              <h2 className="text-2xl font-bold">{result.Passed ? t("runner.passed") : t("runner.notPassed")}</h2>
+              <p className="text-4xl font-bold">{formatPercent(result.Percentage)}</p>
               <p className="text-muted-foreground">
-                {result.Score} of {result.TotalPoints} points. Passing score: {quiz.PassingScore}%
+                {t("runner.scoreLine", { score: formatNumber(result.Score), total: formatNumber(result.TotalPoints), passing: formatPercent(quiz.PassingScore) })}
               </p>
-              <Badge variant={result.Passed ? "default" : "destructive"}>{result.Passed ? "Passed" : "Failed"}</Badge>
+              <Badge variant={result.Passed ? "default" : "destructive"}>{result.Passed ? t("status.passed") : t("status.failed")}</Badge>
               <div className="flex gap-2 mt-3">
-                <Button onClick={() => navigate("/quizzes")}>Back to quizzes</Button>
+                <Button onClick={() => navigate("/quizzes")}>{t("backToQuizzes")}</Button>
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -178,14 +182,14 @@ const QuizRunner = () => {
                     void quizQuery.refetch();
                   }}
                 >
-                  Retake
+                  {t("runner.retake")}
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          <section className="space-y-3" aria-label="Review">
-            <h2 className="text-xl font-semibold">Review</h2>
+          <section className="space-y-3" aria-label={t("runner.review")}>
+            <h2 className="text-xl font-semibold">{t("runner.review")}</h2>
             {quiz.Questions.map((q, i) => {
               const r = reviewById.get(q.Id);
               const yours = r?.YourAnswer ?? null;
@@ -194,21 +198,21 @@ const QuizRunner = () => {
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-3">
                       <CardTitle className="text-base">
-                        {i + 1}. {q.QuestionText}
+                        {formatNumber(i + 1)}. {q.QuestionText}
                       </CardTitle>
                       <Badge variant={r?.Correct ? "default" : "destructive"}>
-                        {r?.Correct ? "Correct" : yours === null ? "Unanswered" : "Incorrect"}
+                        {r?.Correct ? t("runner.correct") : yours === null ? t("runner.unanswered") : t("runner.incorrect")}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-1 text-sm">
                     <p>
-                      <span className="text-muted-foreground">Your answer: </span>
-                      {yours === null ? "No answer" : (q.Options[yours] ?? "No answer")}
+                      <span className="text-muted-foreground">{t("runner.yourAnswer")} </span>
+                      {yours === null ? t("runner.noAnswer") : (q.Options[yours] ?? t("runner.noAnswer"))}
                     </p>
                     {r && !r.Correct && (
                       <p>
-                        <span className="text-muted-foreground">Correct answer: </span>
+                        <span className="text-muted-foreground">{t("runner.correctAnswer")} </span>
                         {q.Options[r.CorrectOptionIndex]}
                       </p>
                     )}
@@ -230,7 +234,7 @@ const QuizRunner = () => {
             <h1 className="text-3xl font-bold">{quiz.Title}</h1>
             {quiz.Description && <p className="text-muted-foreground mt-1">{quiz.Description}</p>}
             <p className="text-sm text-muted-foreground mt-1">
-              {quiz.Questions.length} questions. Passing score: {quiz.PassingScore}%
+              {t("runner.summary", { count: quiz.Questions.length, passing: formatPercent(quiz.PassingScore) })}
             </p>
           </div>
           {remaining !== null && (
@@ -241,10 +245,10 @@ const QuizRunner = () => {
               )}
             >
               <Clock className="w-5 h-5" aria-hidden="true" />
-              <span aria-label="Time remaining">{formatTimeRemaining(remaining)}</span>
+              <span dir="ltr" aria-label={t("runner.timeRemaining")}>{formatTimeRemaining(remaining)}</span>
               {/* Announce only the warning, not every tick. */}
               <span className="sr-only" role="alert">
-                {warn ? "Less than one minute remaining" : ""}
+                {warn ? t("runner.lessThanMinute") : ""}
               </span>
             </div>
           )}
@@ -261,10 +265,10 @@ const QuizRunner = () => {
             <Card key={q.Id}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-base" id={`q-${q.Id}`}>
-                  {i + 1}. {q.QuestionText}
+                  {formatNumber(i + 1)}. {q.QuestionText}
                 </CardTitle>
                 <CardDescription>
-                  {q.Points} point{q.Points === 1 ? "" : "s"}
+                  {t("runner.points", { count: q.Points })}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -289,11 +293,11 @@ const QuizRunner = () => {
 
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground" aria-live="polite">
-              {quiz.Questions.length - unanswered} of {quiz.Questions.length} answered
+              {t("runner.answeredOf", { answered: formatNumber(quiz.Questions.length - unanswered), total: formatNumber(quiz.Questions.length) })}
             </p>
             <Button type="submit" disabled={submitting} className="gap-2">
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-              Submit quiz
+              {t("runner.submit")}
             </Button>
           </div>
         </form>
@@ -301,14 +305,14 @@ const QuizRunner = () => {
         <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Submit with unanswered questions?</AlertDialogTitle>
+              <AlertDialogTitle>{t("runner.confirmTitle")}</AlertDialogTitle>
               <AlertDialogDescription>
-                You have {unanswered} unanswered question{unanswered === 1 ? "" : "s"}. They will be marked incorrect.
+                {t("runner.confirmDesc", { count: unanswered })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Keep answering</AlertDialogCancel>
-              <AlertDialogAction onClick={() => void submit()}>Submit anyway</AlertDialogAction>
+              <AlertDialogCancel>{t("runner.keepAnswering")}</AlertDialogCancel>
+              <AlertDialogAction onClick={() => void submit()}>{t("runner.submitAnyway")}</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -323,8 +327,8 @@ const QuizRunner = () => {
       <main
         className={cn(
           "pt-20 pb-8 px-4 sm:px-6 transition-all duration-300",
-          sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
-          "ml-0"
+          sidebarCollapsed ? "lg:ms-20" : "lg:ms-64",
+          "ms-0"
         )}
       >
         <div className="max-w-3xl mx-auto">{renderBody()}</div>

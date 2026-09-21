@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import api, { getApiError } from '@/lib/api';
+import i18n from '@/i18n';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
@@ -55,8 +56,8 @@ export const useCourses = () => {
     } catch (error) {
       console.error('Error fetching courses:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load courses',
+        title: i18n.t('courses:toast.errorTitle'),
+        description: i18n.t('courses:toast.loadFailed'),
         variant: 'destructive',
       });
     } finally {
@@ -75,8 +76,8 @@ export const useCourses = () => {
     } catch (error) {
       console.error('Error fetching instructor courses:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load your courses',
+        title: i18n.t('courses:toast.errorTitle'),
+        description: i18n.t('courses:toast.loadMineFailed'),
         variant: 'destructive',
       });
     } finally {
@@ -108,8 +109,8 @@ export const useCourses = () => {
     } catch (error) {
       console.error('Error fetching enrolled courses:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to load enrolled courses',
+        title: i18n.t('courses:toast.errorTitle'),
+        description: i18n.t('courses:toast.loadEnrolledFailed'),
         variant: 'destructive',
       });
     } finally {
@@ -117,11 +118,11 @@ export const useCourses = () => {
     }
   }, [user, role, toast]);
 
-  const enrollInCourse = async (courseId: string) => {
+  const enrollInCourse = async (courseId: string, courseTitle?: string | null) => {
     if (!user) {
       toast({
-        title: 'Not Authenticated',
-        description: 'Please log in to enroll in courses',
+        title: i18n.t('courses:toast.notAuthenticated'),
+        description: i18n.t('courses:toast.loginToEnroll'),
         variant: 'destructive',
       });
       return { error: new Error('Not authenticated') };
@@ -132,8 +133,10 @@ export const useCourses = () => {
       await api.post('/Enrollments', { CourseId: courseId });
 
       toast({
-        title: 'Enrolled!',
-        description: 'You have successfully enrolled in this course',
+        title: i18n.t('courses:toast.enrolled'),
+        description: courseTitle
+          ? i18n.t('courses:toast.enrolledIn', { course: courseTitle })
+          : i18n.t('courses:toast.enrolledDesc'),
       });
 
       fetchPublishedCourses();
@@ -141,12 +144,15 @@ export const useCourses = () => {
     } catch (error: unknown) {
       // 409 = already enrolled: not a failure from the trainer's point of view.
       if (axios.isAxiosError(error) && error.response?.status === 409) {
-        toast({ title: 'Already enrolled', description: 'You are already enrolled in this course.' });
+        toast({ title: i18n.t('courses:toast.alreadyEnrolled'),
+          description: courseTitle
+            ? i18n.t('courses:toast.alreadyEnrolledIn', { course: courseTitle })
+            : i18n.t('courses:toast.alreadyEnrolledDesc'), });
         return { error: null };
       }
       toast({
-        title: 'Enrollment Failed',
-        description: getApiError(error, 'An unexpected error occurred during enrollment.'),
+        title: i18n.t('courses:toast.enrollFailed'),
+        description: getApiError(error, i18n.t('courses:toast.enrollFailedDesc')),
         variant: 'destructive',
       });
       return { error: error as Error };
@@ -163,15 +169,15 @@ export const useCourses = () => {
       });
       
       toast({
-        title: 'Course Created',
-        description: 'Your new course has been created successfully',
+        title: i18n.t('courses:toast.created'),
+        description: i18n.t('courses:toast.createdDesc'),
       });
 
       return { error: null, data: response.data };
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to create course',
+        title: i18n.t('courses:toast.errorTitle'),
+        description: i18n.t('courses:toast.createFailed'),
         variant: 'destructive',
       });
       return { error: error as Error, data: null };
@@ -182,8 +188,8 @@ export const useCourses = () => {
     try {
       await api.put(`/Courses/${courseId}`, updates);
       toast({
-        title: 'Course Updated',
-        description: 'Your changes have been saved',
+        title: i18n.t('courses:toast.updated'),
+        description: i18n.t('courses:toast.updatedDesc'),
       });
       return { error: null };
     } catch (error) {
@@ -198,8 +204,8 @@ export const useCourses = () => {
     try {
       await api.delete(`/Courses/${courseId}`);
       toast({
-        title: 'Course Deleted',
-        description: 'The course has been permanently deleted',
+        title: i18n.t('courses:toast.deleted'),
+        description: i18n.t('courses:toast.deletedDesc'),
       });
       return { error: null };
     } catch (error) {

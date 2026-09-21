@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -8,6 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import api, { getApiError } from "@/lib/api";
+import { useFormatters } from "@/lib/format";
 
 interface DeptSummary { Id: string; Name: string; Head: string | null; CoursesCount: number; TrainersCount: number; Performance: number; Trend: number }
 interface OrganizationStats {
@@ -17,16 +19,22 @@ interface OrganizationStats {
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8b5cf6', '#ec4899'];
 
-const NotAvailable = ({ text }: { text: string }) => (
-    <Card className="border-border/50 shadow-soft">
-        <CardContent className="p-12 text-center">
-            <p className="font-semibold">Not available yet</p>
-            <p className="text-sm text-muted-foreground mt-1">{text}</p>
-        </CardContent>
-    </Card>
-);
+const NotAvailable = ({ text }: { text: string }) => {
+    const { t } = useTranslation("organization");
+    return (
+        <Card className="border-border/50 shadow-soft">
+            <CardContent className="p-12 text-center">
+                <p className="font-semibold">{t("notAvailable")}</p>
+                <p className="text-sm text-muted-foreground mt-1">{text}</p>
+            </CardContent>
+        </Card>
+    );
+};
 
 const OrganizationAnalytics = () => {
+    const { t, i18n } = useTranslation(["organization", "common"]);
+    const { formatNumber, formatPercent } = useFormatters();
+    const isRtl = i18n.dir() === "rtl";
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     const { data, isLoading, isError, error } = useQuery({
@@ -48,69 +56,69 @@ const OrganizationAnalytics = () => {
 
             <main className={cn(
                 "pt-20 pb-8 px-4 sm:px-6 transition-all duration-300",
-                sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
-                "ml-0"
+                sidebarCollapsed ? "lg:ms-20" : "lg:ms-64",
+                "ms-0"
             )}>
                 <div className="max-w-7xl mx-auto space-y-6">
                     <div className="animate-slide-up">
                         <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-                            Analytics & Reports
+                            {t("analytics.title")}
                         </h1>
                         <p className="text-muted-foreground mt-1">
-                            Insights into organization performance and trainer enrollment.
+                            {t("analytics.subtitle")}
                         </p>
                     </div>
 
                     {isLoading ? (
                         <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
                     ) : isError ? (
-                        <Card className="border-border/50"><CardContent className="p-12 text-center text-destructive">{getApiError(error, "Could not load analytics.")}</CardContent></Card>
+                        <Card className="border-border/50"><CardContent className="p-12 text-center text-destructive">{getApiError(error, t("analytics.loadFailed"))}</CardContent></Card>
                     ) : (
                     <Tabs defaultValue="enrollment" className="animate-slide-up" style={{ animationDelay: "100ms" }}>
                         <TabsList className="bg-card border border-border/50 shadow-sm p-1 rounded-xl mb-6">
-                            <TabsTrigger value="enrollment" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">Enrollment</TabsTrigger>
-                            <TabsTrigger value="academic" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">Academic Performance</TabsTrigger>
-                            <TabsTrigger value="financial" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">Financials</TabsTrigger>
+                            <TabsTrigger value="enrollment" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">{t("analytics.tabs.enrollment")}</TabsTrigger>
+                            <TabsTrigger value="academic" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">{t("analytics.tabs.academic")}</TabsTrigger>
+                            <TabsTrigger value="financial" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">{t("analytics.tabs.financial")}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="enrollment" className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <Card className="border-border/50 shadow-soft hover:shadow-lg transition-all">
                                     <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Trainers</CardTitle>
-                                        <CardTitle className="text-3xl font-bold text-primary">{(stats?.TotalTrainers ?? 0).toLocaleString()}</CardTitle>
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">{t("analytics.totalTrainers")}</CardTitle>
+                                        <CardTitle className="text-3xl font-bold text-primary">{formatNumber(stats?.TotalTrainers ?? 0)}</CardTitle>
                                     </CardHeader>
                                 </Card>
                                 <Card className="border-border/50 shadow-soft hover:shadow-lg transition-all">
                                     <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">Active Instructors</CardTitle>
-                                        <CardTitle className="text-3xl font-bold text-accent">{(stats?.ActiveInstructors ?? 0).toLocaleString()}</CardTitle>
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">{t("analytics.activeInstructors")}</CardTitle>
+                                        <CardTitle className="text-3xl font-bold text-accent">{formatNumber(stats?.ActiveInstructors ?? 0)}</CardTitle>
                                     </CardHeader>
                                 </Card>
                                 <Card className="border-border/50 shadow-soft hover:shadow-lg transition-all">
                                     <CardHeader className="pb-2">
-                                        <CardTitle className="text-sm font-medium text-muted-foreground">Course Completion Rate</CardTitle>
-                                        <CardTitle className="text-3xl font-bold text-blue-500">{stats?.AvgCompletion ?? 0}%</CardTitle>
+                                        <CardTitle className="text-sm font-medium text-muted-foreground">{t("analytics.completionRate")}</CardTitle>
+                                        <CardTitle className="text-3xl font-bold text-blue-500">{formatPercent(stats?.AvgCompletion ?? 0)}</CardTitle>
                                     </CardHeader>
                                 </Card>
                             </div>
 
                             {departments.length === 0 ? (
-                                <NotAvailable text="Enrollment trends over time will appear here once they are tracked." />
+                                <NotAvailable text={t("analytics.trendsNotAvailable")} />
                             ) : (
                                 <Card className="border-border/50 shadow-soft">
                                     <CardHeader>
-                                        <CardTitle>Trainers by Department</CardTitle>
-                                        <CardDescription>Current trainer count per department.</CardDescription>
+                                        <CardTitle>{t("analytics.trainersByDept")}</CardTitle>
+                                        <CardDescription>{t("analytics.trainersByDeptDesc")}</CardDescription>
                                     </CardHeader>
                                     <CardContent className="h-[400px]">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <BarChart data={departments}>
                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                                                <XAxis dataKey="Name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280' }} />
-                                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280' }} allowDecimals={false} />
-                                                <Tooltip cursor={{ fill: '#f3f4f6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                                                <Bar dataKey="TrainersCount" name="Trainers" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={50} />
+                                                <XAxis dataKey="Name" axisLine={false} tickLine={false} tick={{ fill: '#6b7280' }} reversed={isRtl} />
+                                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6b7280' }} allowDecimals={false} orientation={isRtl ? "right" : "left"} />
+                                                <Tooltip cursor={{ fill: '#f3f4f6' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', direction: isRtl ? 'rtl' : 'ltr' }} />
+                                                <Bar dataKey="TrainersCount" name={t("analytics.trainersSeries")} fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={50} />
                                             </BarChart>
                                         </ResponsiveContainer>
                                     </CardContent>
@@ -120,22 +128,22 @@ const OrganizationAnalytics = () => {
 
                         <TabsContent value="academic" className="space-y-6">
                             {departments.length === 0 ? (
-                                <NotAvailable text="No department data yet." />
+                                <NotAvailable text={t("analytics.noDeptData")} />
                             ) : (
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <Card className="border-border/50 shadow-soft">
                                         <CardHeader>
-                                            <CardTitle>Department Performance</CardTitle>
-                                            <CardDescription>Performance score by department.</CardDescription>
+                                            <CardTitle>{t("analytics.deptPerformance")}</CardTitle>
+                                            <CardDescription>{t("analytics.deptPerformanceDesc")}</CardDescription>
                                         </CardHeader>
                                         <CardContent className="h-[350px]">
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <BarChart data={departments}>
                                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                                                    <XAxis dataKey="Name" axisLine={false} tickLine={false} />
-                                                    <YAxis domain={[0, 100]} axisLine={false} tickLine={false} />
-                                                    <Tooltip cursor={{ fill: '#f3f4f6' }} contentStyle={{ borderRadius: '8px' }} />
-                                                    <Bar dataKey="Performance" name="Performance %" radius={[4, 4, 0, 0]}>
+                                                    <XAxis dataKey="Name" axisLine={false} tickLine={false} reversed={isRtl} />
+                                                    <YAxis domain={[0, 100]} axisLine={false} tickLine={false} orientation={isRtl ? "right" : "left"} />
+                                                    <Tooltip cursor={{ fill: '#f3f4f6' }} contentStyle={{ borderRadius: '8px', direction: isRtl ? 'rtl' : 'ltr' }} />
+                                                    <Bar dataKey="Performance" name={t("analytics.performanceSeries")} radius={[4, 4, 0, 0]}>
                                                         {departments.map((_, index) => (
                                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                         ))}
@@ -147,8 +155,8 @@ const OrganizationAnalytics = () => {
 
                                     <Card className="border-border/50 shadow-soft">
                                         <CardHeader>
-                                            <CardTitle>Courses by Department</CardTitle>
-                                            <CardDescription>Share of courses per department.</CardDescription>
+                                            <CardTitle>{t("analytics.coursesByDept")}</CardTitle>
+                                            <CardDescription>{t("analytics.coursesByDeptDesc")}</CardDescription>
                                         </CardHeader>
                                         <CardContent className="h-[350px]">
                                             <ResponsiveContainer width="100%" height="100%">
@@ -158,7 +166,7 @@ const OrganizationAnalytics = () => {
                                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                         ))}
                                                     </Pie>
-                                                    <Tooltip contentStyle={{ borderRadius: '8px' }} />
+                                                    <Tooltip contentStyle={{ borderRadius: '8px', direction: isRtl ? 'rtl' : 'ltr' }} />
                                                 </PieChart>
                                             </ResponsiveContainer>
                                             <div className="flex justify-center flex-wrap gap-4 mt-4">
@@ -176,7 +184,7 @@ const OrganizationAnalytics = () => {
                         </TabsContent>
 
                         <TabsContent value="financial" className="space-y-6">
-                            <NotAvailable text="Financial data is not tracked by the platform yet." />
+                            <NotAvailable text={t("analytics.financialNotAvailable")} />
                         </TabsContent>
                     </Tabs>
                     )}

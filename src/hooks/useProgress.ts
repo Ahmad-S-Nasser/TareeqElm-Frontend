@@ -1,6 +1,8 @@
 import { useRef, useCallback } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api, { getApiError } from '@/lib/api';
+import i18n from '@/i18n';
+import { formatPercent } from '@/lib/format';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 import {
@@ -19,13 +21,16 @@ export interface CourseProgress {
   TotalLessons: number;
   CompletedLessonIds: string[];
   CompletedAt: string | null;
+  CourseTitle?: string | null;
 }
 
 export interface QuizResult {
   Id: string;
   QuizId: string;
-  QuizTitle: string;
+  QuizTitle: string | null;
   CourseId: string;
+  CourseTitle?: string | null;
+  TrainerName?: string | null;
   Score: number;
   TotalPoints: number;
   Percentage: number;
@@ -45,6 +50,7 @@ export interface QuizAttemptReviewItem {
 export interface QuizAttemptResult {
   ResultId: string;
   QuizId: string;
+  QuizTitle?: string | null;
   Score: number;
   TotalPoints: number;
   Percentage: number;
@@ -126,8 +132,8 @@ export const useProgress = (courseId?: string) => {
       ).data,
     onSuccess: (result) => {
       toast({
-        title: result.Passed ? 'Quiz Passed!' : 'Quiz Completed',
-        description: `You scored ${Math.round(result.Percentage)}%`,
+        title: result.Passed ? i18n.t('dashboard:progress.quizPassed') : i18n.t('dashboard:progress.quizCompleted'),
+        description: i18n.t('dashboard:progress.youScored', { score: formatPercent(result.Percentage) }),
         variant: result.Passed ? 'default' : 'destructive',
       });
       invalidateProgress();
@@ -140,7 +146,7 @@ export const useProgress = (courseId?: string) => {
       const progress = await completionMutation.mutateAsync({ courseId: targetCourseId, lessonId, completed });
       return { error: null, progress };
     } catch (error) {
-      toast({ title: 'Could not update lesson', description: getApiError(error), variant: 'destructive' });
+      toast({ title: i18n.t('dashboard:progress.lessonUpdateFailed'), description: getApiError(error), variant: 'destructive' });
       return { error: error as Error, progress: null };
     }
   };
@@ -155,7 +161,7 @@ export const useProgress = (courseId?: string) => {
       const result = await quizMutation.mutateAsync({ quizId, answers, timeTakenSeconds });
       return { error: null, result };
     } catch (error) {
-      toast({ title: 'Could not submit quiz', description: getApiError(error), variant: 'destructive' });
+      toast({ title: i18n.t('dashboard:progress.quizSubmitFailed'), description: getApiError(error), variant: 'destructive' });
       return { error: error as Error, result: null };
     }
   };
@@ -215,7 +221,7 @@ export const useProgress = (courseId?: string) => {
     courseProgressLoading: courseProgressQuery.isLoading,
     stats,
     loading,
-    error: error ? getApiError(error, 'Failed to load your progress.') : null,
+    error: error ? getApiError(error, i18n.t('dashboard:progress.loadFailed')) : null,
     isCompleting: completionMutation.isPending,
     completeLesson,
     submitQuizAttempt,

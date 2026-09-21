@@ -1,4 +1,6 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 import { Lesson, LessonType } from "./courseChapters";
 import {
     PlayCircle,
@@ -17,6 +19,8 @@ interface LessonItemProps {
 }
 
 export function LessonItem({ lesson, onClick }: LessonItemProps) {
+    const { t } = useTranslation("courses");
+    const { formatNumber } = useFormatters();
     const getTypeIcon = (type: LessonType) => {
         switch (type) {
             case "video": return PlayCircle;
@@ -29,14 +33,7 @@ export function LessonItem({ lesson, onClick }: LessonItemProps) {
     };
 
     const getTypeLabel = (type: LessonType) => {
-        switch (type) {
-            case "video": return "Video";
-            case "reading": return "Reading";
-            case "quiz": return "Quiz";
-            case "exercise": return "Exercise";
-            case "flashcards": return "Flashcards";
-            default: return type;
-        }
+        return t(`lessonType.${type}`, { defaultValue: type });
     };
 
     const getTypeColor = (type: LessonType) => {
@@ -57,7 +54,7 @@ export function LessonItem({ lesson, onClick }: LessonItemProps) {
             onClick={onClick}
             disabled={lesson.IsLocked}
             className={cn(
-                "w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left",
+                "w-full flex items-center gap-4 p-4 rounded-xl transition-all text-start",
                 "hover:bg-muted/50 group",
                 lesson.IsLocked && "opacity-50 cursor-not-allowed",
                 lesson.IsCompleted && "bg-success/5"
@@ -77,7 +74,7 @@ export function LessonItem({ lesson, onClick }: LessonItemProps) {
                 ) : lesson.IsLocked ? (
                     <Lock className="w-4 h-4" />
                 ) : (
-                    lesson.Number
+                    formatNumber(lesson.Number)
                 )}
             </div>
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { InstructorSidebar } from "@/components/layout/InstructorSidebar";
 import { Header } from "@/components/layout/Header";
@@ -7,6 +8,7 @@ import { useCourses, Course } from "@/hooks/useCourses";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { getApiError } from "@/lib/api";
+import { courseStatusLabel } from "@/hooks/useInstructorStats";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +59,7 @@ import {
 } from "lucide-react";
 
 const InstructorCourses = () => {
+  const { t } = useTranslation("instructor");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [deleteConfirmCourse, setDeleteConfirmCourse] = useState<Course | null>(null);
@@ -103,9 +106,9 @@ const InstructorCourses = () => {
     const getStatusBadge = (status: string) => {
         const s = status?.toLowerCase() || 'draft';
         const variants: Record<string, { variant: "default" | "secondary" | "outline"; label: string }> = {
-            draft: { variant: "secondary", label: "Draft" },
-            published: { variant: "default", label: "Published" },
-            archived: { variant: "outline", label: "Archived" },
+            draft: { variant: "secondary", label: courseStatusLabel(t, "Draft") },
+            published: { variant: "default", label: courseStatusLabel(t, "Published") },
+            archived: { variant: "outline", label: courseStatusLabel(t, "Archived") },
         };
         return variants[s] || variants.draft;
     };
@@ -118,61 +121,61 @@ const InstructorCourses = () => {
             <main
                 className={cn(
                     "pt-20 pb-8 px-6 transition-all duration-300",
-                    sidebarCollapsed ? "ml-20" : "ml-64"
+                    sidebarCollapsed ? "ms-20" : "ms-64"
                 )}
             >
                 <div className="max-w-7xl mx-auto space-y-6">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
-                            <h1 className="text-2xl font-bold">My Courses</h1>
+                            <h1 className="text-2xl font-bold">{t("courses.title")}</h1>
                             <p className="text-muted-foreground">
-                                Create, manage, and publish your courses
+                                {t("courses.subtitle")}
                             </p>
                         </div>
                         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                             <DialogTrigger asChild>
                                 <Button variant="gradient">
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Create Course
+                                    <Plus className="w-4 h-4 me-2" />
+                                    {t("courses.create")}
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-lg">
                                 <DialogHeader>
-                                    <DialogTitle>Create New Course</DialogTitle>
+                                    <DialogTitle>{t("courses.createNew")}</DialogTitle>
                                 </DialogHeader>
                                 <div className="space-y-4 py-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="title">Course Title</Label>
+                                        <Label htmlFor="title">{t("courses.courseTitle")}</Label>
                                         <Input
                                             id="title"
                                             value={newCourse.Title}
                                             onChange={(e) => setNewCourse({ ...newCourse, Title: e.target.value })}
-                                            placeholder="e.g., ISTQB Foundation Level"
+                                            placeholder={t("courses.titlePlaceholder")}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="description">Description</Label>
+                                        <Label htmlFor="description">{t("courses.description")}</Label>
                                         <Textarea
                                             id="description"
                                             value={newCourse.Description}
                                             onChange={(e) => setNewCourse({ ...newCourse, Description: e.target.value })}
-                                            placeholder="What will trainers learn?"
+                                            placeholder={t("courses.descriptionPlaceholder")}
                                             rows={3}
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="category">Category</Label>
+                                            <Label htmlFor="category">{t("courses.category")}</Label>
                                             <Input
                                                 id="category"
                                                 value={newCourse.Category}
                                                 onChange={(e) => setNewCourse({ ...newCourse, Category: e.target.value })}
-                                                placeholder="e.g., Certification"
+                                                placeholder={t("courses.categoryPlaceholder")}
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label htmlFor="level">Level</Label>
+                                            <Label htmlFor="level">{t("courses.level")}</Label>
                                             <Select
                                                 value={newCourse.Level}
                                                 onValueChange={(value) => setNewCourse({ ...newCourse, Level: value })}
@@ -181,9 +184,9 @@ const InstructorCourses = () => {
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="beginner">Beginner</SelectItem>
-                                                    <SelectItem value="intermediate">Intermediate</SelectItem>
-                                                    <SelectItem value="advanced">Advanced</SelectItem>
+                                                    <SelectItem value="beginner">{t("level.beginner")}</SelectItem>
+                                                    <SelectItem value="intermediate">{t("level.intermediate")}</SelectItem>
+                                                    <SelectItem value="advanced">{t("level.advanced")}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -195,11 +198,11 @@ const InstructorCourses = () => {
                                     >
                                         {creating ? (
                                             <>
-                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                Creating...
+                                                <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                                                {t("courses.creating")}
                                             </>
                                         ) : (
-                                            "Create Course"
+                                            t("courses.create")
                                         )}
                                     </Button>
                                 </div>
@@ -216,13 +219,13 @@ const InstructorCourses = () => {
                         <Card className="py-12">
                             <CardContent className="flex flex-col items-center text-center">
                                 <BookOpen className="w-12 h-12 text-muted-foreground mb-4" />
-                                <h3 className="text-lg font-semibold mb-2">No courses yet</h3>
+                                <h3 className="text-lg font-semibold mb-2">{t("courses.emptyTitle")}</h3>
                                 <p className="text-muted-foreground mb-4">
-                                    Create your first course to get started
+                                    {t("courses.emptyDesc")}
                                 </p>
                                 <Button onClick={() => setIsCreateDialogOpen(true)}>
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Create Course
+                                    <Plus className="w-4 h-4 me-2" />
+                                    {t("courses.create")}
                                 </Button>
                             </CardContent>
                         </Card>
@@ -240,7 +243,7 @@ const InstructorCourses = () => {
                                                     className="w-full h-full object-cover"
                                                 />
                                             )}
-                                            <div className="absolute top-3 right-3">
+                                            <div className="absolute top-3 end-3">
                                                 <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                                             </div>
                                         </div>
@@ -249,37 +252,37 @@ const InstructorCourses = () => {
                                                 <CardTitle className="text-lg line-clamp-2">{course.Title}</CardTitle>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t("courses.moreActions")}>
                                                             <MoreVertical className="w-4 h-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuItem onClick={() => navigate(`/instructor/courses/${course.Id}`)}>
-                                                            <Edit className="w-4 h-4 mr-2" />
-                                                            Edit
+                                                            <Edit className="w-4 h-4 me-2" />
+                                                            {t("courses.edit")}
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => navigate(`/instructor/courses/${course.Id}/trainers`)}>
-                                                            <Users className="w-4 h-4 mr-2" />
-                                                            View Trainers
+                                                            <Users className="w-4 h-4 me-2" />
+                                                            {t("courses.viewTrainers")}
                                                         </DropdownMenuItem>
                                                         {course.Status?.toLowerCase() === "draft" && (
-                                                            <DropdownMenuItem onClick={() => runAction(publishCourse(course.Id), "Publish failed")}>
-                                                                <Send className="w-4 h-4 mr-2" />
-                                                                Publish
+                                                            <DropdownMenuItem onClick={() => runAction(publishCourse(course.Id), t("courses.publishFailed"))}>
+                                                                <Send className="w-4 h-4 me-2" />
+                                                                {t("courses.publish")}
                                                             </DropdownMenuItem>
                                                         )}
                                                         {course.Status?.toLowerCase() === "published" && (
-                                                            <DropdownMenuItem onClick={() => runAction(archiveCourse(course.Id), "Archive failed")}>
-                                                                <Archive className="w-4 h-4 mr-2" />
-                                                                Archive
+                                                            <DropdownMenuItem onClick={() => runAction(archiveCourse(course.Id), t("courses.archiveFailed"))}>
+                                                                <Archive className="w-4 h-4 me-2" />
+                                                                {t("courses.archive")}
                                                             </DropdownMenuItem>
                                                         )}
                                                         <DropdownMenuItem
                                                             onClick={() => setDeleteConfirmCourse(course)}
                                                             className="text-destructive"
                                                         >
-                                                            <Trash2 className="w-4 h-4 mr-2" />
-                                                            Delete
+                                                            <Trash2 className="w-4 h-4 me-2" />
+                                                            {t("courses.delete")}
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -287,15 +290,15 @@ const InstructorCourses = () => {
                                         </CardHeader>
                                         <CardContent>
                                             <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                                                {course.Description || "No description"}
+                                                {course.Description || t("courses.noDescription")}
                                             </p>
                                             <div className="flex items-center justify-between text-sm">
                                                 <div className="flex items-center gap-1 text-muted-foreground">
                                                     <Users className="w-4 h-4" />
-                                                    <span>{course.EnrolledCount ?? course.EnrollmentCount ?? 0} trainers</span>
+                                                    <span>{t("courses.trainersCount", { count: course.EnrolledCount ?? course.EnrollmentCount ?? 0 })}</span>
                                                 </div>
-                                                <Badge variant="outline" className="capitalize">
-                                                    {course.Level}
+                                                <Badge variant="outline">
+                                                    {["beginner", "intermediate", "advanced"].includes((course.Level ?? "").toLowerCase()) ? t(`level.${(course.Level ?? "").toLowerCase()}`) : course.Level}
                                                 </Badge>
                                             </div>
                                         </CardContent>
@@ -311,24 +314,23 @@ const InstructorCourses = () => {
             <AlertDialog open={!!deleteConfirmCourse} onOpenChange={() => setDeleteConfirmCourse(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Course?</AlertDialogTitle>
+                        <AlertDialogTitle>{t("courses.deleteTitle")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will permanently delete "{deleteConfirmCourse?.Title}" and all its content.
-                            This action cannot be undone.
+                            {t("courses.deleteDesc", { title: deleteConfirmCourse?.Title })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{t("common:actions.cancel")}</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={() => {
                                 if (deleteConfirmCourse) {
-                                    runAction(deleteCourse(deleteConfirmCourse.Id), "Delete failed");
+                                    runAction(deleteCourse(deleteConfirmCourse.Id), t("courses.deleteFailed"));
                                     setDeleteConfirmCourse(null);
                                 }
                             }}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                            Delete
+                            {t("courses.delete")}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

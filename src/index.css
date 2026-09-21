@@ -153,6 +153,51 @@
   }
 }
 
+/* Arabic: Cairo first (Latin digits/letters fall back to Poppins), and undo Latin-only typography. */
+html[lang="ar"] body,
+html[lang="ar"] .font-sans {
+  font-family: 'Cairo', 'Poppins', sans-serif;
+}
+
+/* Uppercase, letter-spacing and italics break Arabic letter joining / look wrong. */
+html[lang="ar"] .uppercase {
+  text-transform: none;
+}
+html[lang="ar"] [class*="tracking-"] {
+  letter-spacing: 0;
+}
+html[lang="ar"] .italic {
+  font-style: normal;
+}
+
+/* RTL: numeric / technical inputs keep left-to-right entry but align to the inline end. */
+html[dir="rtl"] input[type="number"],
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="tel"],
+html[dir="rtl"] input[type="url"],
+html[dir="rtl"] input[type="password"] {
+  direction: ltr;
+  text-align: end;
+}
+html[dir="rtl"] input[type="number"]::placeholder,
+html[dir="rtl"] input[type="email"]::placeholder,
+html[dir="rtl"] input[type="tel"]::placeholder,
+html[dir="rtl"] input[type="url"]::placeholder,
+html[dir="rtl"] input[type="password"]::placeholder {
+  direction: rtl;
+}
+/* Code, keyboard shortcuts and other Latin technical text stay left-to-right inside Arabic text. */
+html[dir="rtl"] code,
+html[dir="rtl"] kbd,
+html[dir="rtl"] pre {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+/* Scrollbars follow the inline direction automatically; keep them slim in RTL too. */
+html[dir="rtl"] * {
+  scrollbar-width: thin;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

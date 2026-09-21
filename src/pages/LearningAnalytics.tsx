@@ -12,7 +12,10 @@ import {
   BarChart3, TrendingUp, Clock, Target, Brain, Flame,
   Calendar, BookOpen, Zap, Award, Activity, Loader2, AlertCircle
 } from "lucide-react";
+import { useTranslation, Trans } from "react-i18next";
+import i18n from "@/i18n";
 import api, { getApiError } from "@/lib/api";
+import { formatDate, useFormatters } from "@/lib/format";
 import { format, subDays, startOfWeek, addDays } from "date-fns";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis,
@@ -52,7 +55,8 @@ interface TrainerStatsDto {
   Streak: number;
   FlashcardsDue: number;
   WeakTopics: string[];
-  BestStudyTime: string;
+  /** Null = no data; otherwise Morning | Afternoon | Evening | Night. */
+  BestStudyTime: string | null;
   CardsReviewedToday: number;
   SessionsThisWeek: number;
   TotalCards: number;
@@ -72,8 +76,8 @@ const dayKey = (iso: string) => format(new Date(iso), "yyyy-MM-dd");
 const QueryError = ({ error, onRetry }: { error: unknown; onRetry: () => void }) => (
   <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
     <AlertCircle className="w-4 h-4" />
-    <span className="flex-1">{getApiError(error, "Failed to load analytics")}</span>
-    <Button size="sm" variant="outline" onClick={onRetry}>Retry</Button>
+    <span className="flex-1">{getApiError(error, i18n.t("learning:analytics.loadFailed"))}</span>
+    <Button size="sm" variant="outline" onClick={onRetry}>{i18n.t("common:actions.retry")}</Button>
   </div>
 );
 
@@ -82,6 +86,10 @@ const EmptyChart = ({ message }: { message: string }) => (
 );
 
 const LearningAnalytics = () => {
+  const { t, i18n: i18nInstance } = useTranslation(["learning", "common"]);
+  const { formatNumber, formatPercent } = useFormatters();
+  const rtl = i18nInstance.dir() === "rtl";
+  const axisNum = (v: number) => formatNumber(v);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -126,7 +134,7 @@ const LearningAnalytics = () => {
   const avgFocusScore = stats ? Math.round(stats.AvgFocusScore) : 0;
   const currentStreak = stats?.Streak ?? 0;
   const flashcardRetention = stats ? Math.round(stats.RetentionRate) : 0;
-  const bestStudyTime = stats?.BestStudyTime || "N/A";
+  const bestStudyTime = stats?.BestStudyTime ? t(`analytics.bestTime.${stats.BestStudyTime}`, { defaultValue: stats.BestStudyTime }) : t("analytics.na");
 
   // Heatmap: sessions per day over the last year (derived from GET /study-sessions)
   const heatmapData = useMemo(() => {
@@ -143,22 +151,24 @@ const LearningAnalytics = () => {
       const key = format(day, "yyyy-MM-dd");
       const daySessions = sessions.filter((s) => dayKey(s.StartedAt) === key);
       const seconds = daySessions.reduce((acc, s) => acc + s.DurationSeconds, 0);
-      return { day: format(day, "EEE"), hours: Math.round((seconds / 3600) * 10) / 10, sessions: daySessions.length };
+      return { day: formatDate(day, { weekday: "short" }), hours: Math.round((seconds / 3600) * 10) / 10, sessions: daySessions.length };
     });
-  }, [sessions]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessions, i18nInstance.language]);
 
   // Planned study hours per day this week from time blocks
   const plannedHours = useMemo(() => {
     const ws = startOfWeek(new Date(), { weekStartsOn: 1 });
-    const toMin = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+    const toMin = (time: string) => { const [h, m] = time.split(":").map(Number); return h * 60 + m; };
     return Array.from({ length: 7 }, (_, i) => {
       const key = format(addDays(ws, i), "yyyy-MM-dd");
       const mins = (blocksQuery.data ?? [])
         .filter((b) => b.Date.slice(0, 10) === key && b.Category !== "break" && b.Category !== "personal")
         .reduce((acc, b) => acc + Math.max(0, toMin(b.EndTime) - toMin(b.StartTime)), 0);
-      return { day: format(addDays(ws, i), "EEE"), hours: Math.round((mins / 60) * 10) / 10 };
+      return { day: formatDate(addDays(ws, i), { weekday: "short" }), hours: Math.round((mins / 60) * 10) / 10 };
     });
-  }, [blocksQuery.data]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blocksQuery.data, i18nInstance.language]);
 
   // Daily study minutes for the last 14 days (focus tab)
   const dailyMinutesTrend = useMemo(() => {
@@ -166,9 +176,10 @@ const LearningAnalytics = () => {
       const day = subDays(new Date(), 13 - i);
       const key = format(day, "yyyy-MM-dd");
       const seconds = sessions.filter((s) => dayKey(s.StartedAt) === key).reduce((acc, s) => acc + s.DurationSeconds, 0);
-      return { date: format(day, "MMM d"), minutes: Math.round(seconds / 60) };
+      return { date: formatDate(day, { month: "short", day: "numeric" }), minutes: Math.round(seconds / 60) };
     });
-  }, [sessions]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessions, i18nInstance.language]);
 
   // Cards reviewed per day for the last 14 days, based on each card's last review date
   const reviewTrend = useMemo(() => {
@@ -176,9 +187,10 @@ const LearningAnalytics = () => {
       const day = subDays(new Date(), 13 - i);
       const key = format(day, "yyyy-MM-dd");
       const reviewed = cards.filter((c) => c.LastReviewed && dayKey(c.LastReviewed) === key).length;
-      return { date: format(day, "MMM d"), reviewed };
+      return { date: formatDate(day, { month: "short", day: "numeric" }), reviewed };
     });
-  }, [cards]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cards, i18nInstance.language]);
 
   const weeklyTotalHours = weeklyProductivity.reduce((s, d) => s + d.hours, 0);
   const bestDay = weeklyProductivity.reduce((best, d) => (d.hours > best.hours ? d : best), weeklyProductivity[0] ?? { day: "", hours: 0, sessions: 0 });
@@ -204,7 +216,7 @@ const LearningAnalytics = () => {
         mobileSidebar={<ApplicantSidebarContent onItemClick={() => {}} />}
       />
 
-      <main className={cn("pt-20 pb-10 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64", "ml-0")}>
+      <main className={cn("pt-20 pb-10 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ms-20" : "lg:ms-64", "ms-0")}>
         <div className="max-w-7xl mx-auto space-y-6">
           {firstError && <QueryError error={firstError.error} onRetry={refetchAll} />}
           {/* Header */}
@@ -215,16 +227,16 @@ const LearningAnalytics = () => {
                   <div className="p-2.5 rounded-xl bg-accent/15">
                     <BarChart3 className="w-6 h-6 text-accent" />
                   </div>
-                  Learning Analytics
+                  {t("analytics.title")}
                 </h1>
                 <p className="text-muted-foreground text-sm mt-2 max-w-md">
-                  Track your study patterns, focus scores, and retention to optimize your learning.
+                  {t("analytics.subtitle")}
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="gap-1.5">
                   <Flame className="w-3.5 h-3.5 text-warning" />
-                  {currentStreak} day streak
+                  {t("analytics.streakDays", { count: currentStreak })}
                 </Badge>
               </div>
             </div>
@@ -233,10 +245,10 @@ const LearningAnalytics = () => {
           {/* Key Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { icon: Clock, label: "Total Study Time", value: `${totalStudyHours}h`, color: "text-primary", bg: "bg-primary/10" },
-              { icon: Target, label: "Avg Focus Score", value: `${avgFocusScore}%`, color: "text-accent", bg: "bg-accent/10" },
-              { icon: Brain, label: "Flashcard Retention", value: `${flashcardRetention}%`, color: "text-success", bg: "bg-success/10" },
-              { icon: Zap, label: "Best Study Time", value: bestStudyTime.split(" ")[0], color: "text-warning-foreground", bg: "bg-warning/10" },
+              { icon: Clock, label: t("analytics.stats.totalStudy"), value: t("analytics.hoursValue", { value: formatNumber(totalStudyHours, { maximumFractionDigits: 1 }) }), color: "text-primary", bg: "bg-primary/10" },
+              { icon: Target, label: t("analytics.stats.avgFocus"), value: formatPercent(avgFocusScore), color: "text-accent", bg: "bg-accent/10" },
+              { icon: Brain, label: t("analytics.stats.retention"), value: formatPercent(flashcardRetention), color: "text-success", bg: "bg-success/10" },
+              { icon: Zap, label: t("analytics.stats.bestTime"), value: bestStudyTime, color: "text-warning-foreground", bg: "bg-warning/10" },
             ].map((stat) => (
               <Card key={stat.label} className="overflow-hidden">
                 <CardContent className="p-4">
@@ -256,13 +268,13 @@ const LearningAnalytics = () => {
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-4">
               <TabsTrigger value="overview" className="gap-1.5">
-                <Activity className="w-3.5 h-3.5" /> Overview
+                <Activity className="w-3.5 h-3.5" /> {t("analytics.tabs.overview")}
               </TabsTrigger>
               <TabsTrigger value="focus" className="gap-1.5">
-                <Target className="w-3.5 h-3.5" /> Focus
+                <Target className="w-3.5 h-3.5" /> {t("analytics.tabs.focus")}
               </TabsTrigger>
               <TabsTrigger value="retention" className="gap-1.5">
-                <Brain className="w-3.5 h-3.5" /> Retention
+                <Brain className="w-3.5 h-3.5" /> {t("analytics.tabs.retention")}
               </TabsTrigger>
             </TabsList>
 
@@ -272,12 +284,12 @@ const LearningAnalytics = () => {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-muted-foreground" />
-                    Study Activity (Last 12 Months)
+                    {t("analytics.activity")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="overflow-x-auto pb-4">
                   <StudyHeatmap data={heatmapData} />
-                  {!hasSessions && <p className="text-xs text-muted-foreground text-center mt-2">No study sessions recorded yet. Open a lesson to start tracking.</p>}
+                  {!hasSessions && <p className="text-xs text-muted-foreground text-center mt-2">{t("analytics.noSessionsYet")}</p>}
                 </CardContent>
               </Card>
 
@@ -287,15 +299,15 @@ const LearningAnalytics = () => {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-muted-foreground" />
-                      Weekly Study Hours
+                      {t("analytics.weeklyHours")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-48">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={weeklyProductivity} barSize={32}>
-                          <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} unit="h" width={30} />
+                          <XAxis dataKey="day" reversed={rtl} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} orientation={rtl ? "right" : "left"} tickFormatter={(v: number) => t("analytics.hoursValue", { value: axisNum(v) })} width={36} />
                           <Tooltip
                             cursor={{ fill: "hsl(var(--muted) / 0.3)", radius: 8 }}
                             contentStyle={{
@@ -303,6 +315,7 @@ const LearningAnalytics = () => {
                               border: "1px solid hsl(var(--border))",
                               borderRadius: "0.75rem",
                               fontSize: "12px",
+                              textAlign: rtl ? "right" : "left",
                             }}
                           />
                           <Bar dataKey="hours" radius={[8, 8, 4, 4]} fill="hsl(var(--primary))" />
@@ -310,7 +323,7 @@ const LearningAnalytics = () => {
                       </ResponsiveContainer>
                     </div>
                     <p className="text-xs text-muted-foreground text-center mt-2">
-                      Total: {weeklyTotalHours.toFixed(1)}h this week
+                      {t("analytics.weekTotal", { value: formatNumber(weeklyTotalHours, { maximumFractionDigits: 1 }) })}
                     </p>
                   </CardContent>
                 </Card>
@@ -319,15 +332,15 @@ const LearningAnalytics = () => {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center gap-2">
                       <Target className="w-4 h-4 text-muted-foreground" />
-                      Planned Study Hours
+                      {t("analytics.plannedHours")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="h-48">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={plannedHours} barSize={32}>
-                          <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} unit="h" width={30} />
+                          <XAxis dataKey="day" reversed={rtl} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} orientation={rtl ? "right" : "left"} tickFormatter={(v: number) => t("analytics.hoursValue", { value: axisNum(v) })} width={36} />
                           <Tooltip
                             cursor={{ fill: "hsl(var(--muted) / 0.3)", radius: 8 }}
                             contentStyle={{
@@ -335,6 +348,7 @@ const LearningAnalytics = () => {
                               border: "1px solid hsl(var(--border))",
                               borderRadius: "0.75rem",
                               fontSize: "12px",
+                              textAlign: rtl ? "right" : "left",
                             }}
                           />
                           <Bar dataKey="hours" radius={[8, 8, 4, 4]} fill="hsl(var(--accent))" />
@@ -342,7 +356,7 @@ const LearningAnalytics = () => {
                       </ResponsiveContainer>
                     </div>
                     <p className="text-xs text-muted-foreground text-center mt-2">
-                      Planned this week: {plannedHours.reduce((s, d) => s + d.hours, 0).toFixed(1)}h (from your time blocks)
+                      {t("analytics.plannedTotal", { value: formatNumber(plannedHours.reduce((s, d) => s + d.hours, 0), { maximumFractionDigits: 1 }) })}
                     </p>
                   </CardContent>
                 </Card>
@@ -353,17 +367,17 @@ const LearningAnalytics = () => {
                 <CardContent className="p-5">
                   <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
                     <Award className="w-4 h-4 text-accent" /> 
-                    Weekly Insights
+                    {t("analytics.insights")}
                   </h3>
                   <ul className="text-sm text-muted-foreground space-y-2">
                     {bestDay.hours > 0 ? (
-                      <li>• Your most productive day this week was <strong className="text-foreground">{bestDay.day}</strong> with {bestDay.hours}h of study time.</li>
+                      <li>• <Trans i18nKey="analytics.insight.bestDay" ns="learning" values={{ day: bestDay.day, hours: formatNumber(bestDay.hours, { maximumFractionDigits: 1 }) }} components={{ b: <strong className="text-foreground" /> }} /></li>
                     ) : (
-                      <li>• No study time tracked yet this week.</li>
+                      <li>• {t("analytics.insight.noTime")}</li>
                     )}
-                    {stats && stats.BestStudyTime && <li>• Your best study time is <strong className="text-foreground">{stats.BestStudyTime}</strong>.</li>}
-                    <li>• You've had <strong className="text-foreground">{stats?.SessionsThisWeek ?? 0}</strong> study sessions this week.</li>
-                    <li>• You've reviewed <strong className="text-foreground">{cardsReviewedWeek}</strong> flashcards in the last 7 days.</li>
+                    {stats && stats.BestStudyTime && <li>• <Trans i18nKey="analytics.insight.bestTime" ns="learning" values={{ time: t(`analytics.bestTime.${stats.BestStudyTime}`, { defaultValue: stats.BestStudyTime }) }} components={{ b: <strong className="text-foreground" /> }} /></li>}
+                    <li>• <Trans i18nKey="analytics.insight.sessions" ns="learning" count={stats?.SessionsThisWeek ?? 0} values={{ n: formatNumber(stats?.SessionsThisWeek ?? 0) }} components={{ b: <strong className="text-foreground" /> }} /></li>
+                    <li>• <Trans i18nKey="analytics.insight.reviewed" ns="learning" count={cardsReviewedWeek} values={{ n: formatNumber(cardsReviewedWeek) }} components={{ b: <strong className="text-foreground" /> }} /></li>
                   </ul>
                 </CardContent>
               </Card>
@@ -374,7 +388,7 @@ const LearningAnalytics = () => {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Target className="w-4 h-4 text-muted-foreground" />
-                    Daily Study Minutes (Last 2 Weeks)
+                    {t("analytics.dailyMinutes")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -389,21 +403,22 @@ const LearningAnalytics = () => {
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                          <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} unit="m" width={35} />
+                          <XAxis dataKey="date" reversed={rtl} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} orientation={rtl ? "right" : "left"} tickFormatter={(v: number) => t("analytics.minutesShort", { value: axisNum(v) })} width={40} />
                           <Tooltip
                             contentStyle={{
                               background: "hsl(var(--card))",
                               border: "1px solid hsl(var(--border))",
                               borderRadius: "0.75rem",
                               fontSize: "12px",
+                              textAlign: rtl ? "right" : "left",
                             }}
                           />
                           <Area type="monotone" dataKey="minutes" stroke="hsl(var(--accent))" strokeWidth={2} fill="url(#focusGradient)" />
                         </AreaChart>
                       </ResponsiveContainer>
                     ) : (
-                      <EmptyChart message="No study sessions yet. Your daily study time will appear here." />
+                      <EmptyChart message={t("analytics.noSessionsChart")} />
                     )}
                   </div>
                 </CardContent>
@@ -412,23 +427,23 @@ const LearningAnalytics = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-accent">{avgFocusScore}%</p>
-                    <p className="text-sm text-muted-foreground mt-1">Average Focus</p>
+                    <p className="text-3xl font-bold text-accent">{formatPercent(avgFocusScore)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t("analytics.avgFocus")}</p>
                     <Progress value={avgFocusScore} className="mt-3 h-2" />
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-success">{Math.round(longestSessionMin)}m</p>
-                    <p className="text-sm text-muted-foreground mt-1">Longest Session</p>
-                    <p className="text-xs text-muted-foreground mt-1">Last 12 months</p>
+                    <p className="text-3xl font-bold text-success">{t("analytics.minutesShort", { value: formatNumber(Math.round(longestSessionMin)) })}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t("analytics.longestSession")}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("analytics.last12")}</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-primary">{stats?.DeepWorkSessions ?? 0}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Deep Work Sessions</p>
-                    <p className="text-xs text-muted-foreground mt-1">{summaryQuery.data?.DistractionsLogged ?? 0} distractions logged</p>
+                    <p className="text-3xl font-bold text-primary">{formatNumber(stats?.DeepWorkSessions ?? 0)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t("analytics.deepWork")}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("analytics.distractionsLogged", { count: summaryQuery.data?.DistractionsLogged ?? 0 })}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -439,7 +454,7 @@ const LearningAnalytics = () => {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Brain className="w-4 h-4 text-muted-foreground" />
-                    Cards Reviewed (Last 2 Weeks)
+                    {t("analytics.cardsReviewed2w")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -448,21 +463,22 @@ const LearningAnalytics = () => {
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={reviewTrend}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} width={30} />
+                        <XAxis dataKey="date" reversed={rtl} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} allowDecimals={false} orientation={rtl ? "right" : "left"} tickFormatter={axisNum} width={30} />
                         <Tooltip
                           contentStyle={{
                             background: "hsl(var(--card))",
                             border: "1px solid hsl(var(--border))",
                             borderRadius: "0.75rem",
                             fontSize: "12px",
+                              textAlign: rtl ? "right" : "left",
                           }}
                         />
                         <Line type="monotone" dataKey="reviewed" stroke="hsl(var(--success))" strokeWidth={2} dot={{ fill: "hsl(var(--success))", strokeWidth: 0, r: 3 }} />
                       </LineChart>
                     </ResponsiveContainer>
                     ) : (
-                      <EmptyChart message="No flashcard reviews yet. Review some cards to see your activity here. Counts are based on each card's most recent review." />
+                      <EmptyChart message={t("analytics.noReviews")} />
                     )}
                   </div>
                 </CardContent>
@@ -471,23 +487,23 @@ const LearningAnalytics = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-success">{flashcardRetention}%</p>
-                    <p className="text-sm text-muted-foreground mt-1">Current Retention</p>
+                    <p className="text-3xl font-bold text-success">{formatPercent(flashcardRetention)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t("analytics.currentRetention")}</p>
                     <Progress value={flashcardRetention} className="mt-3 h-2" />
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-primary">{stats?.CardsReviewedToday ?? 0}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Cards Reviewed</p>
-                    <p className="text-xs text-muted-foreground mt-1">Today</p>
+                    <p className="text-3xl font-bold text-primary">{formatNumber(stats?.CardsReviewedToday ?? 0)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t("analytics.cardsReviewed")}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("analytics.today")}</p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardContent className="p-4 text-center">
-                    <p className="text-3xl font-bold text-warning-foreground">{stats?.FlashcardsDue ?? 0}</p>
-                    <p className="text-sm text-muted-foreground mt-1">Due for Review</p>
-                    <p className="text-xs text-muted-foreground mt-1">Now</p>
+                    <p className="text-3xl font-bold text-warning-foreground">{formatNumber(stats?.FlashcardsDue ?? 0)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t("analytics.dueForReview")}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{t("analytics.now")}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -496,14 +512,14 @@ const LearningAnalytics = () => {
                 <CardContent className="p-5">
                   <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-success" />
-                    Retention Tips
+                    {t("analytics.tips.title")}
                   </h3>
                   <ul className="text-sm text-muted-foreground space-y-2">
-                    <li>• Review cards marked "Hard" more frequently to strengthen weak memories.</li>
+                    <li>• {t("analytics.tips.hard")}</li>
                     {stats && stats.WeakTopics.length > 0 ? (
-                      <li>• Consider adding more cards for <strong className="text-foreground">{stats.WeakTopics.join(", ")}</strong> — {stats.WeakTopics.length === 1 ? "it's a weak area" : "these are weak areas"}.</li>
+                      <li>• <Trans i18nKey="analytics.tips.weak" ns="learning" count={stats.WeakTopics.length} values={{ topics: stats.WeakTopics.join(t("analytics.listSeparator")) }} components={{ b: <strong className="text-foreground" /> }} /></li>
                     ) : (
-                      <li>• No weak topics detected yet. Keep reviewing to build up your data.</li>
+                      <li>• {t("analytics.tips.noWeak")}</li>
                     )}
                   </ul>
                 </CardContent>

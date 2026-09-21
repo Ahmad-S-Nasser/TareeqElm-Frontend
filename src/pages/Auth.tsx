@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,10 +13,10 @@ import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { getAuthModeFromRoute, getReturnPath, type AuthMode } from "@/lib/authRoute";
 
-const emailSchema = z.string().email("Please enter a valid email address");
-const passwordSchema = z.string().min(8, "Password must be at least 8 characters");
+const PASSWORD_MIN_LENGTH = 8;
 
 const Auth = () => {
+  const { t } = useTranslation(["auth", "common", "roles"]);
   const location = useLocation();
   const [mode, setMode] = useState<AuthMode>(() => getAuthModeFromRoute(location.pathname, location.search));
 
@@ -37,6 +39,12 @@ const Auth = () => {
   const validateForm = () => {
     const newErrors: typeof errors = {};
 
+    // Schemas are built here (not at module level) so messages use the language active at validation time.
+    const emailSchema = z.string().email(t("auth:validation.emailInvalid"));
+    const passwordSchema = z
+      .string()
+      .min(PASSWORD_MIN_LENGTH, t("auth:validation.passwordMin", { count: PASSWORD_MIN_LENGTH }));
+
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
       newErrors.email = emailResult.error.errors[0].message;
@@ -48,7 +56,7 @@ const Auth = () => {
     }
 
     if (mode === "signup" && !fullName.trim()) {
-      newErrors.fullName = "Please enter your full name";
+      newErrors.fullName = t("auth:validation.fullNameRequired");
     }
 
     setErrors(newErrors);
@@ -68,16 +76,16 @@ const Auth = () => {
         if (error) {
           toast({
             variant: "destructive",
-            title: "Sign in failed",
-            description: error.message === "Invalid credentials"
-              ? "Invalid email or password. Please try again."
+            title: t("auth:signIn.failedTitle"),
+            description: error.code === "auth.invalid_credentials"
+              ? t("auth:signIn.invalidCredentials")
               : error.message,
           });
           return;
         }
         toast({
-          title: "Welcome back!",
-          description: "You have successfully signed in.",
+          title: t("auth:signIn.successTitle"),
+          description: t("auth:signIn.successDescription"),
         });
         // "/" resolves to the user's own dashboard; RoleGuard bounces disallowed targets there too.
         navigate(getReturnPath(location.state) ?? "/", { replace: true });
@@ -86,16 +94,16 @@ const Auth = () => {
         if (error) {
           toast({
             variant: "destructive",
-            title: "Sign up failed",
-            description: error.message === "Registration failed"
-              ? "We couldn't create this account. If you already have one, try signing in."
+            title: t("auth:signUp.failedTitle"),
+            description: error.code === "auth.registration_failed"
+              ? t("auth:signUp.registrationFailed")
               : error.message,
           });
           return;
         }
         toast({
-          title: "Account created!",
-          description: "Welcome to TareeqElm. Let's start learning!",
+          title: t("auth:signUp.successTitle"),
+          description: t("auth:signUp.successDescription"),
         });
         navigate(getReturnPath(location.state) ?? "/", { replace: true });
       }
@@ -105,24 +113,25 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="relative min-h-screen bg-background flex items-center justify-center p-4">
+      <LanguageSwitcher className="absolute top-4 end-4" />
       <div className="w-full max-w-md space-y-6">
         {/* Logo */}
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-primary shadow-glow-primary mb-4">
             <GraduationCap className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold">TareeqElm</h1>
-          <p className="text-muted-foreground">Smart Learning Platform</p>
+          <h1 className="text-2xl font-bold">{t("common:appName")}</h1>
+          <p className="text-muted-foreground">{t("common:tagline")}</p>
         </div>
 
         <Card className="border-border/50 shadow-soft">
           <CardHeader className="text-center">
-            <CardTitle>{mode === "signin" ? "Welcome back" : "Create an account"}</CardTitle>
+            <CardTitle>{mode === "signin" ? t("auth:signIn.title") : t("auth:signUp.title")}</CardTitle>
             <CardDescription>
               {mode === "signin"
-                ? "Sign in to continue your learning journey"
-                : "Start your learning journey today"}
+                ? t("auth:signIn.subtitle")
+                : t("auth:signUp.subtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -132,17 +141,17 @@ const Auth = () => {
               {import.meta.env.DEV && mode === "signin" && (
                 <div className="rounded-xl border border-border/50 bg-muted/30 p-3 space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">
-                    Quick Test Login (dev only)
+                    {t("auth:devLogin.title")}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { label: "Trainer", email: "trainer@tareeqelm.com", password: "Trainer@123", icon: "👨‍🎓", color: "hover:bg-primary/10 hover:text-primary hover:border-primary/40" },
-                      { label: "Instructor", email: "instructor@tareeqelm.com", password: "Instructor@123", icon: "👨‍🏫", color: "hover:bg-accent/10 hover:text-accent-foreground hover:border-accent/40" },
-                      { label: "Organization", email: "organization@tareeqelm.com", password: "Organization@123", icon: "🏛️", color: "hover:bg-indigo-500/10 hover:text-indigo-600 hover:border-indigo-400/40" },
-                      { label: "Admin", email: "admin@tareeqelm.com", password: "Admin@123", icon: "🛡️", color: "hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-400/40" },
+                      { role: "applicant" as const, email: "trainer@tareeqelm.com", password: "Trainer@123", icon: "👨‍🎓", color: "hover:bg-primary/10 hover:text-primary hover:border-primary/40" },
+                      { role: "instructor" as const, email: "instructor@tareeqelm.com", password: "Instructor@123", icon: "👨‍🏫", color: "hover:bg-accent/10 hover:text-accent-foreground hover:border-accent/40" },
+                      { role: "organization" as const, email: "organization@tareeqelm.com", password: "Organization@123", icon: "🏛️", color: "hover:bg-indigo-500/10 hover:text-indigo-600 hover:border-indigo-400/40" },
+                      { role: "admin" as const, email: "admin@tareeqelm.com", password: "Admin@123", icon: "🛡️", color: "hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-400/40" },
                     ].map((acct) => (
                       <button
-                        key={acct.label}
+                        key={acct.role}
                         type="button"
                         onClick={() => {
                           setEmail(acct.email);
@@ -155,12 +164,12 @@ const Auth = () => {
                         )}
                       >
                         <span>{acct.icon}</span>
-                        {acct.label}
+                        {t(`roles:${acct.role}.name`)}
                       </button>
                     ))}
                   </div>
                   <p className="text-[11px] text-muted-foreground text-center">
-                    Seeded development accounts — click to fill the form.
+                    {t("auth:devLogin.hint")}
                   </p>
                 </div>
               )}
@@ -172,11 +181,11 @@ const Auth = () => {
 
                   {/* Full Name */}
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="fullName">{t("auth:fields.fullName.label")}</Label>
                     <Input
                       id="fullName"
                       type="text"
-                      placeholder="John Doe"
+                      placeholder={t("auth:fields.fullName.placeholder")}
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className={errors.fullName ? "border-destructive" : ""}
@@ -190,11 +199,11 @@ const Auth = () => {
 
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("auth:fields.email.label")}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={t("auth:fields.email.placeholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={errors.email ? "border-destructive" : ""}
@@ -206,20 +215,21 @@ const Auth = () => {
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("auth:fields.password.label")}</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
+                    placeholder={t("auth:fields.password.placeholder")}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={cn("pr-10", errors.password ? "border-destructive" : "")}
+                    className={cn("pe-10", errors.password ? "border-destructive" : "")}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showPassword ? t("auth:fields.password.hide") : t("auth:fields.password.show")}
+                    className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -238,11 +248,11 @@ const Auth = () => {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {mode === "signin" ? "Signing in..." : "Creating account..."}
+                    <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                    {mode === "signin" ? t("auth:signIn.submitting") : t("auth:signUp.submitting")}
                   </>
                 ) : (
-                  mode === "signin" ? "Sign In" : "Create Account"
+                  mode === "signin" ? t("auth:signIn.submit") : t("auth:signUp.submit")
                 )}
               </Button>
             </form>
@@ -250,16 +260,16 @@ const Auth = () => {
             {/* Toggle Mode */}
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                {mode === "signin" ? "Don't have an account?" : "Already have an account?"}
+                {mode === "signin" ? t("auth:signIn.noAccount") : t("auth:signUp.haveAccount")}
                 <button
                   type="button"
                   onClick={() => {
                     setMode(mode === "signin" ? "signup" : "signin");
                     setErrors({});
                   }}
-                  className="ml-1 text-primary font-medium hover:underline"
+                  className="ms-1 text-primary font-medium hover:underline"
                 >
-                  {mode === "signin" ? "Sign up" : "Sign in"}
+                  {mode === "signin" ? t("auth:signIn.switchToSignUp") : t("auth:signUp.switchToSignIn")}
                 </button>
               </p>
             </div>

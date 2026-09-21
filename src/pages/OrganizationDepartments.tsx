@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api, { getApiError } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { useFormatters } from "@/lib/format";
 
 interface Department { Id: string; Name: string; Head: string | null; CoursesCount: number; TrainersCount: number; Performance: number; Trend: number }
 
@@ -37,6 +39,8 @@ const OrganizationDepartments = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [newDept, setNewDept] = useState({ name: "", head: "" });
+    const { t } = useTranslation(["organization", "common"]);
+    const { formatNumber, formatPercent } = useFormatters();
     const { toast } = useToast();
     const queryClient = useQueryClient();
 
@@ -57,20 +61,20 @@ const OrganizationDepartments = () => {
             invalidate();
             setIsAddOpen(false);
             setNewDept({ name: "", head: "" });
-            toast({ title: "Department created" });
+            toast({ title: t("departments.created") });
         },
-        onError: (err: unknown) => toast({ variant: "destructive", title: "Error", description: getApiError(err, "Could not create department") }),
+        onError: (err: unknown) => toast({ variant: "destructive", title: t("common:states.error"), description: getApiError(err, t("departments.createFailed")) }),
     });
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => { await api.delete(`/Departments/${id}`); },
-        onSuccess: () => { invalidate(); toast({ title: "Department deleted" }); },
-        onError: (err: unknown) => toast({ variant: "destructive", title: "Error", description: getApiError(err, "Could not delete department") }),
+        onSuccess: () => { invalidate(); toast({ title: t("departments.deleted") }); },
+        onError: (err: unknown) => toast({ variant: "destructive", title: t("common:states.error"), description: getApiError(err, t("departments.deleteFailed")) }),
     });
 
     const handleAdd = () => {
         if (!newDept.name.trim()) {
-            toast({ variant: "destructive", title: "Department name is required" });
+            toast({ variant: "destructive", title: t("departments.nameRequired") });
             return;
         }
         addMutation.mutate({ Name: newDept.name.trim(), HeadOfDepartment: newDept.head.trim() || undefined });
@@ -88,37 +92,37 @@ const OrganizationDepartments = () => {
 
             <main className={cn(
                 "pt-20 pb-12 px-4 sm:px-6 transition-all duration-300",
-                sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
+                sidebarCollapsed ? "lg:ms-20" : "lg:ms-64"
             )}>
                 <div className="max-w-7xl mx-auto space-y-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight">Departments</h1>
-                            <p className="text-muted-foreground mt-1">Manage organization departments and their heads.</p>
+                            <h1 className="text-3xl font-bold tracking-tight">{t("departments.title")}</h1>
+                            <p className="text-muted-foreground mt-1">{t("departments.subtitle")}</p>
                         </div>
                         <Button className="gradient-primary text-white border-0" onClick={() => setIsAddOpen(true)}>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Department
+                            <Plus className="w-4 h-4 me-2" />
+                            {t("departments.add")}
                         </Button>
                     </div>
 
                     <div className="flex items-center gap-4 bg-card p-4 rounded-xl border border-border/50 shadow-sm">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input
-                                placeholder="Search departments or heads..."
-                                className="pl-10 bg-background/50"
+                                placeholder={t("departments.search")}
+                                className="ps-10 bg-background/50"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
                         <Button variant="outline" className="shrink-0">
-                            Filters
+                            {t("departments.filters")}
                         </Button>
                     </div>
 
                     {isError && (
-                        <div className="text-center py-6 text-destructive">{getApiError(error, "Could not load departments.")}</div>
+                        <div className="text-center py-6 text-destructive">{getApiError(error, t("departments.loadFailed"))}</div>
                     )}
 
                     {loading ? (
@@ -136,13 +140,13 @@ const OrganizationDepartments = () => {
                                             </div>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={t("departments.actionsMenu")}>
                                                         <MoreVertical className="w-4 h-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem className="text-destructive" onClick={() => { if (window.confirm(`Delete ${dept.Name}?`)) deleteMutation.mutate(dept.Id); }}>
-                                                        <Trash2 className="w-4 h-4 mr-2" /> Delete
+                                                    <DropdownMenuItem className="text-destructive" onClick={() => { if (window.confirm(t("departments.confirmDelete", { name: dept.Name }))) deleteMutation.mutate(dept.Id); }}>
+                                                        <Trash2 className="w-4 h-4 me-2" /> {t("common:actions.delete")}
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -150,38 +154,38 @@ const OrganizationDepartments = () => {
                                         <CardTitle className="text-xl">{dept.Name}</CardTitle>
                                         <CardDescription className="flex items-center gap-1.5">
                                             <Users className="w-3.5 h-3.5" />
-                                            Head: {dept.Head || "Not Assigned"}
+                                            {t("departments.head", { name: dept.Head ?? t("notAssigned") })}
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-6">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-1">
-                                                <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Courses</p>
+                                                <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">{t("departments.courses")}</p>
                                                 <div className="flex items-center gap-2">
                                                     <BookOpen className="w-4 h-4 text-primary" />
-                                                    <span className="font-bold">{dept.CoursesCount || 0}</span>
+                                                    <span className="font-bold">{formatNumber(dept.CoursesCount || 0)}</span>
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Trainers</p>
+                                                <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">{t("departments.trainers")}</p>
                                                 <div className="flex items-center gap-2">
                                                     <Users className="w-4 h-4 text-accent" />
-                                                    <span className="font-bold">{dept.TrainersCount || 0}</span>
+                                                    <span className="font-bold">{formatNumber(dept.TrainersCount || 0)}</span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
                                             <div className="flex justify-between text-xs font-medium">
-                                                <span className="text-muted-foreground">Performance Score</span>
-                                                <span className="text-primary">{dept.Performance || 0}%</span>
+                                                <span className="text-muted-foreground">{t("departments.performance")}</span>
+                                                <span className="text-primary">{formatPercent(dept.Performance || 0)}</span>
                                             </div>
                                             <Progress value={dept.Performance || 0} className="h-1.5" />
                                         </div>
 
                                         <Button variant="ghost" className="w-full group/btn hover:bg-primary/5 hover:text-primary border border-transparent hover:border-primary/20">
-                                            View Department Details
-                                            <ChevronRight className="w-4 h-4 ml-2 transition-transform group-hover/btn:translate-x-1" />
+                                            {t("departments.viewDetails")}
+                                            <ChevronRight className="w-4 h-4 ms-2 transition-transform rtl:rotate-180 group-hover/btn:translate-x-1 rtl:group-hover/btn:-translate-x-1" />
                                         </Button>
                                     </CardContent>
                                 </Card>
@@ -192,8 +196,8 @@ const OrganizationDepartments = () => {
                     {!loading && !isError && filteredDepartments.length === 0 && (
                         <div className="text-center py-20 bg-card rounded-2xl border border-dashed border-border/50">
                             <Building2 className="w-12 h-12 mx-auto text-muted-foreground mb-4 opacity-20" />
-                            <h3 className="text-lg font-medium">No Departments Found</h3>
-                            <p className="text-muted-foreground">Try adjusting your search or add a new department.</p>
+                            <h3 className="text-lg font-medium">{t("departments.noneFound")}</h3>
+                            <p className="text-muted-foreground">{t("departments.noneHint")}</p>
                         </div>
                     )}
                 </div>
@@ -202,24 +206,24 @@ const OrganizationDepartments = () => {
             <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle>Add New Department</DialogTitle>
-                        <DialogDescription>Create a new department under the organization.</DialogDescription>
+                        <DialogTitle>{t("dashboard.addTitle")}</DialogTitle>
+                        <DialogDescription>{t("dashboard.addDescription")}</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="dept-name">Department Name</Label>
-                            <Input id="dept-name" placeholder="e.g. Mathematics" value={newDept.name} onChange={(e) => setNewDept({ ...newDept, name: e.target.value })} />
+                            <Label htmlFor="dept-name">{t("dashboard.deptName")}</Label>
+                            <Input id="dept-name" placeholder={t("dashboard.deptNamePlaceholder")} value={newDept.name} onChange={(e) => setNewDept({ ...newDept, name: e.target.value })} />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="dept-head">Head of Department</Label>
-                            <Input id="dept-head" placeholder="e.g. Dr. John Nash" value={newDept.head} onChange={(e) => setNewDept({ ...newDept, head: e.target.value })} />
+                            <Label htmlFor="dept-head">{t("dashboard.headLabel")}</Label>
+                            <Input id="dept-head" placeholder={t("dashboard.headPlaceholder")} value={newDept.head} onChange={(e) => setNewDept({ ...newDept, head: e.target.value })} />
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                        <Button variant="outline" onClick={() => setIsAddOpen(false)}>{t("common:actions.cancel")}</Button>
                         <Button onClick={handleAdd} disabled={addMutation.isPending} className="gradient-primary text-white border-0">
-                            {addMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                            Add Department
+                            {addMutation.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
+                            {t("dashboard.addDepartment")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -1,0 +1,9 @@
+{
+  "network": "Cannot reach the server. Check your connection and try again.",
+  "tooManyRequests": "Too many attempts. Please wait a minute and try again.",
+  "forbidden": "You do not have permission to do that.",
+  "server": "The server ran into a problem. Please try again in a moment.",
+  "notFound": "We could not find what you were looking for.",
+  "conflict": "This conflicts with existing data. Refresh the page and try again.",
+  "generic": "Something went wrong. Please try again."
+}

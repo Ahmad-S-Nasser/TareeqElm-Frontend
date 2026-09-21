@@ -1,6 +1,9 @@
 import { useState, useRef, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import api, { getApiError } from '@/lib/api';
+import i18n from '@/i18n';
+
+const tr = (key: string, options?: Record<string, unknown>): string => i18n.t(`instructor:${key}`, options) as string;
 
 export type LessonType = 'Reading' | 'Video' | 'Quiz' | 'Assignment' | 'Interactive';
 // Older UI code (ChapterList) still creates lowercase values; they are normalised to LessonType when saving.
@@ -50,6 +53,10 @@ export const normalizeLessonType = (type: string | undefined | null): LessonType
     return 'Reading'; // 'text' and anything unknown
 };
 
+/** Translated label for a lesson type (accepts API values and legacy lowercase ones). */
+export const lessonTypeLabel = (t: (key: string) => string, type: string | undefined | null): string =>
+    t(`instructor:lessonType.${normalizeLessonType(type).toLowerCase()}`);
+
 /** Origin of the API (base URL without the trailing /api), used to display uploaded files. */
 export const getApiOrigin = (): string => (api.defaults.baseURL ?? '').replace(/\/api\/?$/, '');
 
@@ -74,9 +81,9 @@ export const useCourseEditor = (_courseId?: string) => {
     const analyzeSyllabus = async (file: File): Promise<Chapter[] | null> => {
         setAnalysisError(null);
         if (!/\.(txt|md)$/i.test(file.name)) {
-            const message = 'Only .txt and .md syllabus files can be analysed.';
+            const message = tr('editor.onlyTxtMd');
             setAnalysisError(message);
-            toast({ title: 'Unsupported file', description: message, variant: 'destructive' });
+            toast({ title: tr('editor.unsupportedFile'), description: message, variant: 'destructive' });
             return null;
         }
         setAnalyzing(true);
@@ -100,22 +107,22 @@ export const useCourseEditor = (_courseId?: string) => {
             }));
 
             if (chapters.length === 0) {
-                const message = 'No chapters could be found in that file.';
+                const message = tr('editor.noChapters');
                 setAnalysisError(message);
-                toast({ title: 'Nothing found', description: message, variant: 'destructive' });
+                toast({ title: tr('editor.nothingFound'), description: message, variant: 'destructive' });
                 return null;
             }
 
             toast({
-                title: 'Analysis Complete',
-                description: 'A suggested course structure was created from your syllabus. Review it before saving.',
+                title: tr('editor.analysisComplete'),
+                description: tr('editor.analysisCompleteDesc'),
             });
             return chapters;
         } catch (error) {
-            const message = getApiError(error, 'The syllabus could not be analysed.');
+            const message = getApiError(error, tr('editor.analysisFailedMsg'));
             console.error('Analysis failed:', error);
             setAnalysisError(message);
-            toast({ title: 'Analysis Failed', description: message, variant: 'destructive' });
+            toast({ title: tr('editor.analysisFailed'), description: message, variant: 'destructive' });
             return null;
         } finally {
             setAnalyzing(false);
@@ -137,8 +144,8 @@ export const useCourseEditor = (_courseId?: string) => {
         } catch (error) {
             console.error('Upload error:', error);
             toast({
-                title: 'Upload Failed',
-                description: getApiError(error, 'Could not upload the file.'),
+                title: tr('editor.uploadFailed'),
+                description: getApiError(error, tr('editor.uploadFailedDesc')),
                 variant: 'destructive',
             });
             return null;
@@ -176,15 +183,15 @@ export const useCourseEditor = (_courseId?: string) => {
             const saved = await loadCurriculum(courseId);
 
             toast({
-                title: 'Curriculum Saved',
-                description: 'Your course structure has been updated successfully.',
+                title: tr('editor.curriculumSaved'),
+                description: tr('editor.curriculumSavedDesc'),
             });
             return saved;
         } catch (error) {
             console.error('Save curriculum error:', error);
             toast({
-                title: 'Save Failed',
-                description: getApiError(error, 'Could not save course curriculum.'),
+                title: tr('editor.saveFailed'),
+                description: getApiError(error, tr('editor.saveFailedDesc')),
                 variant: 'destructive',
             });
             return null;
@@ -201,8 +208,8 @@ export const useCourseEditor = (_courseId?: string) => {
         } catch (error) {
             console.error('Fetch curriculum error:', error);
             toast({
-                title: 'Fetch Failed',
-                description: getApiError(error, 'Could not load course curriculum.'),
+                title: tr('editor.fetchFailed'),
+                description: getApiError(error, tr('editor.fetchFailedDesc')),
                 variant: 'destructive',
             });
             return [];

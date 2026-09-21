@@ -1,4 +1,6 @@
 import { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { Upload, FileText, X, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,6 +16,8 @@ export const FileDropzone = ({
   acceptedTypes = [".pdf", ".docx", ".doc", ".txt"],
   maxSize = 10
 }: FileDropzoneProps) => {
+  const { t } = useTranslation("instructor");
+  const { formatNumber } = useFormatters();
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -21,16 +25,16 @@ export const FileDropzone = ({
   const validateFile = useCallback((file: File): boolean => {
     const extension = "." + file.name.split('.').pop()?.toLowerCase();
     if (!acceptedTypes.includes(extension)) {
-      setError(`Invalid file type. Accepted: ${acceptedTypes.join(", ")}`);
+      setError(t("syllabus.dropzone.invalidType", { types: acceptedTypes.join(", ") }));
       return false;
     }
     if (file.size > maxSize * 1024 * 1024) {
-      setError(`File too large. Maximum size: ${maxSize}MB`);
+      setError(t("syllabus.dropzone.tooLarge", { size: t("syllabus.dropzone.sizeMB", { value: formatNumber(maxSize) }) }));
       return false;
     }
     setError(null);
     return true;
-  }, [acceptedTypes, maxSize]);
+  }, [acceptedTypes, maxSize, t, formatNumber]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -67,9 +71,10 @@ export const FileDropzone = ({
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return bytes + " B";
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    const opts = { maximumFractionDigits: 1 };
+    if (bytes < 1024) return t("syllabus.dropzone.sizeB", { value: formatNumber(bytes) });
+    if (bytes < 1024 * 1024) return t("syllabus.dropzone.sizeKB", { value: formatNumber(bytes / 1024, opts) });
+    return t("syllabus.dropzone.sizeMB", { value: formatNumber(bytes / (1024 * 1024), opts) });
   };
 
   return (
@@ -117,20 +122,20 @@ export const FileDropzone = ({
           {/* Text */}
           {selectedFile ? (
             <div className="space-y-1">
-              <p className="font-medium text-success">File selected</p>
+              <p className="font-medium text-success">{t("syllabus.dropzone.fileSelected")}</p>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <FileText className="w-4 h-4" />
-                <span>{selectedFile.name}</span>
+                <span dir="ltr">{selectedFile.name}</span>
                 <span className="text-xs">({formatFileSize(selectedFile.size)})</span>
               </div>
             </div>
           ) : (
             <>
               <p className="font-medium mb-1">
-                {isDragging ? "Drop your file here" : "Drag & drop your syllabus"}
+                {isDragging ? t("syllabus.dropzone.drop") : t("syllabus.dropzone.drag")}
               </p>
               <p className="text-sm text-muted-foreground mb-3">
-                or click to browse files
+                {t("syllabus.dropzone.browse")}
               </p>
               <div className="flex flex-wrap justify-center gap-2">
                 {acceptedTypes.map((type) => (
@@ -143,7 +148,7 @@ export const FileDropzone = ({
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Maximum file size: {maxSize}MB
+                {t("syllabus.dropzone.maxSize", { size: t("syllabus.dropzone.sizeMB", { value: formatNumber(maxSize) }) })}
               </p>
             </>
           )}
@@ -171,8 +176,8 @@ export const FileDropzone = ({
           onClick={clearFile}
           className="w-full"
         >
-          <X className="w-4 h-4 mr-2" />
-          Remove file and upload different one
+          <X className="w-4 h-4 me-2" />
+          {t("syllabus.dropzone.remove")}
         </Button>
       )}
     </div>

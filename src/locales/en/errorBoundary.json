@@ -1,0 +1,15 @@
+{
+  "pageLoader": {
+    "loading": "Loading..."
+  },
+  "boundary": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. You can reload the page or go back to the home page.",
+    "reload": "Reload",
+    "goHome": "Go home"
+  },
+  "notFound": {
+    "message": "Oops! Page not found",
+    "returnHome": "Return to Home"
+  }
+}

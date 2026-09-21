@@ -10,7 +10,8 @@ export interface TrainerData {
   Streak: number;
   FlashcardsDue: number;
   WeakTopics: string[];
-  BestStudyTime: string;
+  /** Null = no data; otherwise Morning | Afternoon | Evening | Night. */
+  BestStudyTime: string | null;
   CoursesEnrolled: number;
   LessonsCompleted: number;
   QuizAverage: number;
@@ -63,12 +64,17 @@ export interface EnrollmentDto {
   ProgressPercentage: number;
   CompletedAt: string | null;
   Course: CourseSummary;
+  TrainerName?: string | null;
+  CourseTitle?: string | null;
+  InstructorName?: string | null;
 }
 
 export interface StudySessionDto {
   Id: string;
   CourseId: string | null;
   LessonId: string | null;
+  CourseTitle?: string | null;
+  LessonTitle?: string | null;
   StartedAt: string;
   EndedAt: string | null;
   DurationSeconds: number;

@@ -1,0 +1,833 @@
+{
+  "ai": {
+    "title": "مساعد التدريس الذكي",
+    "subtitle": "استعن بالذكاء الاصطناعي لإنشاء المحتوى وتصحيح التقييمات والحصول على نصائح تدريسية.",
+    "tabs": {
+      "chat": "المحادثة",
+      "quiz": "توليد الاختبارات",
+      "lesson": "مسوّدة الدروس",
+      "insights": "الرؤى"
+    },
+    "chat": {
+      "title": "محادثة المساعد",
+      "description": "اسأل عن هيكل الدورة أو التفاعل أو المواضيع التقنية.",
+      "welcome": "مرحبًا! أنا مساعدك الذكي في التدريس. كيف يمكنني مساعدتك في تحسين دوراتك اليوم؟",
+      "reply": "يسعدني مساعدتك في «{{message}}». بصفتي ذكاءً اصطناعيًا يمكنني المساعدة في تصميم المنهج واستراتيجيات تفاعل المتدرّبين والشروحات التقنية. ما الجانب الذي تودّ الاستشارة فيه تحديدًا؟",
+      "placeholder": "اكتب رسالتك...",
+      "send": "إرسال الرسالة"
+    },
+    "quiz": {
+      "title": "مولّد الاختبارات",
+      "description": "ولّد أسئلة اختيار من متعدد انطلاقًا من موضوع.",
+      "topic": "الموضوع أو المفهوم",
+      "topicPlaceholder": "مثال: React Hooks، البناء الضوئي...",
+      "difficulty": "مستوى الصعوبة",
+      "selectDifficulty": "اختر مستوى الصعوبة",
+      "difficultyLevels": {
+        "easy": "سهل",
+        "medium": "متوسط",
+        "hard": "صعب",
+        "expert": "متقدّم جدًا"
+      },
+      "assignTo": "إسناد إلى",
+      "allTrainers": "جميع المتدرّبين",
+      "selectTrainers": "متدرّبون محدّدون",
+      "selectToAssign": "اختر المتدرّبين للإسناد",
+      "noTrainers": "لم يُعثر على متدرّبين",
+      "attachment": "مرفق (اختياري)",
+      "attached": "المرفق: {{name}}",
+      "generating": "جارٍ التوليد...",
+      "generate": "توليد الاختبار",
+      "result": "النتيجة",
+      "copy": "نسخ",
+      "placeholderResult": "سيظهر المحتوى المولَّد هنا",
+      "audienceAll": "جميع المتدرّبين",
+      "audienceSelected_zero": "لا متدرّبين محدّدين",
+      "audienceSelected_one": "متدرّب محدّد واحد",
+      "audienceSelected_two": "متدرّبان محدّدان",
+      "audienceSelected_few": "{{count}} متدرّبين محدّدين",
+      "audienceSelected_many": "{{count}} متدرّبًا محدّدًا",
+      "audienceSelected_other": "{{count}} متدرّب محدّد",
+      "none": "بلا",
+      "q1": "ما الوظيفة الأساسية لـ {{topic}}؟",
+      "q2": "أيٌّ مما يلي يصف {{topic}} على أفضل وجه؟",
+      "optionA": "الخيار أ",
+      "optionB": "الخيار ب",
+      "optionC": "الخيار ج",
+      "optionD": "الخيار د",
+      "conceptX": "المفهوم س",
+      "conceptY": "المفهوم ص",
+      "conceptZ": "المفهوم ع",
+      "generated": "تم توليد الاختبار",
+      "generatedDesc": "أُنشئ لـ {{audience}} بمستوى صعوبة {{difficulty}}."
+    },
+    "lesson": {
+      "title": "مسوّدة الدروس",
+      "description": "أنشئ خطة درس منظّمة انطلاقًا من عنوان.",
+      "lessonTitle": "عنوان الدرس",
+      "lessonPlaceholder": "مثال: مدخل إلى الديناميكا الحرارية",
+      "audienceLevel": "مستوى الفئة المستهدفة",
+      "audiencePlaceholder": "مثال: المرحلة الثانوية، المرحلة الجامعية",
+      "reference": "مادة مرجعية (اختياري)",
+      "drafting": "جارٍ إعداد المسوّدة...",
+      "draft": "إعداد خطة الدرس",
+      "draftTitle": "المسوّدة",
+      "placeholderDraft": "ستظهر المسوّدة هنا",
+      "drafted": "تم إعداد المسوّدة",
+      "draftedDesc": "مخطط درسك جاهز.",
+      "copied": "تم النسخ!",
+      "copiedDesc": "تم نسخ المحتوى إلى الحافظة.",
+      "context": "استنادًا إلى {{name}}",
+      "contextGeneral": "نظرة عامة",
+      "plan": "# خطة الدرس: {{topic}}\n**السياق**: {{context}}\n\n## أهداف التعلّم\n1. فهم المفاهيم الأساسية في {{topic}}.\n2. تطبيق {{topic}} في سيناريوهات واقعية.\n\n## المقدمة (5 دقائق)\n- التمهيد: ابدأ بمعلومة شيّقة عن {{topic}}.\n- التعريف: عرّف المصطلحات الأساسية.\n\n## المحتوى الرئيسي (20 دقيقة)\n- المفهوم أ: شرح مفصّل.\n- المفهوم ب: الأخطاء الشائعة.\n- النشاط: نقاش جماعي.\n\n## الخاتمة (5 دقائق)\n- تلخيص النقاط الرئيسية.\n- جلسة أسئلة وأجوبة."
+    },
+    "insights": {
+      "title": "تحليل أداء المتدرّبين",
+      "description": "رؤى مدعومة بالذكاء الاصطناعي بناءً على بيانات المتدرّبين الفعلية.",
+      "avgProgress": "متوسط التقدّم",
+      "classAverage": "متوسط المجموعة",
+      "atRisk": "المتدرّبون المعرّضون للتعثّر",
+      "below50": "تقدّم أقل من 50%",
+      "focusArea": "مجال التركيز",
+      "lowestTopic": "الموضوع الأقل أداءً",
+      "mockTopic": "إدارة الحالة",
+      "recommendation": "توصية الذكاء الاصطناعي",
+      "behind_zero": "لا يوجد متدرّبون متأخرون.",
+      "behind_one": "هناك متدرّب واحد متأخر. فكّر في جدولة جلسة مراجعة حول «{{topic}}» أو إسناد اختبارات تدريبية إضافية.",
+      "behind_two": "هناك متدرّبان متأخران. فكّر في جدولة جلسة مراجعة حول «{{topic}}» أو إسناد اختبارات تدريبية إضافية.",
+      "behind_few": "هناك {{count}} متدرّبين متأخرين. فكّر في جدولة جلسة مراجعة حول «{{topic}}» أو إسناد اختبارات تدريبية إضافية.",
+      "behind_many": "هناك {{count}} متدرّبًا متأخرًا. فكّر في جدولة جلسة مراجعة حول «{{topic}}» أو إسناد اختبارات تدريبية إضافية.",
+      "behind_other": "هناك {{count}} متدرّب متأخر. فكّر في جدولة جلسة مراجعة حول «{{topic}}» أو إسناد اختبارات تدريبية إضافية.",
+      "performingWell": "أداء المجموعة جيد! يمكنك تحفيزهم بمشاريع متقدّمة أو جلسات مراجعة الأقران.",
+      "generateReview": "إنشاء مادة مراجعة عن {{topic}}",
+      "analysis": "تحليل المتدرّبين",
+      "columns": {
+        "trainer": "المتدرّب",
+        "courses": "الدورات المسجّل بها",
+        "progress": "الدرجة العامة / التقدّم",
+        "status": "الحالة"
+      },
+      "onTrack": "على المسار",
+      "atRiskBadge": "معرّض للتعثّر"
+    }
+  },
+  "analytics": {
+    "title": "لوحة التحليلات",
+    "subtitle": "تابع أداءك وتفاعل المتدرّبين.",
+    "loadFailed": "تعذّر تحميل التحليلات.",
+    "avgQuiz": "متوسط درجات الاختبارات",
+    "avgQuizHint": "في جميع اختباراتك",
+    "activeTrainers": "المتدرّبون النشطون",
+    "activeTrainersHint": "المسجّلون في دوراتك",
+    "completion": "إكمال الدورات",
+    "completionHint": "من التسجيلات المكتملة",
+    "totalCourses": "إجمالي الدورات",
+    "draftsPending_zero": "لا مسودات معلّقة",
+    "draftsPending_one": "مسودة واحدة معلّقة",
+    "draftsPending_two": "مسودتان معلّقتان",
+    "draftsPending_few": "{{count}} مسودات معلّقة",
+    "draftsPending_many": "{{count}} مسودة معلّقة",
+    "draftsPending_other": "{{count}} مسودة معلّقة",
+    "lessonCompletions": "الدروس المكتملة",
+    "completionsPerWeek": "عدد الإكمالات أسبوعيًا",
+    "completions": "الإكمالات",
+    "trainerActivity": "نشاط المتدرّبين",
+    "activePerWeek": "المتدرّبون النشطون أسبوعيًا",
+    "trainers": "المتدرّبون",
+    "noActivity": "لا يوجد نشاط بعد.",
+    "recent": "النشاط الأخير",
+    "recentDesc": "آخر نشاط للمتدرّبين في دوراتك",
+    "noRecent": "لا يوجد نشاط للمتدرّبين بعد.",
+    "activeIn": "نشط في «{{course}}»",
+    "personProgress": "{{name}} - أنجز {{progress}}"
+  },
+  "announcements": {
+    "title": "الإعلانات",
+    "subtitle": "انشر التحديثات والتذكيرات لمتدرّبيك",
+    "new": "إعلان جديد",
+    "items": {
+      "1": {
+        "title": "صدور جدول الاختبار النصفي",
+        "course": "تعلّم الآلة 101",
+        "content": "سيُعقد الاختبار النصفي في 15 مارس. يُرجى مراجعة الفصول من 1 إلى 5."
+      },
+      "2": {
+        "title": "نشر واجب جديد",
+        "course": "الإحصاء",
+        "content": "تم نشر واجب جديد في تحليل البيانات. موعد التسليم 20 مارس."
+      },
+      "3": {
+        "title": "محاضرة ضيف يوم الجمعة",
+        "course": "استراتيجية الأعمال",
+        "content": "سيحاضرنا ضيف من جوجل حول استراتيجية الذكاء الاصطناعي."
+      },
+      "4": {
+        "title": "تغيير موعد الساعات المكتبية",
+        "course": "تعلّم الآلة 101",
+        "content": "ستُنقل الساعات المكتبية إلى يوم الخميس من 2 إلى 4 مساءً هذا الأسبوع."
+      }
+    }
+  },
+  "assignments": {
+    "title": "الواجبات",
+    "subtitle": "أنشئ واجبات المتدرّبين وأدرها وصحّحها",
+    "create": "إنشاء واجب",
+    "stats": {
+      "total": "الإجمالي",
+      "pending": "بانتظار المراجعة",
+      "graded": "تم تصحيحها",
+      "overdue": "متأخرة"
+    },
+    "status": {
+      "active": "نشط",
+      "completed": "مكتمل",
+      "upcoming": "قادم"
+    },
+    "due": "{{course}} • موعد التسليم: {{date}}",
+    "submitted": "تم التسليم",
+    "gradedCount": "تم تصحيح {{count}}",
+    "items": {
+      "1": {
+        "title": "ورقة بحثية: الذكاء الاصطناعي في التعليم",
+        "course": "تعلّم الآلة 101"
+      },
+      "2": {
+        "title": "مشروع تحليل البيانات",
+        "course": "أساسيات الإحصاء"
+      },
+      "3": {
+        "title": "دراسة الحالة النهائية",
+        "course": "استراتيجية الأعمال"
+      },
+      "4": {
+        "title": "تمرين مراجعة الشيفرة",
+        "course": "تعلّم الآلة 101"
+      }
+    }
+  },
+  "chapters": {
+    "title": "المنهج",
+    "addChapter": "إضافة فصل",
+    "addNewChapter": "إضافة فصل جديد",
+    "chapterTitle": "عنوان الفصل",
+    "chapterPlaceholder": "مثال: مقدمة",
+    "lessonsInline_zero": "(لا دروس)",
+    "lessonsInline_one": "(درس واحد)",
+    "lessonsInline_two": "(درسان)",
+    "lessonsInline_few": "({{count}} دروس)",
+    "lessonsInline_many": "({{count}} درسًا)",
+    "lessonsInline_other": "({{count}} درس)",
+    "deleteChapter": "حذف الفصل",
+    "editLesson": "تعديل الدرس",
+    "addLesson": "إضافة درس",
+    "addLessonTo": "إضافة درس إلى «{{chapter}}»",
+    "lessonTitle": "عنوان الدرس",
+    "lessonPlaceholder": "مثال: تهيئة بيئة العمل",
+    "type": "النوع",
+    "videoSource": "مصدر الفيديو",
+    "uploading": "جارٍ الرفع...",
+    "uploadVideo": "رفع فيديو",
+    "videoUrlPlaceholder": "أو الصق رابط الفيديو (يوتيوب، فيميو...)",
+    "selected": "المحدد: {{url}}",
+    "content": "المحتوى / الوصف",
+    "contentPlaceholder": "محتوى الدرس أو وصفه...",
+    "empty": "لا توجد فصول بعد. ابدأ بإضافة فصل.",
+    "addFirst": "إضافة أول فصل"
+  },
+  "content": {
+    "title": "أدوات المحتوى",
+    "subtitle": "أدر ملفات دوراتك ووسائطها ومواردها.",
+    "uploadNew": "رفع جديد",
+    "library": "مكتبة الوسائط",
+    "searchPlaceholder": "ابحث في الملفات...",
+    "uploadFile": "رفع ملف",
+    "download": "تنزيل",
+    "delete": "حذف",
+    "moreActions": "إجراءات إضافية",
+    "units": {
+      "KB": "{{value}} ك.ب",
+      "MB": "{{value}} م.ب"
+    }
+  },
+  "courses": {
+    "title": "دوراتي",
+    "subtitle": "أنشئ دوراتك وأدرها وانشرها",
+    "create": "إنشاء دورة",
+    "createNew": "إنشاء دورة جديدة",
+    "courseTitle": "عنوان الدورة",
+    "titlePlaceholder": "مثال: شهادة ISTQB المستوى التأسيسي",
+    "description": "الوصف",
+    "descriptionPlaceholder": "ماذا سيتعلّم المتدرّبون؟",
+    "category": "التصنيف",
+    "categoryPlaceholder": "مثال: شهادات مهنية",
+    "level": "المستوى",
+    "creating": "جارٍ الإنشاء...",
+    "emptyTitle": "لا توجد دورات بعد",
+    "emptyDesc": "أنشئ دورتك الأولى للبدء",
+    "moreActions": "إجراءات الدورة",
+    "edit": "تعديل",
+    "viewTrainers": "عرض المتدرّبين",
+    "publish": "نشر",
+    "archive": "أرشفة",
+    "delete": "حذف",
+    "noDescription": "لا يوجد وصف",
+    "trainersCount_zero": "لا متدرّبين",
+    "trainersCount_one": "متدرّب واحد",
+    "trainersCount_two": "متدرّبان",
+    "trainersCount_few": "{{count}} متدرّبين",
+    "trainersCount_many": "{{count}} متدرّبًا",
+    "trainersCount_other": "{{count}} متدرّب",
+    "publishFailed": "فشل النشر",
+    "archiveFailed": "فشلت الأرشفة",
+    "deleteFailed": "فشل الحذف",
+    "deleteTitle": "حذف الدورة؟",
+    "deleteDesc": "سيؤدي هذا إلى حذف «{{title}}» وكل محتواها نهائيًا. لا يمكن التراجع عن هذا الإجراء."
+  },
+  "createCourse": {
+    "title": "إنشاء دورة",
+    "stepOf": "الخطوة {{current}} من {{total}} — {{label}}",
+    "steps": {
+      "info": "معلومات الدورة",
+      "curriculum": "المنهج",
+      "materials": "المواد",
+      "quizzes": "الاختبارات",
+      "publish": "النشر"
+    },
+    "titleRequired": "العنوان مطلوب",
+    "courseTitleRequired": "عنوان الدورة مطلوب",
+    "outlineReady": "المخطط المقترح جاهز",
+    "outlineReadyDesc_zero": "لم يُقترح أي فصل.",
+    "outlineReadyDesc_one": "اقتُرح فصل واحد. راجعه وعدّله قبل المتابعة.",
+    "outlineReadyDesc_two": "اقتُرح فصلان. راجعهما وعدّلهما قبل المتابعة.",
+    "outlineReadyDesc_few": "اقتُرحت {{count}} فصول. راجعها وعدّلها قبل المتابعة.",
+    "outlineReadyDesc_many": "اقتُرح {{count}} فصلًا. راجعها وعدّلها قبل المتابعة.",
+    "outlineReadyDesc_other": "اقتُرح {{count}} فصل. راجعها وعدّلها قبل المتابعة.",
+    "outlineFailed": "تعذّر اقتراح مخطط",
+    "publishFailed": "فشل النشر",
+    "published": "تم نشر الدورة!",
+    "publishedDesc": "أصبحت دورتك متاحة الآن.",
+    "newChapter": "فصل جديد",
+    "newLesson": "درس جديد",
+    "info": {
+      "title": "معلومات الدورة",
+      "description": "التفاصيل الأساسية عن دورتك",
+      "titleLabel": "العنوان *",
+      "titlePlaceholder": "مثال: مقدمة في تعلّم الآلة",
+      "descriptionLabel": "الوصف",
+      "descriptionPlaceholder": "ماذا سيتعلّم المتدرّبون؟",
+      "category": "التصنيف",
+      "categoryPlaceholder": "مثال: علوم الحاسوب",
+      "level": "المستوى"
+    },
+    "curriculum": {
+      "title": "منهج الدورة",
+      "suggest": "اقتراح مخطط",
+      "addChapter": "إضافة فصل",
+      "empty": "لا توجد فصول بعد. انقر «اقتراح مخطط» أو أضف الفصول يدويًا.",
+      "chapterShort": "ف {{number}}",
+      "deleteChapter": "حذف الفصل",
+      "deleteLesson": "حذف الدرس",
+      "addLesson": "إضافة درس"
+    },
+    "materials": {
+      "title": "رفع المواد",
+      "description": "أضف مقاطع الفيديو وملفات PDF والموارد إلى دروسك",
+      "drop": "اسحب الملفات وأفلتها هنا، أو انقر للتصفّح",
+      "supports": "يدعم PDF وMP4 وDOCX (بحد أقصى 20 م.ب)",
+      "browse": "تصفّح الملفات"
+    },
+    "quizzes": {
+      "title": "الاختبارات والتقييمات",
+      "description": "أنشئ اختبارات أو دع الذكاء الاصطناعي يولّدها من محتوى دورتك",
+      "hint": "يمكنك إنشاء الاختبارات من صفحة الاختبارات والامتحانات بعد النشر.",
+      "go": "الانتقال إلى منشئ الاختبارات"
+    },
+    "publish": {
+      "title": "المراجعة والنشر",
+      "description": "راجع دورتك ثم انشرها",
+      "titleField": "العنوان",
+      "level": "المستوى",
+      "chapters": "الفصول",
+      "lessons": "الدروس",
+      "publish": "نشر الدورة"
+    },
+    "previous": "السابق",
+    "next": "التالي"
+  },
+  "curriculum": {
+    "title": "إدارة المنهج",
+    "subtitle": "نظّم محتوى الدورة بالأقسام والدروس والموارد",
+    "selectCourse": "اختر دورة",
+    "noCourses": "لا توجد دورات",
+    "addSection": "إضافة قسم",
+    "addLesson": "إضافة درس",
+    "selectPrompt": "اختر دورة لعرض منهجها.",
+    "loadFailed": "تعذّر تحميل المنهج.",
+    "emptyCourse": "لا تحتوي هذه الدورة على أقسام بعد. استخدم «إضافة قسم» لبناء المنهج في محرّر الدورة.",
+    "lessonsCount_zero": "لا دروس",
+    "lessonsCount_one": "درس واحد",
+    "lessonsCount_two": "درسان",
+    "lessonsCount_few": "{{count}} دروس",
+    "lessonsCount_many": "{{count}} درسًا",
+    "lessonsCount_other": "{{count}} درس",
+    "minutes": "{{value}} د"
+  },
+  "dashboard": {
+    "title": "لوحة تحكم المدرّس",
+    "subtitle": "تابع أداء المتدرّبين وأدر دوراتك",
+    "myCourses": "دوراتي",
+    "createCourse": "إنشاء دورة",
+    "loadFailed": "تعذّر تحميل إحصاءات لوحة التحكم.",
+    "stats": {
+      "totalCourses": "إجمالي الدورات",
+      "totalTrainers": "إجمالي المتدرّبين",
+      "completionRate": "معدل الإكمال",
+      "avgQuizScore": "متوسط درجات الاختبارات"
+    },
+    "engagement": {
+      "title": "تفاعل المتدرّبين",
+      "description": "المتدرّبون النشطون وإكمال الدروس أسبوعيًا",
+      "activeTrainers": "المتدرّبون النشطون",
+      "completions": "الدروس المكتملة"
+    },
+    "distribution": {
+      "title": "توزيع الدورات حسب الحالة",
+      "description": "تصنيف دوراتك حسب الحالة",
+      "empty": "لا توجد دورات بعد"
+    },
+    "insights": {
+      "title": "رؤى",
+      "description": "ملاحظات حول دوراتك ومتدرّبيك بناءً على بياناتك",
+      "lowCompletion": "معدل إكمال الدورات {{rate}} — فكّر في إضافة محتوى أكثر جاذبية",
+      "lowScore": "متوسط درجات الاختبارات {{score}} — قد يحتاج المتدرّبون إلى مواد تحضيرية أكثر",
+      "highScore": "أداء رائع في الاختبارات! متوسط الدرجات {{score}}",
+      "drafts_zero": "لا توجد دورات مسودة جاهزة للنشر",
+      "drafts_one": "لديك دورة واحدة في المسودة جاهزة للنشر",
+      "drafts_two": "لديك دورتان في المسودة جاهزتان للنشر",
+      "drafts_few": "لديك {{count}} دورات في المسودة جاهزة للنشر",
+      "drafts_many": "لديك {{count}} دورة في المسودة جاهزة للنشر",
+      "drafts_other": "لديك {{count}} دورة في المسودة جاهزة للنشر",
+      "good": "دوراتك تحقق أداءً جيدًا. واصل التقدّم!",
+      "createFirst": "أنشئ دورتك الأولى لتظهر لك الرؤى"
+    }
+  },
+  "discussions": {
+    "title": "النقاشات",
+    "subtitle": "تابع نقاشات الدورات وأشرف عليها",
+    "items": {
+      "1": {
+        "title": "كيف أبدأ بالمشروع النهائي؟",
+        "course": "تعلّم الآلة 101"
+      },
+      "2": {
+        "title": "التباس حول خطوات النزول التدرّجي",
+        "course": "تعلّم الآلة 101"
+      },
+      "3": {
+        "title": "مجموعة دراسة للاختبار النصفي؟",
+        "course": "الإحصاء"
+      },
+      "4": {
+        "title": "ترشيح مصادر لموضوع الانحدار",
+        "course": "تعلّم الآلة 101"
+      },
+      "5": {
+        "title": "هل يمكن تمديد موعد الواجب 2؟",
+        "course": "استراتيجية الأعمال"
+      }
+    }
+  },
+  "editor": {
+    "onlyTxtMd": "يمكن تحليل ملفات المنهج بصيغتي ‎.txt و ‎.md فقط.",
+    "unsupportedFile": "ملف غير مدعوم",
+    "noChapters": "لم يتم العثور على أي فصول في هذا الملف.",
+    "nothingFound": "لم يتم العثور على شيء",
+    "analysisComplete": "اكتمل التحليل",
+    "analysisCompleteDesc": "أُنشئ هيكل مقترح للدورة من منهجك. راجعه قبل الحفظ.",
+    "analysisFailedMsg": "تعذّر تحليل المنهج.",
+    "analysisFailed": "فشل التحليل",
+    "uploadFailed": "فشل الرفع",
+    "uploadFailedDesc": "تعذّر رفع الملف.",
+    "curriculumSaved": "تم حفظ المنهج",
+    "curriculumSavedDesc": "تم تحديث هيكل دورتك بنجاح.",
+    "saveFailed": "فشل الحفظ",
+    "saveFailedDesc": "تعذّر حفظ منهج الدورة.",
+    "fetchFailed": "فشل التحميل",
+    "fetchFailedDesc": "تعذّر تحميل منهج الدورة."
+  },
+  "courseEditor": {
+    "back": "رجوع",
+    "title": "تعديل الدورة",
+    "tabs": {
+      "info": "معلومات الدورة",
+      "curriculum": "المنهج",
+      "trainers": "المتدرّبون",
+      "settings": "الإعدادات"
+    },
+    "info": {
+      "title": "المعلومات الأساسية",
+      "description": "أدر تفاصيل دورتك وإعداداتها.",
+      "courseTitle": "عنوان الدورة",
+      "titlePlaceholder": "مثال: إتقان React",
+      "descriptionLabel": "الوصف",
+      "category": "التصنيف",
+      "level": "المستوى",
+      "selectLevel": "اختر المستوى",
+      "minApplicants": "الحد الأدنى للمتقدّمين",
+      "minApplicantsHint": "الحد الأدنى لعدد المتدرّبين اللازم لبدء الدورة.",
+      "syllabus": "تحليل المنهج",
+      "analyzing": "جارٍ تحليل المنهج...",
+      "uploadText": "ارفع منهجًا نصيًا (‎.txt أو ‎.md)",
+      "uploadHint": "يُنشأ مخطط مقترح من المواضيع؛ راجعه قبل الحفظ",
+      "save": "حفظ التغييرات"
+    },
+    "curriculum": {
+      "title": "منهج الدورة",
+      "description": "اسحب الفصول والدروس وأفلتها لإعادة ترتيبها.",
+      "save": "حفظ المنهج"
+    },
+    "trainers": {
+      "title": "المتدرّبون المسجّلون",
+      "description": "أدر وتابع المتدرّبين المسجّلين في هذه الدورة.",
+      "trainer": "المتدرّب",
+      "enrolledDate": "تاريخ التسجيل",
+      "progress": "التقدّم",
+      "status": "الحالة",
+      "loadFailed": "تعذّر تحميل المتدرّبين.",
+      "empty": "لا يوجد متدرّبون مسجّلون بعد.",
+      "completed": "مكتمل",
+      "active": "نشط"
+    },
+    "settings": {
+      "visibility": "ظهور الدورة",
+      "visibilityDesc": "تحكّم في كيفية ظهور دورتك للآخرين.",
+      "publish": "نشر الدورة",
+      "publishHint": "اجعل هذه الدورة مرئية للمتدرّبين.",
+      "danger": "منطقة الخطر",
+      "dangerDesc": "إجراءات لا يمكن التراجع عنها لهذه الدورة.",
+      "warning": "تنبيه",
+      "warningDesc": "أرشفة الدورة تخفيها عن المتدرّبين مع الاحتفاظ بالبيانات. أما الحذف فهو نهائي.",
+      "archiveCourse": "أرشفة الدورة",
+      "archiveHint": "إخفاء الدورة عن العرض العام.",
+      "archive": "أرشفة",
+      "deleteCourse": "حذف الدورة",
+      "deleteHint": "إزالة هذه الدورة نهائيًا.",
+      "archiveFailed": "فشلت الأرشفة",
+      "deleteConfirm": "هل تريد حذف هذه الدورة وكل محتواها نهائيًا؟",
+      "deleteFailed": "فشل الحذف",
+      "deleteFailedDesc": "تعذّر حذف الدورة."
+    }
+  },
+  "flashcards": {
+    "title": "إدارة البطاقات التعليمية",
+    "subtitle": "أنشئ مجموعات بطاقات وأسندها لمتدرّبيك",
+    "aiGenerate": "إنشاء بالذكاء الاصطناعي",
+    "createDeck": "إنشاء مجموعة",
+    "deckMeta": "{{course}} • {{count}} بطاقة",
+    "trainersUsing": "{{count}} متدرّبًا",
+    "retention": "الاحتفاظ {{value}}",
+    "items": {
+      "1": {
+        "title": "المفاهيم الأساسية في تعلّم الآلة",
+        "course": "تعلّم الآلة 101"
+      },
+      "2": {
+        "title": "الأساليب الإحصائية",
+        "course": "الإحصاء"
+      },
+      "3": {
+        "title": "نماذج الأعمال وأطرها",
+        "course": "استراتيجية الأعمال"
+      },
+      "4": {
+        "title": "مفردات الشبكات العصبية",
+        "course": "تعلّم الآلة 101"
+      }
+    }
+  },
+  "leaderboard": {
+    "title": "لوحة صدارة المتدرّبين",
+    "subtitle": "أفضل المتدرّبين أداءً في دوراتك، مرتّبون حسب الدروس المكتملة",
+    "loadFailed": "تعذّر تحميل لوحة الصدارة.",
+    "empty": "لا يوجد متدرّبون مسجّلون في دوراتك بعد.",
+    "lessons_zero": "لا دروس",
+    "lessons_one": "درس واحد",
+    "lessons_two": "درسان",
+    "lessons_few": "{{count}} دروس",
+    "lessons_many": "{{count}} درسًا",
+    "lessons_other": "{{count}} درس",
+    "quizAvg": "متوسط الاختبارات {{value}}",
+    "noQuizzes": "لا اختبارات",
+    "fullRankings": "الترتيب الكامل",
+    "completed_zero": "لا دورات مكتملة",
+    "completed_one": "دورة مكتملة",
+    "completed_two": "دورتان مكتملتان",
+    "completed_few": "{{count}} دورات مكتملة",
+    "completed_many": "{{count}} دورة مكتملة",
+    "completed_other": "{{count}} دورة مكتملة"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "subtitle": "ابقَ على اطلاع بنشاط المتدرّبين وتنبيهات النظام.",
+    "markAllRead": "تعيين الكل كمقروء",
+    "empty": "لا توجد إشعارات.",
+    "items": {
+      "1": {
+        "title": "تسجيل جديد",
+        "message": "سجّل {{name}} في «{{course}}»"
+      },
+      "2": {
+        "title": "سؤال جديد",
+        "message": "طرح {{name}} سؤالًا في «{{module}}»"
+      },
+      "3": {
+        "title": "صيانة النظام",
+        "message": "تمت جدولة صيانة المنصة يوم السبت الساعة 2 صباحًا بتوقيت شرق الولايات المتحدة."
+      },
+      "4": {
+        "title": "نُشرت الدورة",
+        "message": "أصبحت دورتك «{{course}}» متاحة الآن."
+      },
+      "5": {
+        "title": "تحقّق هدف التقييمات",
+        "message": "وصلت إلى 100 تقييم إيجابي!"
+      }
+    }
+  },
+  "quizzes": {
+    "title": "الاختبارات والامتحانات",
+    "subtitle": "أنشئ التقييمات وجدولها وراجعها",
+    "generate": "توليد اختبار",
+    "create": "إنشاء اختبار",
+    "loadFailed": "تعذّر تحميل الاختبارات.",
+    "empty": "لا توجد اختبارات بعد. أنشئ اختبارًا أو ولّد أسئلة مقترحة من موادك.",
+    "badge": "اختبار",
+    "minutesShort": "{{value}} د",
+    "questionsCount_zero": "لا أسئلة",
+    "questionsCount_one": "سؤال واحد",
+    "questionsCount_two": "سؤالان",
+    "questionsCount_few": "{{count}} أسئلة",
+    "questionsCount_many": "{{count}} سؤالًا",
+    "questionsCount_other": "{{count}} سؤال",
+    "pass": "النجاح: {{value}}",
+    "generatorTitle": "مولّد الاختبارات",
+    "generatorDesc": "الصق مادة الدورة للحصول على أسئلة اختبار مقترحة. راجعها قبل الحفظ.",
+    "selectCourse": "اختر الدورة",
+    "chooseCourse": "اختر دورة",
+    "quizTitle": "عنوان الاختبار",
+    "quizTitlePlaceholder": "مثال: اختبار الفصل 3",
+    "material": "مادة الدورة",
+    "materialPlaceholder": "الصق هنا ملاحظات المحاضرات أو محتوى الكتاب أو ملخصات الدروس…",
+    "numQuestions": "عدد الأسئلة",
+    "generating": "جارٍ التوليد…",
+    "generateQuestions": "توليد الأسئلة",
+    "suggested": "الأسئلة المقترحة ({{count}})",
+    "fromTemplates": "مبنية من قوالب جاهزة",
+    "questionLabel": "س{{number}}. {{text}}",
+    "pointsCorrect": "الدرجات: {{points}} | الإجابة الصحيحة: {{answer}}",
+    "saveQuiz": "حفظ الاختبار في الدورة",
+    "questionsReady": "الأسئلة جاهزة",
+    "questionsReadyDesc_zero": "لا توجد أسئلة مقترحة.",
+    "questionsReadyDesc_one": "سؤال مقترح واحد. راجعه قبل الحفظ.",
+    "questionsReadyDesc_two": "سؤالان مقترحان. راجعهما قبل الحفظ.",
+    "questionsReadyDesc_few": "{{count}} أسئلة مقترحة. راجعها قبل الحفظ.",
+    "questionsReadyDesc_many": "{{count}} سؤالًا مقترحًا. راجعها قبل الحفظ.",
+    "questionsReadyDesc_other": "{{count}} سؤال مقترح. راجعها قبل الحفظ.",
+    "generationFailed": "فشل التوليد",
+    "saved": "تم حفظ الاختبار!",
+    "savedDesc_zero": "«{{title}}» بلا أسئلة.",
+    "savedDesc_one": "«{{title}}» بسؤال واحد.",
+    "savedDesc_two": "«{{title}}» بسؤالين.",
+    "savedDesc_few": "«{{title}}» بـ {{count}} أسئلة.",
+    "savedDesc_many": "«{{title}}» بـ {{count}} سؤالًا.",
+    "savedDesc_other": "«{{title}}» بـ {{count}} سؤال.",
+    "saveFailed": "فشل الحفظ",
+    "provideMaterial": "أدخل مادة الدورة",
+    "provideMaterialDesc": "الصق 20 حرفًا على الأقل من المادة.",
+    "fillAll": "أكمل جميع الحقول",
+    "fillAllDesc": "اختر الدورة والعنوان ثم ولّد الأسئلة أولًا.",
+    "resultsTitle": "{{title}} - النتائج",
+    "resultsFailed": "تعذّر تحميل النتائج.",
+    "noResults": "لم يجرِ أي متدرّب هذا الاختبار بعد.",
+    "passed": "ناجح",
+    "failed": "راسب"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "أدر تفضيلات حسابك وملفك كمدرّس.",
+    "tabs": {
+      "profile": "الملف الشخصي",
+      "notifications": "الإشعارات",
+      "security": "الأمان"
+    },
+    "profile": {
+      "title": "الملف العام",
+      "description": "يظهر اسمك للمتدرّبين في صفحات دوراتك.",
+      "loadFailed": "تعذّر تحميل ملفك الشخصي.",
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "save": "حفظ التغييرات",
+      "saving": "جارٍ الحفظ...",
+      "nameRequired": "الاسم مطلوب",
+      "saved": "تم حفظ الملف الشخصي",
+      "savedDesc": "تم تحديث تغييراتك بنجاح.",
+      "saveFailed": "تعذّر الحفظ",
+      "saveFailedDesc": "تعذّر حفظ ملفك الشخصي."
+    },
+    "notifications": {
+      "title": "الإشعارات",
+      "description": "إشعارات البريد الإلكتروني قادمة قريبًا. هذه المفاتيح للمعاينة فقط ولا تُحفظ بعد.",
+      "emailHeading": "إشعارات البريد الإلكتروني",
+      "enrollments": "التسجيلات الجديدة",
+      "enrollmentsDesc": "استلم بريدًا إلكترونيًا عند تسجيل متدرّب.",
+      "completions": "إكمال الدورات",
+      "completionsDesc": "استلم بريدًا إلكترونيًا عند إكمال متدرّب لدورة.",
+      "questions": "تحديثات الأسئلة والأجوبة",
+      "questionsDesc": "استلم بريدًا إلكترونيًا عند طرح متدرّب لسؤال."
+    },
+    "security": {
+      "title": "الأمان",
+      "description": "أدر كلمة المرور وأمان حسابك.",
+      "current": "كلمة المرور الحالية",
+      "next": "كلمة المرور الجديدة",
+      "confirm": "تأكيد كلمة المرور",
+      "update": "تحديث كلمة المرور",
+      "updating": "جارٍ التحديث...",
+      "checkTitle": "راجع كلمات المرور",
+      "checkDesc": "أدخل كلمة المرور الحالية وكلمة مرور جديدة من 8 أحرف على الأقل.",
+      "mismatch": "كلمتا المرور غير متطابقتين",
+      "updated": "تم تحديث كلمة المرور",
+      "failed": "تعذّر تحديث كلمة المرور",
+      "failedDesc": "تعذّر تحديث كلمة المرور."
+    }
+  },
+  "level": {
+    "beginner": "مبتدئ",
+    "intermediate": "متوسط",
+    "advanced": "متقدّم"
+  },
+  "week": "الأسبوع {{number}}",
+  "courseStatus": {
+    "Published": "منشورة",
+    "Draft": "مسودة",
+    "Archived": "مؤرشفة"
+  },
+  "lessonType": {
+    "video": "فيديو",
+    "reading": "مقال / نص",
+    "quiz": "اختبار",
+    "assignment": "واجب",
+    "interactive": "تفاعلي"
+  },
+  "syllabus": {
+    "backToDashboard": "العودة إلى لوحة التحكم",
+    "title": "رفع المنهج",
+    "subtitle": "دع الذكاء الاصطناعي يحوّل منهجك إلى دورة تفاعلية",
+    "aiAnalysis": "تحليل بالذكاء الاصطناعي",
+    "aiAnalysisDesc": "يحلّل الذكاء الاصطناعي بنية منهجك ويُنشئ تلقائيًا الفصول والمواضيع والاختبارات والبطاقات التعليمية.",
+    "formats": "الصيغ المدعومة",
+    "formatsDesc": "ارفع ملفات PDF أو مستندات Word (‎.docx و‎.doc) أو ملفات نصية عادية. وسنتولى الباقي!",
+    "uploadDifferent": "رفع ملف آخر",
+    "courseCreated": "تم إنشاء الدورة بنجاح!",
+    "courseCreatedDesc": "أُنشئت دورة ISTQB الخاصة بك وهي جاهزة للمراجعة.",
+    "editMode": "وضع التعديل",
+    "editModeDesc": "يمكنك الآن تعديل مخطط الدورة.",
+    "mock": {
+      "courseName": "ISTQB المستوى التأسيسي - الدورة الكاملة"
+    },
+    "dropzone": {
+      "invalidType": "نوع الملف غير صالح. الأنواع المقبولة: {{types}}",
+      "tooLarge": "حجم الملف كبير جدًا. الحد الأقصى: {{size}}",
+      "fileSelected": "تم اختيار الملف",
+      "drop": "أفلت ملفك هنا",
+      "drag": "اسحب منهجك وأفلته هنا",
+      "browse": "أو انقر لتصفّح الملفات",
+      "maxSize": "الحد الأقصى لحجم الملف: {{size}}",
+      "remove": "إزالة الملف ورفع ملف آخر",
+      "sizeB": "{{value}} بايت",
+      "sizeKB": "{{value}} ك.ب",
+      "sizeMB": "{{value}} م.ب"
+    },
+    "parsing": {
+      "title": "المعالجة بالذكاء الاصطناعي",
+      "analyzing": "جارٍ تحليل منهجك...",
+      "progress": "التقدّم",
+      "stepOf": "الخطوة {{current}} من {{total}}",
+      "steps": {
+        "upload": "رفع المستند",
+        "parse": "قراءة المحتوى",
+        "analyze": "تحليل البنية بالذكاء الاصطناعي",
+        "generate": "إنشاء مخطط الدورة"
+      }
+    },
+    "preview": {
+      "badge": "مُنشأ بالذكاء الاصطناعي",
+      "description": "راجع مخطط الدورة المُنشأ بالذكاء الاصطناعي وخصّصه",
+      "chapters": "الفصول",
+      "topics": "المواضيع",
+      "activities": "الأنشطة",
+      "topicsCount_zero": "لا مواضيع",
+      "topicsCount_one": "موضوع واحد",
+      "topicsCount_two": "موضوعان",
+      "topicsCount_few": "{{count}} مواضيع",
+      "topicsCount_many": "{{count}} موضوعًا",
+      "topicsCount_other": "{{count}} موضوع",
+      "quizIncluded": "يتضمن اختبارًا",
+      "flashcardsIncluded": "يتضمن بطاقات تعليمية",
+      "addTopic": "إضافة موضوع",
+      "editOutline": "تعديل المخطط",
+      "confirm": "تأكيد وإنشاء الدورة"
+    }
+  },
+  "trainers": {
+    "all": {
+      "title": "جميع المتدرّبين",
+      "subtitle": "أدر وتابع جميع المتدرّبين المسجّلين في دوراتك",
+      "search": "ابحث عن متدرّبين...",
+      "directory": "دليل المتدرّبين ({{count}})",
+      "loadFailed": "تعذّر تحميل المتدرّبين.",
+      "empty": "لم يُعثر على متدرّبين.",
+      "columns": {
+        "trainer": "المتدرّب",
+        "courses": "الدورات المسجّل بها",
+        "progress": "متوسط التقدّم",
+        "lastActive": "آخر نشاط",
+        "actions": "الإجراءات"
+      },
+      "noEmail": "لا يوجد بريد إلكتروني",
+      "coursesCount_zero": "لا دورات",
+      "coursesCount_one": "دورة واحدة",
+      "coursesCount_two": "دورتان",
+      "coursesCount_few": "{{count}} دورات",
+      "coursesCount_many": "{{count}} دورة",
+      "coursesCount_other": "{{count}} دورة",
+      "never": "لم يكن نشطًا",
+      "viewDetails": "عرض التفاصيل",
+      "enrollmentsOf": "تسجيلات {{name}}",
+      "completedPercent": "اكتمل {{value}}"
+    },
+    "course": {
+      "title": "المتدرّبون المسجّلون",
+      "fallbackCourse": "الدورة",
+      "back": "العودة إلى الدورات",
+      "stats": {
+        "total": "إجمالي المتدرّبين",
+        "completed": "أكملوا الدورة",
+        "avgProgress": "متوسط التقدّم",
+        "avgQuiz": "متوسط درجات الاختبارات"
+      },
+      "list": "قائمة المتدرّبين",
+      "loadFailed": "تعذّر تحميل المتدرّبين.",
+      "empty": "لا يوجد متدرّبون مسجّلون بعد",
+      "columns": {
+        "trainer": "المتدرّب",
+        "enrolled": "تاريخ التسجيل",
+        "progress": "التقدّم",
+        "lessons": "الدروس",
+        "avgScore": "متوسط الدرجات",
+        "lastActive": "آخر نشاط"
+      },
+      "never": "لم يكن نشطًا"
+    }
+  }
+}

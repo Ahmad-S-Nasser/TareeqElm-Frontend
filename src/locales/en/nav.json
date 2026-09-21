@@ -1,0 +1,163 @@
+{
+  "header": {
+    "search": "Search...",
+    "searchShortcut": "⌘K",
+    "openMenu": "Open menu",
+    "guest": "Guest",
+    "myAccount": "My Account",
+    "myProfile": "My Profile",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "logOut": "Log out"
+  },
+  "sidebar": {
+    "applicant": {
+      "dashboard": "Dashboard",
+      "browseCourses": "Browse Courses",
+      "myCourses": "My Courses",
+      "flashcards": "Flashcards",
+      "quizzes": "Quizzes",
+      "mockExams": "Mock Exams",
+      "analytics": "Analytics",
+      "aiTutor": "AI Tutor",
+      "aiCoach": "AI Coach",
+      "timeBlocking": "Time Blocking",
+      "spacedRepetition": "Spaced Repetition",
+      "achievements": "Achievements",
+      "myProfile": "My Profile",
+      "notifications": "Notifications",
+      "uploadSyllabus": "Upload Syllabus",
+      "progress": "Progress",
+      "instructorView": "Instructor View",
+      "settings": "Settings"
+    },
+    "instructor": {
+      "dashboard": "Dashboard",
+      "myCourses": "My Courses",
+      "createCourse": "Create Course",
+      "curriculum": "Curriculum",
+      "trainers": "Trainers",
+      "assignments": "Assignments",
+      "quizzesExams": "Quizzes & Exams",
+      "discussions": "Discussions",
+      "announcements": "Announcements",
+      "flashcards": "Flashcards",
+      "analytics": "Analytics",
+      "leaderboard": "Leaderboard",
+      "contentTools": "Content Tools",
+      "aiAssistant": "AI Assistant",
+      "notifications": "Notifications",
+      "settings": "Settings"
+    },
+    "organization": {
+      "overview": "Overview",
+      "departments": "Departments",
+      "academicTerms": "Academic Terms",
+      "sections": "Sections",
+      "instructors": "Instructors",
+      "trainers": "Trainers",
+      "courses": "Courses",
+      "enrollment": "Enrollment",
+      "exams": "Exams",
+      "announcements": "Announcements",
+      "contentLibrary": "Content Library",
+      "analytics": "Analytics",
+      "reports": "Reports",
+      "aiInsights": "AI Insights",
+      "rolesPermissions": "Roles & Permissions",
+      "settings": "Settings"
+    },
+    "admin": {
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "courses": "Courses",
+      "enrollments": "Enrollments",
+      "analytics": "Analytics",
+      "settings": "Settings"
+    },
+    "brand": {
+      "applicant": "TareeqElm",
+      "organization": "UniAdmin",
+      "admin": "AdminAI"
+    },
+    "portal": {
+      "applicant": "Trainer Portal",
+      "instructor": "Instructor Portal",
+      "generic": "Smart Learning"
+    },
+    "signOut": "Sign Out",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar"
+  },
+  "search": {
+    "placeholder": "Search courses, lessons, flashcards, instructors...",
+    "esc": "ESC",
+    "noResults": "No results found",
+    "tryDifferent": "Try different keywords",
+    "startTyping": "Start typing to search across the platform",
+    "tip": "Tip: press {{shortcut}} to open search anytime",
+    "categories": {
+      "course": "Courses",
+      "lesson": "Lessons",
+      "flashcard": "Flashcards",
+      "instructor": "Instructors",
+      "trainer": "Trainers",
+      "department": "Departments"
+    },
+    "items": {
+      "1": {
+        "title": "ISTQB Foundation Level",
+        "subtitle": "Complete certification prep • 48 lessons"
+      },
+      "2": {
+        "title": "Test Design Techniques",
+        "subtitle": "Black-box and white-box testing"
+      },
+      "3": {
+        "title": "Agile Testing Essentials",
+        "subtitle": "Testing in agile environments"
+      },
+      "4": {
+        "title": "Equivalence Partitioning",
+        "subtitle": "Chapter 4 • Test Design"
+      },
+      "5": {
+        "title": "State Transition Testing",
+        "subtitle": "Chapter 4 • Test Design"
+      },
+      "6": {
+        "title": "Decision Table Testing",
+        "subtitle": "Chapter 4 • Test Design"
+      },
+      "7": {
+        "title": "Boundary Value Analysis",
+        "subtitle": "12 cards • Due for review"
+      },
+      "8": {
+        "title": "Dr. Ahmed Hassan",
+        "subtitle": "Software Testing • 3 courses"
+      },
+      "9": {
+        "title": "Sara Al-Rashid",
+        "subtitle": "UX Design • 2 courses"
+      },
+      "10": {
+        "title": "Computer Science",
+        "subtitle": "12 courses • 450 trainers"
+      },
+      "11": {
+        "title": "UI/UX Design",
+        "subtitle": "8 courses • 280 trainers"
+      }
+    }
+  },
+  "ui": {
+    "more": "More",
+    "morePages": "More pages",
+    "previousPage": "Go to previous page",
+    "nextPage": "Go to next page",
+    "previousSlide": "Previous slide",
+    "nextSlide": "Next slide",
+    "toggleSidebar": "Toggle sidebar"
+  }
+}

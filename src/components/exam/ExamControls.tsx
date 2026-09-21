@@ -1,4 +1,6 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { useFormatters } from "@/lib/format";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -33,11 +35,13 @@ export function ExamControls({
     onSubmit,
     onReviewFlagged,
 }: ExamControlsProps) {
+    const { t } = useTranslation("quizzes");
+    const { formatNumber } = useFormatters();
     const unansweredCount = totalQuestions - answeredCount;
 
     return (
         <div className="rounded-2xl bg-card border border-border/50 shadow-soft p-4 space-y-3">
-            <h3 className="text-sm font-semibold mb-3">Exam Controls</h3>
+            <h3 className="text-sm font-semibold mb-3">{t("exam.controls")}</h3>
 
             {/* Pause/Resume Button */}
             <Button
@@ -48,12 +52,12 @@ export function ExamControls({
                 {isPaused ? (
                     <>
                         <Play className="w-4 h-4" />
-                        Resume Exam
+                        {t("exam.resume")}
                     </>
                 ) : (
                     <>
                         <Pause className="w-4 h-4" />
-                        Pause Exam
+                        {t("exam.pause")}
                     </>
                 )}
             </Button>
@@ -66,7 +70,7 @@ export function ExamControls({
                     onClick={onReviewFlagged}
                 >
                     <Flag className="w-4 h-4" />
-                    Review Flagged ({flaggedCount})
+                    {t("exam.reviewFlagged", { count: formatNumber(flaggedCount) })}
                 </Button>
             )}
 
@@ -75,39 +79,39 @@ export function ExamControls({
                 <AlertDialogTrigger asChild>
                     <Button variant="gradient" className="w-full gap-2">
                         <Send className="w-4 h-4" />
-                        Submit Exam
+                        {t("exam.submit")}
                     </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Submit Exam?</AlertDialogTitle>
+                        <AlertDialogTitle>{t("exam.submitTitle")}</AlertDialogTitle>
                         <AlertDialogDescription className="space-y-3">
-                            <p>Are you sure you want to submit your exam?</p>
+                            <p>{t("exam.submitConfirm")}</p>
                             <div className="rounded-lg bg-muted p-3 space-y-1">
                                 <p className="text-sm">
-                                    <span className="font-medium text-success">Answered:</span>{" "}
-                                    {answeredCount} / {totalQuestions}
+                                    <span className="font-medium text-success">{t("exam.answered")}:</span>{" "}
+                                    <bdi>{formatNumber(answeredCount)} / {formatNumber(totalQuestions)}</bdi>
                                 </p>
                                 {unansweredCount > 0 && (
                                     <p className="text-sm text-warning">
-                                        ⚠️ You have {unansweredCount} unanswered question(s)
+                                        ⚠️ {t("exam.unansweredWarning", { count: unansweredCount })}
                                     </p>
                                 )}
                                 {flaggedCount > 0 && (
                                     <p className="text-sm text-muted-foreground">
-                                        📌 {flaggedCount} question(s) flagged for review
+                                        📌 {t("exam.flaggedNote", { count: flaggedCount })}
                                     </p>
                                 )}
                             </div>
                             <p className="text-sm text-muted-foreground">
-                                This action cannot be undone.
+                                {t("exam.cannotUndo")}
                             </p>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Continue Exam</AlertDialogCancel>
+                        <AlertDialogCancel>{t("exam.continue")}</AlertDialogCancel>
                         <AlertDialogAction onClick={onSubmit} className="bg-primary">
-                            Submit Exam
+                            {t("exam.submit")}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

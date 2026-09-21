@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 
 interface StatsCardProps {
   title: string;
@@ -23,6 +24,7 @@ export const StatsCard = ({
   variant = "default",
   onClick,
 }: StatsCardProps) => {
+  const { formatNumber } = useFormatters();
   const variants = {
     default: {
       bg: "bg-card",
@@ -73,7 +75,7 @@ export const StatsCard = ({
               ? "bg-success/10 text-success"
               : "bg-destructive/10 text-destructive"
           )}>
-            <span>{trend.positive ? "+" : ""}{trend.value}%</span>
+            <span dir="ltr">{trend.positive ? "+" : ""}{formatNumber(trend.value)}%</span>
           </div>
         )}
       </div>

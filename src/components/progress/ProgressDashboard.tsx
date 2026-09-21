@@ -10,13 +10,16 @@ import {
   Target,
   BarChart3,
 } from "lucide-react";
-import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 
 interface ProgressDashboardProps {
   className?: string;
 }
 
 export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
+  const { t } = useTranslation(["dashboard", "common"]);
+  const { formatNumber, formatPercent, formatDateTime, formatDate } = useFormatters();
   const { stats, quizResults, loading, error } = useProgress();
 
   if (loading) {
@@ -51,8 +54,8 @@ export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
                 <BookOpen className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats?.totalLessonsCompleted || 0}</p>
-                <p className="text-xs text-muted-foreground">Lessons Done</p>
+                <p className="text-2xl font-bold">{formatNumber(stats?.totalLessonsCompleted || 0)}</p>
+                <p className="text-xs text-muted-foreground">{t("progress.lessonsDone")}</p>
               </div>
             </div>
           </CardContent>
@@ -65,8 +68,8 @@ export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
                 <Trophy className="w-5 h-5 text-success" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats?.totalQuizzesTaken || 0}</p>
-                <p className="text-xs text-muted-foreground">Quizzes Taken</p>
+                <p className="text-2xl font-bold">{formatNumber(stats?.totalQuizzesTaken || 0)}</p>
+                <p className="text-xs text-muted-foreground">{t("progress.quizzesTaken")}</p>
               </div>
             </div>
           </CardContent>
@@ -80,9 +83,9 @@ export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {stats?.averageQuizScore ? `${Math.round(stats.averageQuizScore)}%` : "-"}
+                  {stats?.averageQuizScore ? formatPercent(stats.averageQuizScore) : "-"}
                 </p>
-                <p className="text-xs text-muted-foreground">Avg. Score</p>
+                <p className="text-xs text-muted-foreground">{t("progress.avgScore")}</p>
               </div>
             </div>
           </CardContent>
@@ -95,8 +98,8 @@ export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
                 <Clock className="w-5 h-5 text-accent" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{stats?.totalStudyTimeMinutes || 0}</p>
-                <p className="text-xs text-muted-foreground">Minutes Studied</p>
+                <p className="text-2xl font-bold">{formatNumber(stats?.totalStudyTimeMinutes || 0)}</p>
+                <p className="text-xs text-muted-foreground">{t("progress.minutesStudied")}</p>
               </div>
             </div>
           </CardContent>
@@ -110,13 +113,13 @@ export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
-              Recent Quiz Results
+              {t("progress.recentQuizResults")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {recentQuizzes.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No quiz results yet
+                {t("progress.noQuizResults")}
               </p>
             ) : (
               <div className="space-y-3">
@@ -138,10 +141,11 @@ export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
                       </div>
                       <div>
                         <p className="text-sm font-medium">
-                          {Math.round(Number(result.Percentage))}% Score
+                          {result.QuizTitle ?? t("common:deletedEntity")}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(result.TakenAt), "MMM d, h:mm a")}
+                          {result.CourseTitle ? `${result.CourseTitle} · ` : ""}
+                          {formatPercent(Number(result.Percentage))} · {formatDateTime(result.TakenAt, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                         </p>
                       </div>
                     </div>
@@ -165,7 +169,7 @@ export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <Flame className="w-4 h-4" />
-              Study Streak
+              {t("stats.streak")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -174,8 +178,8 @@ export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-warning to-destructive flex items-center justify-center mb-3 mx-auto">
                   <Flame className="w-10 h-10 text-white" />
                 </div>
-                <p className="text-3xl font-bold">{stats?.currentStreak || 0}</p>
-                <p className="text-sm text-muted-foreground">Day Streak</p>
+                <p className="text-3xl font-bold">{formatNumber(stats?.currentStreak || 0)}</p>
+                <p className="text-sm text-muted-foreground">{t("progress.dayStreak")}</p>
               </div>
             </div>
             <div className="flex items-center justify-center gap-1 mt-2">
@@ -188,7 +192,7 @@ export const ProgressDashboard = ({ className }: ProgressDashboardProps) => {
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  {["S", "M", "T", "W", "T", "F", "S"][i]}
+                  {formatDate(new Date(2024, 0, 7 + i), { weekday: "narrow" })}
                 </div>
               ))}
             </div>

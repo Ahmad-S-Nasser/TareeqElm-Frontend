@@ -1,11 +1,13 @@
+import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { Toast, ToastClose, ToastDescription, ToastProvider, ToastTitle, ToastViewport } from "@/components/ui/toast";
 
 export function Toaster() {
   const { toasts } = useToast();
+  const { i18n } = useTranslation();
 
   return (
-    <ToastProvider>
+    <ToastProvider swipeDirection={i18n.dir() === "rtl" ? "left" : "right"}>
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
           <Toast key={id} {...props}>

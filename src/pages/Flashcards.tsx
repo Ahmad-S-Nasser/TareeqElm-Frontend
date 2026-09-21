@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -33,6 +35,8 @@ import {
 
 const Flashcards = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const { t } = useTranslation(["learning", "common"]);
+    const { formatNumber, formatPercent } = useFormatters();
     const [decks, setDecks] = useState<FlashcardDeck[]>(mockDecks);
     const [flashcards, setFlashcards] = useState<Record<string, Flashcard[]>>(mockFlashcards);
     const [studyingDeckId, setStudyingDeckId] = useState<string | null>(null);
@@ -146,8 +150,8 @@ const Flashcards = () => {
             <main
                 className={cn(
                     "pt-20 pb-8 px-4 sm:px-6 transition-all duration-300",
-                    sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
-                    "ml-0"
+                    sidebarCollapsed ? "lg:ms-20" : "lg:ms-64",
+                    "ms-0"
                 )}
             >
                 <div className="max-w-7xl mx-auto space-y-6">
@@ -159,15 +163,15 @@ const Flashcards = () => {
                                     <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center shadow-glow-accent">
                                         <Brain className="w-5 h-5 text-white" />
                                     </div>
-                                    <h1 className="text-2xl font-bold">Flashcards</h1>
+                                    <h1 className="text-2xl font-bold">{t("flashcards.title")}</h1>
                                 </div>
                                 <p className="text-muted-foreground">
-                                    Master concepts with spaced repetition learning
+                                    {t("flashcards.subtitle")}
                                 </p>
                             </div>
                             <Button className="gap-2" onClick={() => setIsCreateOpen(true)}>
                                 <Plus className="w-4 h-4" />
-                                Create Deck
+                                {t("flashcards.createDeck")}
                             </Button>
                         </div>
                     </section>
@@ -183,8 +187,8 @@ const Flashcards = () => {
                                     <Layers className="w-5 h-5 text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.totalCards}</p>
-                                    <p className="text-xs text-muted-foreground">Total Cards</p>
+                                    <p className="text-2xl font-bold">{formatNumber(stats.totalCards)}</p>
+                                    <p className="text-xs text-muted-foreground">{t("flashcards.totalCards")}</p>
                                 </div>
                             </div>
                         </div>
@@ -195,8 +199,8 @@ const Flashcards = () => {
                                     <Trophy className="w-5 h-5 text-success" />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.masteredCards}</p>
-                                    <p className="text-xs text-muted-foreground">Mastered</p>
+                                    <p className="text-2xl font-bold">{formatNumber(stats.masteredCards)}</p>
+                                    <p className="text-xs text-muted-foreground">{t("flashcards.masteredLabel")}</p>
                                 </div>
                             </div>
                         </div>
@@ -207,8 +211,8 @@ const Flashcards = () => {
                                     <Clock className="w-5 h-5 text-warning" />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.dueCards}</p>
-                                    <p className="text-xs text-muted-foreground">Due Today</p>
+                                    <p className="text-2xl font-bold">{formatNumber(stats.dueCards)}</p>
+                                    <p className="text-xs text-muted-foreground">{t("flashcards.dueToday")}</p>
                                 </div>
                             </div>
                         </div>
@@ -219,8 +223,8 @@ const Flashcards = () => {
                                     <TrendingUp className="w-5 h-5 text-accent" />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.decksStudied}</p>
-                                    <p className="text-xs text-muted-foreground">Decks Active</p>
+                                    <p className="text-2xl font-bold">{formatNumber(stats.decksStudied)}</p>
+                                    <p className="text-xs text-muted-foreground">{t("flashcards.decksActive")}</p>
                                 </div>
                             </div>
                         </div>
@@ -232,9 +236,9 @@ const Flashcards = () => {
                             <div className="rounded-2xl bg-gradient-to-r from-warning/10 to-orange-500/10 border border-warning/20 p-6">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h2 className="text-lg font-semibold mb-1">Cards Due for Review</h2>
+                                        <h2 className="text-lg font-semibold mb-1">{t("flashcards.dueForReview")}</h2>
                                         <p className="text-sm text-muted-foreground">
-                                            You have {stats.dueCards} cards across {decks.filter(d => d.dueCount > 0).length} decks ready for review
+                                            {t("flashcards.dueSummary", { cards: stats.dueCards, decks: decks.filter(d => d.dueCount > 0).length })}
                                         </p>
                                     </div>
                                     <Button
@@ -245,7 +249,7 @@ const Flashcards = () => {
                                         }}
                                     >
                                         <Brain className="w-4 h-4" />
-                                        Start Review
+                                        {t("flashcards.startReview")}
                                     </Button>
                                 </div>
                             </div>
@@ -254,7 +258,7 @@ const Flashcards = () => {
 
                     {/* Deck Grid */}
                     <section className="animate-slide-up" style={{ animationDelay: "200ms" }}>
-                        <h2 className="text-lg font-semibold mb-4">Your Decks</h2>
+                        <h2 className="text-lg font-semibold mb-4">{t("flashcards.yourDecks")}</h2>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {decks.map((deck) => (
                                 <FlashcardDeckCard
@@ -272,23 +276,23 @@ const Flashcards = () => {
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Create New Deck</DialogTitle>
+                        <DialogTitle>{t("flashcards.createTitle")}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Deck Name</Label>
+                            <Label htmlFor="name">{t("flashcards.deckName")}</Label>
                             <Input
                                 id="name"
-                                placeholder="e.g., JavaScript Basics"
+                                placeholder={t("flashcards.deckNamePlaceholder")}
                                 value={newDeckName}
                                 onChange={(e) => setNewDeckName(e.target.value)}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="topic">Topic / Description</Label>
+                            <Label htmlFor="topic">{t("flashcards.topic")}</Label>
                             <Input
                                 id="topic"
-                                placeholder="e.g., Core language concepts"
+                                placeholder={t("flashcards.topicPlaceholder")}
                                 value={newDeckTopic}
                                 onChange={(e) => setNewDeckTopic(e.target.value)}
                             />
@@ -296,22 +300,22 @@ const Flashcards = () => {
 
                         <div className="pt-4 border-t space-y-4">
                             <h4 className="text-sm font-semibold flex items-center gap-2">
-                                <Plus className="w-4 h-4" /> Add Initial Card
+                                <Plus className="w-4 h-4" /> {t("flashcards.addInitial")}
                             </h4>
                             <div className="space-y-2">
-                                <Label htmlFor="front">Question (Front)</Label>
+                                <Label htmlFor="front">{t("flashcards.front")}</Label>
                                 <Input
                                     id="front"
-                                    placeholder="Enter question"
+                                    placeholder={t("flashcards.frontPlaceholder")}
                                     value={initialCardFront}
                                     onChange={(e) => setInitialCardFront(e.target.value)}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="back">Answer (Back)</Label>
+                                <Label htmlFor="back">{t("flashcards.back")}</Label>
                                 <Input
                                     id="back"
-                                    placeholder="Enter answer"
+                                    placeholder={t("flashcards.backPlaceholder")}
                                     value={initialCardBack}
                                     onChange={(e) => setInitialCardBack(e.target.value)}
                                 />
@@ -319,8 +323,8 @@ const Flashcards = () => {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                        <Button onClick={handleCreateDeck} disabled={!newDeckName || !newDeckTopic || !initialCardFront || !initialCardBack}>Create Deck</Button>
+                        <Button variant="outline" onClick={() => setIsCreateOpen(false)}>{t("common:actions.cancel")}</Button>
+                        <Button onClick={handleCreateDeck} disabled={!newDeckName || !newDeckTopic || !initialCardFront || !initialCardBack}>{t("flashcards.createDeck")}</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -333,20 +337,20 @@ const Flashcards = () => {
                             <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center mb-6">
                                 <Trophy className="w-10 h-10 text-success" />
                             </div>
-                            <h2 className="text-2xl font-bold mb-2">Study Session Complete!</h2>
+                            <h2 className="text-2xl font-bold mb-2">{t("flashcards.complete")}</h2>
                             <p className="text-muted-foreground mb-6">
-                                You got {showResults.correct} out of {showResults.total} cards correct
+                                {t("flashcards.resultLine", { correct: formatNumber(showResults.correct), total: formatNumber(showResults.total) })}
                             </p>
                             <div className="text-5xl font-bold text-primary mb-8">
-                                {Number.isNaN((showResults.correct / showResults.total)) ? 0 : Math.round((showResults.correct / showResults.total) * 100)}%
+                                {formatPercent(Number.isNaN((showResults.correct / showResults.total)) ? 0 : (showResults.correct / showResults.total) * 100)}
                             </div>
                             <div className="flex gap-4">
                                 <Button variant="outline" onClick={handleExitStudy}>
-                                    <ArrowLeft className="w-4 h-4 mr-2" />
-                                    Back to Decks
+                                    <ArrowLeft className="w-4 h-4 me-2 rtl:rotate-180" />
+                                    {t("flashcards.backToDecks")}
                                 </Button>
                                 <Button onClick={() => setShowResults(null)}>
-                                    Study Again
+                                    {t("flashcards.studyAgain")}
                                 </Button>
                             </div>
                         </div>
@@ -364,9 +368,9 @@ const Flashcards = () => {
                             />
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full">
-                                <p className="text-muted-foreground">No cards in this deck yet.</p>
+                                <p className="text-muted-foreground">{t("flashcards.noCards")}</p>
                                 <Button variant="outline" className="mt-4" onClick={handleExitStudy}>
-                                    Go Back
+                                    {t("flashcards.goBack")}
                                 </Button>
                             </div>
                         )

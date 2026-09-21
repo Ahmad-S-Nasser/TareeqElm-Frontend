@@ -1,0 +1,126 @@
+{
+  "searchPlaceholder": "Search courses...",
+  "loadFailed": "Failed to load courses.",
+  "hoursShort": "{{value}}h",
+  "lessonsCount_one": "{{count}} lesson",
+  "lessonsCount_other": "{{count}} lessons",
+  "hoursCount_one": "{{count}} hour",
+  "hoursCount_other": "{{count}} hours",
+  "status": {
+    "Draft": "Draft",
+    "Published": "Published",
+    "Archived": "Archived"
+  },
+  "level": {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced"
+  },
+  "category": {
+    "certification": "Certification Prep",
+    "testing-techniques": "Testing Techniques",
+    "automation": "Test Automation",
+    "agile": "Agile & DevOps",
+    "tools": "Tools & Frameworks",
+    "soft-skills": "Soft Skills"
+  },
+  "lessonType": {
+    "video": "Video",
+    "reading": "Reading",
+    "quiz": "Quiz",
+    "exercise": "Exercise",
+    "flashcards": "Flashcards"
+  },
+  "chapter": {
+    "completed": "Completed"
+  },
+  "card": {
+    "new": "New",
+    "featured": "Featured",
+    "percentComplete": "{{percent}} complete"
+  },
+  "list": {
+    "title": "Courses",
+    "subtitle": "Explore our comprehensive library of testing and QA courses",
+    "totalCourses": "Total courses",
+    "inProgress": "In progress",
+    "completed": "Completed",
+    "totalContent": "Total content",
+    "tabs": {
+      "all": "All",
+      "inProgress": "In progress",
+      "new": "New"
+    },
+    "filters": "Filters",
+    "categories": "Categories",
+    "level": "Level",
+    "loading": "Loading courses...",
+    "loadFailedTitle": "Could not load courses",
+    "noneFound": "No courses found",
+    "noPublished": "There are no published courses yet. Check back soon.",
+    "adjustFilters": "Try adjusting your search or filters",
+    "clearFilters": "Clear all filters"
+  },
+  "catalog": {
+    "enrolled": "Enrolled",
+    "noDescription": "No description available",
+    "progress": "Progress",
+    "enroll": "Enroll",
+    "continue": "Continue",
+    "title": "Course catalog",
+    "subtitle": "Discover and enroll in courses to advance your learning",
+    "browseTab": "Browse courses",
+    "myCoursesTab": "My courses",
+    "allLevels": "All levels",
+    "noEnrolled": "No enrolled courses",
+    "noEnrolledHint": "Browse and enroll in courses to start learning"
+  },
+  "toast": {
+    "errorTitle": "Error",
+    "loadFailed": "Failed to load courses",
+    "loadMineFailed": "Failed to load your courses",
+    "loadEnrolledFailed": "Failed to load enrolled courses",
+    "notAuthenticated": "Not Authenticated",
+    "loginToEnroll": "Please log in to enroll in courses",
+    "enrolled": "Enrolled!",
+    "enrolledDesc": "You have successfully enrolled in this course",
+    "enrolledIn": "You have successfully enrolled in {{course}}",
+    "alreadyEnrolled": "Already enrolled",
+    "alreadyEnrolledDesc": "You are already enrolled in this course.",
+    "alreadyEnrolledIn": "You are already enrolled in {{course}}.",
+    "enrollFailed": "Enrollment Failed",
+    "enrollFailedDesc": "An unexpected error occurred during enrollment.",
+    "created": "Course Created",
+    "createdDesc": "Your new course has been created successfully",
+    "createFailed": "Failed to create course",
+    "updated": "Course Updated",
+    "updatedDesc": "Your changes have been saved",
+    "deleted": "Course Deleted",
+    "deletedDesc": "The course has been permanently deleted"
+  },
+  "detail": {
+    "loadFailedTitle": "Could not load this course",
+    "loadFailed": "Failed to load the course.",
+    "notFound": "Course not found",
+    "notFoundDesc": "This course doesn't exist or has been removed.",
+    "backToCourses": "Back to courses",
+    "trainersCount_one": "{{count}} trainer",
+    "trainersCount_other": "{{count}} trainers",
+    "yourProgress": "Your progress",
+    "lessonsCompleted": "{{done}} of {{total}} lessons completed",
+    "chaptersDone": "{{done}} of {{total}} chapters done",
+    "continueLesson": "Continue: {{title}}",
+    "enrollNow": "Enroll now",
+    "quizzes": "Quizzes",
+    "chapterN": "Chapter {{number}}",
+    "noLessonsYet": "No lessons published yet",
+    "courseCompleted": "Course completed",
+    "enrollToStart": "Enroll to start learning",
+    "courseContent": "Course content",
+    "unlockTitle": "Enroll to unlock this course",
+    "unlockDesc": "Lesson content and videos are available once you are enrolled.",
+    "noLessons": "The instructor has not added any lessons yet.",
+    "instructor": "Instructor",
+    "courseInstructor": "Course instructor"
+  }
+}

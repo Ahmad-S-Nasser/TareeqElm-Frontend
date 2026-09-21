@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import axios from 'axios';
 import api, { getApiError, setUnauthorizedHandler } from '@/lib/api';
 
 import { parseApiRole, type AppRole } from '@/lib/roles';
@@ -14,12 +15,22 @@ export interface AuthUser {
   AvatarUrl?: string | null;
 }
 
+/** A sign-in/sign-up failure: `message` is user-facing (already translated), `code` is the API's stable error code. */
+export type AuthError = Error & { code?: string };
+
+const toAuthError = (error: unknown): AuthError => {
+  const authError: AuthError = new Error(getApiError(error));
+  const code = axios.isAxiosError(error) ? (error.response?.data as { code?: unknown } | undefined)?.code : undefined;
+  if (typeof code === 'string') authError.code = code;
+  return authError;
+};
+
 interface AuthContextType {
   user: AuthUser | null;
   role: AppRole | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: AuthError | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   /** Merges profile changes into the signed-in user (state and stored session). */
   updateUser: (patch: Partial<Pick<AuthUser, 'FullName' | 'AvatarUrl'>>) => void;
@@ -120,7 +131,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       applySession(Token, ExpiresAt, userData);
       return { error: null };
     } catch (error) {
-      return { error: new Error(getApiError(error, 'Login failed')) };
+      return { error: toAuthError(error) };
     }
   }, [applySession]);
 
@@ -136,7 +147,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       applySession(Token, ExpiresAt, userData);
       return { error: null };
     } catch (error) {
-      return { error: new Error(getApiError(error, 'Registration failed')) };
+      return { error: toAuthError(error) };
     }
   }, [applySession]);
 

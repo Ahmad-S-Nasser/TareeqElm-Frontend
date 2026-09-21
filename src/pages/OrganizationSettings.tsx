@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -10,9 +11,12 @@ import { Settings, Save, Shield, CreditCard, Bell } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { useFormatters } from "@/lib/format";
 
 const OrganizationSettings = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const { t } = useTranslation(["organization", "common"]);
+    const { formatDate } = useFormatters();
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
 
@@ -22,8 +26,8 @@ const OrganizationSettings = () => {
         setTimeout(() => {
             setLoading(false);
             toast({
-                title: "Settings Saved",
-                description: "Your organization preferences have been updated.",
+                title: t("settings.saved"),
+                description: t("settings.savedDescription"),
             });
         }, 1000);
     };
@@ -39,52 +43,52 @@ const OrganizationSettings = () => {
 
             <main className={cn(
                 "pt-20 pb-8 px-4 sm:px-6 transition-all duration-300",
-                sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
-                "ml-0"
+                sidebarCollapsed ? "lg:ms-20" : "lg:ms-64",
+                "ms-0"
             )}>
                 <div className="max-w-4xl mx-auto space-y-6">
                     <div className="animate-slide-up">
                         <h1 className="text-3xl font-bold flex items-center gap-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
                             <Settings className="w-8 h-8 text-primary" />
-                            Settings
+                            {t("settings.title")}
                         </h1>
                         <p className="text-muted-foreground mt-1">
-                            Manage organization profile, billing, and system preferences.
+                            {t("settings.subtitle")}
                         </p>
                     </div>
 
                     <Tabs defaultValue="general" className="w-full animate-slide-up" style={{ animationDelay: "100ms" }}>
                         <TabsList className="grid w-full grid-cols-3 lg:w-[400px] bg-card border border-border/50 shadow-sm p-1 rounded-xl mb-6">
-                            <TabsTrigger value="general" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">General</TabsTrigger>
-                            <TabsTrigger value="billing" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">Billing</TabsTrigger>
-                            <TabsTrigger value="notifications" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">Notifications</TabsTrigger>
+                            <TabsTrigger value="general" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">{t("settings.tabs.general")}</TabsTrigger>
+                            <TabsTrigger value="billing" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">{t("settings.tabs.billing")}</TabsTrigger>
+                            <TabsTrigger value="notifications" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary">{t("settings.tabs.notifications")}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="general">
                             <Card className="border-border/50 shadow-soft">
                                 <CardHeader>
-                                    <CardTitle>Organization Profile</CardTitle>
+                                    <CardTitle>{t("settings.profile.title")}</CardTitle>
                                     <CardDescription>
-                                        Update your institution's public information.
+                                        {t("settings.profile.description")}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="name">Organization Name</Label>
+                                        <Label htmlFor="name">{t("settings.profile.name")}</Label>
                                         <Input id="name" defaultValue="My Organization" className="bg-background/50 focus-visible:ring-primary" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="domain">Custom Domain</Label>
-                                        <Input id="domain" defaultValue="organization.example.com" className="bg-background/50 focus-visible:ring-primary" />
+                                        <Label htmlFor="domain">{t("settings.profile.domain")}</Label>
+                                        <Input id="domain" dir="ltr" defaultValue="organization.example.com" className="bg-background/50 focus-visible:ring-primary" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="address">Address</Label>
+                                        <Label htmlFor="address">{t("settings.profile.address")}</Label>
                                         <Input id="address" defaultValue="123 Education Lane, Learning City" className="bg-background/50 focus-visible:ring-primary" />
                                     </div>
                                 </CardContent>
                                 <CardFooter>
                                     <Button onClick={handleSave} disabled={loading} className="w-full sm:w-auto">
-                                        {loading ? "Saving..." : <><Save className="w-4 h-4 mr-2" /> Save Changes</>}
+                                        {loading ? t("common:states.saving") : <><Save className="w-4 h-4 me-2" /> {t("settings.saveChanges")}</>}
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -93,9 +97,9 @@ const OrganizationSettings = () => {
                         <TabsContent value="billing">
                             <Card className="border-border/50 shadow-soft">
                                 <CardHeader>
-                                    <CardTitle>Subscription & Billing</CardTitle>
+                                    <CardTitle>{t("settings.billing.title")}</CardTitle>
                                     <CardDescription>
-                                        Manage your subscription plan and payment methods.
+                                        {t("settings.billing.description")}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
@@ -105,19 +109,19 @@ const OrganizationSettings = () => {
                                                 <Shield className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <p className="font-medium">Enterprise Plan</p>
-                                                <p className="text-sm text-muted-foreground">Active • Renews on Dec 31, 2024</p>
+                                                <p className="font-medium">{t("settings.billing.plan")}</p>
+                                                <p className="text-sm text-muted-foreground">{t("settings.billing.renews", { date: formatDate("2024-12-31T00:00:00Z", { timeZone: "UTC" }) })}</p>
                                             </div>
                                         </div>
-                                        <Button variant="outline">Manage</Button>
+                                        <Button variant="outline">{t("settings.billing.manage")}</Button>
                                     </div>
 
                                     <div className="space-y-4">
-                                        <h3 className="text-sm font-medium">Payment Method</h3>
+                                        <h3 className="text-sm font-medium">{t("settings.billing.paymentMethod")}</h3>
                                         <div className="flex items-center gap-3 p-3 border border-border/50 rounded-xl bg-background/50">
                                             <CreditCard className="w-5 h-5 text-muted-foreground" />
-                                            <span className="text-sm">Visa ending in 4242</span>
-                                            <Button variant="ghost" size="sm" className="ml-auto">Update</Button>
+                                            <span className="text-sm">{t("settings.billing.card", { last4: "4242" })}</span>
+                                            <Button variant="ghost" size="sm" className="ms-auto">{t("settings.billing.update")}</Button>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -127,37 +131,37 @@ const OrganizationSettings = () => {
                         <TabsContent value="notifications">
                             <Card className="border-border/50 shadow-soft">
                                 <CardHeader>
-                                    <CardTitle>Notification Preferences</CardTitle>
+                                    <CardTitle>{t("settings.notifications.title")}</CardTitle>
                                     <CardDescription>
-                                        Configure how and when you receive alerts.
+                                        {t("settings.notifications.description")}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-0.5">
-                                            <Label className="text-base">System Alerts</Label>
-                                            <p className="text-sm text-muted-foreground">Receive emails about critical system updates.</p>
+                                            <Label className="text-base">{t("settings.notifications.systemAlerts")}</Label>
+                                            <p className="text-sm text-muted-foreground">{t("settings.notifications.systemAlertsHint")}</p>
                                         </div>
                                         <Switch defaultChecked />
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-0.5">
-                                            <Label className="text-base">New Instructor Applications</Label>
-                                            <p className="text-sm text-muted-foreground">Notify when a new instructor applies.</p>
+                                            <Label className="text-base">{t("settings.notifications.applications")}</Label>
+                                            <p className="text-sm text-muted-foreground">{t("settings.notifications.applicationsHint")}</p>
                                         </div>
                                         <Switch defaultChecked />
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="space-y-0.5">
-                                            <Label className="text-base">Course Approvals</Label>
-                                            <p className="text-sm text-muted-foreground">Notify when courses are submitted for approval.</p>
+                                            <Label className="text-base">{t("settings.notifications.approvals")}</Label>
+                                            <p className="text-sm text-muted-foreground">{t("settings.notifications.approvalsHint")}</p>
                                         </div>
                                         <Switch defaultChecked />
                                     </div>
                                 </CardContent>
                                 <CardFooter>
                                     <Button onClick={handleSave} disabled={loading} className="w-full sm:w-auto">
-                                        {loading ? "Saving..." : "Save Preferences"}
+                                        {loading ? t("common:states.saving") : t("settings.savePreferences")}
                                     </Button>
                                 </CardFooter>
                             </Card>

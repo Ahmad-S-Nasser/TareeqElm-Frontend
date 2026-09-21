@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { InstructorSidebar, InstructorSidebarContent } from "@/components/layout/InstructorSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -10,21 +12,23 @@ import { Badge } from "@/components/ui/badge";
 
 interface Notification {
     id: number;
-    title: string;
-    message: string;
     type: "enrollment" | "message" | "system" | "course";
-    time: string;
+    minutesAgo: number;
     read: boolean;
+    params?: Record<string, string>;
 }
 
 const InstructorNotifications = () => {
+    const { t } = useTranslation("instructor");
+    const { formatRelativeTime } = useFormatters();
+    const [now] = useState(() => Date.now());
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([
-        { id: 1, title: "New Enrollment", message: "Jane Smith enrolled in 'Advanced React Patterns'", type: "enrollment", time: "25 min ago", read: false },
-        { id: 2, title: "New Question", message: "Mike Johnson asked a question in 'Module 3: Hooks'", type: "message", time: "1 hour ago", read: false },
-        { id: 3, title: "System Maintenance", message: "Platform maintenance scheduled for Saturday 2am EST.", type: "system", time: "5 hours ago", read: true },
-        { id: 4, title: "Course Published", message: "Your course 'Intro to Python' is now live.", type: "course", time: "1 day ago", read: true },
-        { id: 5, title: "Review Goal Met", message: "You reached 100 positive reviews!", type: "enrollment", time: "2 days ago", read: true },
+        { id: 1, type: "enrollment", minutesAgo: 25, read: false, params: { name: "Jane Smith", course: "Advanced React Patterns" } },
+        { id: 2, type: "message", minutesAgo: 60, read: false, params: { name: "Mike Johnson", module: "Module 3: Hooks" } },
+        { id: 3, type: "system", minutesAgo: 300, read: true },
+        { id: 4, type: "course", minutesAgo: 1440, read: true, params: { course: "Intro to Python" } },
+        { id: 5, type: "enrollment", minutesAgo: 2880, read: true },
     ]);
 
     const markAllRead = () => {
@@ -55,19 +59,19 @@ const InstructorNotifications = () => {
 
             <main className={cn(
                 "pt-20 pb-8 px-4 sm:px-6 transition-all duration-300",
-                sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
-                "ml-0"
+                sidebarCollapsed ? "lg:ms-20" : "lg:ms-64",
+                "ms-0"
             )}>
                 <div className="max-w-4xl mx-auto space-y-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-3xl font-bold">Notifications</h1>
+                            <h1 className="text-3xl font-bold">{t("notifications.title")}</h1>
                             <p className="text-muted-foreground mt-1">
-                                Stay updated with trainer activity and system alerts.
+                                {t("notifications.subtitle")}
                             </p>
                         </div>
                         <Button variant="outline" onClick={markAllRead}>
-                            <Check className="w-4 h-4 mr-2" /> Mark all as read
+                            <Check className="w-4 h-4 me-2" /> {t("notifications.markAllRead")}
                         </Button>
                     </div>
 
@@ -77,7 +81,7 @@ const InstructorNotifications = () => {
                                 <div className="divide-y">
                                     {notifications.length === 0 ? (
                                         <div className="p-8 text-center text-muted-foreground">
-                                            No notifications found.
+                                            {t("notifications.empty")}
                                         </div>
                                     ) : (
                                         notifications.map((notification) => (
@@ -98,12 +102,12 @@ const InstructorNotifications = () => {
                                                 <div className="flex-1 space-y-1">
                                                     <div className="flex items-center justify-between">
                                                         <p className={cn("text-sm font-medium", !notification.read && "font-bold")}>
-                                                            {notification.title}
+                                                            {t(`notifications.items.${notification.id}.title`)}
                                                         </p>
-                                                        <span className="text-xs text-muted-foreground">{notification.time}</span>
+                                                        <span className="text-xs text-muted-foreground">{formatRelativeTime(now - notification.minutesAgo * 60000)}</span>
                                                     </div>
                                                     <p className="text-sm text-muted-foreground line-clamp-2">
-                                                        {notification.message}
+                                                        {t(`notifications.items.${notification.id}.message`, notification.params)}
                                                     </p>
                                                 </div>
                                                 {!notification.read && (

@@ -8,26 +8,29 @@ import {
   Sparkles, ArrowRight, ArrowLeft, Check, Rocket
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 const STEPS = ["welcome", "role", "goals", "ai-setup"] as const;
 type Step = typeof STEPS[number];
 
 const learningGoals = [
-  { id: "exams", label: "Prepare for exams", icon: Target, description: "Get exam-ready with practice tests and AI coaching" },
-  { id: "consistency", label: "Improve study consistency", icon: Flame, description: "Build daily habits and maintain streaks" },
-  { id: "subjects", label: "Learn new subjects", icon: Brain, description: "Explore courses across multiple disciplines" },
-  { id: "progress", label: "Track learning progress", icon: BarChart3, description: "Monitor performance with detailed analytics" },
+  { id: "exams", icon: Target },
+  { id: "consistency", icon: Flame },
+  { id: "subjects", icon: Brain },
+  { id: "progress", icon: BarChart3 },
 ];
 
 const roles = [
-  { id: "applicant" as const, label: "Trainer", icon: GraduationCap, description: "Access courses, flashcards, and AI tutoring" },
-  { id: "instructor" as const, label: "Instructor", icon: BookOpen, description: "Create and manage courses, track trainer progress" },
-  { id: "organization" as const, label: "Organization / Admin", icon: Building2, description: "Manage departments, instructors, and analytics" },
+  { id: "applicant" as const, icon: GraduationCap },
+  { id: "instructor" as const, icon: BookOpen },
+  { id: "organization" as const, icon: Building2 },
 ];
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { role } = useAuth();
+  const { role, user } = useAuth();
+  const { t } = useTranslation(["profile", "common", "roles"]);
+  const firstName = user?.FullName?.trim().split(/\s+/)[0] ?? "";
   const [currentStep, setCurrentStep] = useState<Step>("welcome");
   const [selectedRole, setSelectedRole] = useState<string>(role || "applicant");
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
@@ -80,12 +83,12 @@ const Onboarding = () => {
             <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
               <Rocket className="w-10 h-10 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold">مرحباً بك في طريق علم! 🎓</h1>
+            <h1 className="text-3xl font-bold">{firstName ? t("profile:onboarding.welcome.title", { name: firstName }) : t("profile:onboarding.welcome.titleAnonymous")}</h1>
             <p className="text-lg text-muted-foreground max-w-md mx-auto">
-              Welcome to <strong>TareeqElm</strong> — your AI-powered learning platform. Let's set up your personalized experience in just a few steps.
+              {t("profile:onboarding.welcome.description")}
             </p>
             <Button size="lg" onClick={next} className="gap-2">
-              Get Started <ArrowRight className="w-4 h-4" />
+              {t("profile:onboarding.welcome.start")} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
             </Button>
           </div>
         )}
@@ -94,8 +97,8 @@ const Onboarding = () => {
         {currentStep === "role" && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-center">
-              <h2 className="text-2xl font-bold">What's your role?</h2>
-              <p className="text-muted-foreground mt-1">Choose how you'll use the platform</p>
+              <h2 className="text-2xl font-bold">{t("profile:onboarding.role.title")}</h2>
+              <p className="text-muted-foreground mt-1">{t("profile:onboarding.role.subtitle")}</p>
             </div>
             <div className="grid gap-4">
               {roles.map(r => (
@@ -112,8 +115,8 @@ const Onboarding = () => {
                       <r.icon className="w-6 h-6" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold">{r.label}</p>
-                      <p className="text-sm text-muted-foreground">{r.description}</p>
+                      <p className="font-semibold">{r.id === "organization" ? t("profile:onboarding.roles.organizationLabel") : t(`roles:${r.id}.name`)}</p>
+                      <p className="text-sm text-muted-foreground">{t(`profile:onboarding.roles.${r.id}`)}</p>
                     </div>
                     {selectedRole === r.id && <Check className="w-5 h-5 text-primary" />}
                   </CardContent>
@@ -121,8 +124,8 @@ const Onboarding = () => {
               ))}
             </div>
             <div className="flex justify-between">
-              <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
-              <Button onClick={next}>Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>
+              <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 me-2 rtl:rotate-180" /> {t("common:actions.back")}</Button>
+              <Button onClick={next}>{t("common:actions.continue")} <ArrowRight className="w-4 h-4 ms-2 rtl:rotate-180" /></Button>
             </div>
           </div>
         )}
@@ -131,8 +134,8 @@ const Onboarding = () => {
         {currentStep === "goals" && (
           <div className="space-y-6 animate-slide-up">
             <div className="text-center">
-              <h2 className="text-2xl font-bold">What are your goals?</h2>
-              <p className="text-muted-foreground mt-1">Select all that apply — we'll personalize your experience</p>
+              <h2 className="text-2xl font-bold">{t("profile:onboarding.goals.title")}</h2>
+              <p className="text-muted-foreground mt-1">{t("profile:onboarding.goals.subtitle")}</p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               {learningGoals.map(g => {
@@ -148,8 +151,8 @@ const Onboarding = () => {
                         <g.icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="font-medium text-sm">{g.label}</p>
-                        <p className="text-xs text-muted-foreground">{g.description}</p>
+                        <p className="font-medium text-sm">{t(`profile:onboarding.goals.${g.id}.label`)}</p>
+                        <p className="text-xs text-muted-foreground">{t(`profile:onboarding.goals.${g.id}.description`)}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -157,8 +160,8 @@ const Onboarding = () => {
               })}
             </div>
             <div className="flex justify-between">
-              <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
-              <Button onClick={next} disabled={selectedGoals.length === 0}>Continue <ArrowRight className="w-4 h-4 ml-2" /></Button>
+              <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 me-2 rtl:rotate-180" /> {t("common:actions.back")}</Button>
+              <Button onClick={next} disabled={selectedGoals.length === 0}>{t("common:actions.continue")} <ArrowRight className="w-4 h-4 ms-2 rtl:rotate-180" /></Button>
             </div>
           </div>
         )}
@@ -170,18 +173,18 @@ const Onboarding = () => {
               <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-4">
                 <Sparkles className="w-8 h-8 text-accent" />
               </div>
-              <h2 className="text-2xl font-bold">Your AI Experience is Ready! ✨</h2>
+              <h2 className="text-2xl font-bold">{t("profile:onboarding.ready.title")}</h2>
               <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-                Based on your preferences, we've prepared a personalized learning environment for you.
+                {t("profile:onboarding.ready.description")}
               </p>
             </div>
 
             <div className="grid gap-3">
               {[
-                { label: "AI Study Coach", desc: "Get personalized guidance and study strategies", done: true },
-                { label: "Suggested Courses", desc: isTrainer ? "Curated courses based on your goals" : "Popular courses in your domain", done: true },
-                { label: "Smart Study Schedule", desc: "AI-generated time blocks optimized for your peak hours", done: true },
-                { label: "Spaced Repetition", desc: "Flashcard system with intelligent review intervals", done: true },
+                { label: t("profile:onboarding.ready.coach.label"), desc: t("profile:onboarding.ready.coach.description"), done: true },
+                { label: t("profile:onboarding.ready.courses.label"), desc: isTrainer ? t("profile:onboarding.ready.courses.descriptionTrainer") : t("profile:onboarding.ready.courses.descriptionOther"), done: true },
+                { label: t("profile:onboarding.ready.schedule.label"), desc: t("profile:onboarding.ready.schedule.description"), done: true },
+                { label: t("profile:onboarding.ready.spaced.label"), desc: t("profile:onboarding.ready.spaced.description"), done: true },
               ].map((item, i) => (
                 <Card key={i}>
                   <CardContent className="p-4 flex items-center gap-3">
@@ -198,9 +201,9 @@ const Onboarding = () => {
             </div>
 
             <div className="flex justify-between">
-              <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
+              <Button variant="ghost" onClick={back}><ArrowLeft className="w-4 h-4 me-2 rtl:rotate-180" /> {t("common:actions.back")}</Button>
               <Button size="lg" onClick={finish} className="gap-2">
-                Launch My Dashboard <Rocket className="w-4 h-4" />
+                {t("profile:onboarding.launch")} <Rocket className="w-4 h-4" />
               </Button>
             </div>
           </div>

@@ -20,7 +20,7 @@ export const OrganizationPageLayout = ({ children }: OrganizationPageLayoutProps
             />
             <main className={cn(
                 "pt-20 pb-12 px-4 sm:px-6 transition-all duration-300",
-                sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
+                sidebarCollapsed ? "lg:ms-20" : "lg:ms-64"
             )}>
                 <div className="max-w-7xl mx-auto space-y-8">
                     {children}

@@ -1,5 +1,8 @@
 import { useMemo } from 'react';
 import { format, startOfDay, subDays } from 'date-fns';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
+import { formatDate } from '@/lib/format';
 import { getApiError } from '@/lib/api';
 import {
     useEnrollmentsQuery,
@@ -29,6 +32,8 @@ export interface TrainerStats {
 }
 
 export const useTrainerStats = () => {
+    const { t, i18n: i18nInstance } = useTranslation(['dashboard', 'common']);
+    const lang = i18nInstance.language;
     const statsQuery = useTrainerStatsQuery();
     const enrollmentsQuery = useEnrollmentsQuery();
     const sessionsQuery = useStudySessionsQuery();
@@ -40,7 +45,7 @@ export const useTrainerStats = () => {
 
         const courses: TrainerCourseProgress[] = enrollments.map((e) => ({
             id: e.CourseId,
-            title: e.Course?.Title ?? 'Untitled course',
+            title: e.CourseTitle ?? e.Course?.Title ?? t('common:deletedCourse'),
             progress: Math.round(e.ProgressPercentage || 0),
             enrolledAt: e.EnrolledAt,
             totalLessons: e.Course?.LessonsCount ?? 0,
@@ -51,7 +56,7 @@ export const useTrainerStats = () => {
         const today = startOfDay(new Date());
         const buckets = Array.from({ length: 7 }, (_, i) => {
             const d = subDays(today, 6 - i);
-            return { key: format(d, 'yyyy-MM-dd'), day: format(d, 'EEE'), minutes: 0 };
+            return { key: format(d, 'yyyy-MM-dd'), day: formatDate(d, { weekday: 'short' }, lang), minutes: 0 };
         });
         (sessionsQuery.data ?? []).forEach((s) => {
             const bucket = buckets.find((b) => b.key === format(new Date(s.StartedAt), 'yyyy-MM-dd'));
@@ -71,11 +76,11 @@ export const useTrainerStats = () => {
             weeklyActivity: buckets.map(({ day, minutes }) => ({ day, minutes })),
             courses,
         };
-    }, [statsQuery.data, enrollmentsQuery.data, sessionsQuery.data]);
+    }, [statsQuery.data, enrollmentsQuery.data, sessionsQuery.data, t, lang]);
 
     const loading = statsQuery.isLoading || enrollmentsQuery.isLoading || sessionsQuery.isLoading;
     const queryError = statsQuery.error || enrollmentsQuery.error || sessionsQuery.error;
-    const error = queryError ? getApiError(queryError, 'Failed to load your progress.') : null;
+    const error = queryError ? getApiError(queryError, i18n.t('dashboard:progress.loadFailed')) : null;
 
     return { stats, loading, error };
 };

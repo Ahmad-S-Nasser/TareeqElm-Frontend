@@ -1,8 +1,10 @@
 import { BookOpen, Clock, Star, Users, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Course, levelLabels } from "./types";
+import { Course } from "./types";
 
 interface CourseCardEnhancedProps {
     course: Course;
@@ -15,6 +17,8 @@ export function CourseCardEnhanced({
     variant = "default",
     onClick,
 }: CourseCardEnhancedProps) {
+    const { t } = useTranslation("courses");
+    const { formatNumber, formatPercent } = useFormatters();
     const getLevelColor = (level: string) => {
         switch (level) {
             case "beginner": return "bg-success/10 text-success border-success/20";
@@ -57,22 +61,22 @@ export function CourseCardEnhanced({
                 <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
 
                 {/* Badges */}
-                <div className="absolute top-3 left-3 flex gap-2">
+                <div className="absolute top-3 start-3 flex gap-2">
                     {course.isNew && (
                         <Badge className="bg-success text-white border-0 gap-1">
                             <Sparkles className="w-3 h-3" />
-                            New
+                            {t("card.new")}
                         </Badge>
                     )}
                     {course.isFeatured && (
-                        <Badge className="bg-primary text-white border-0">Featured</Badge>
+                        <Badge className="bg-primary text-white border-0">{t("card.featured")}</Badge>
                     )}
                 </div>
 
                 {/* Progress Badge */}
                 {course.progress > 0 && (
-                    <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full glass text-xs font-medium">
-                        {course.progress}% complete
+                    <div className="absolute top-3 end-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full glass text-xs font-medium">
+                        {t("card.percentComplete", { percent: formatPercent(course.progress) })}
                     </div>
                 )}
             </div>
@@ -82,13 +86,13 @@ export function CourseCardEnhanced({
                 {/* Level & Rating */}
                 <div className="flex items-center justify-between mb-3">
                     <Badge variant="outline" className={cn("text-xs", getLevelColor(course.level))}>
-                        {levelLabels[course.level] ?? course.level}
+                        {t(`level.${course.level}`, { defaultValue: course.level })}
                     </Badge>
                     {course.rating > 0 && (
                         <div className="flex items-center gap-1 text-xs">
                             <Star className="w-3.5 h-3.5 fill-warning text-warning" />
-                            <span className="font-medium">{course.rating}</span>
-                            <span className="text-muted-foreground">({course.trainersEnrolled.toLocaleString()})</span>
+                            <span className="font-medium">{formatNumber(course.rating)}</span>
+                            <span className="text-muted-foreground">({formatNumber(course.trainersEnrolled)})</span>
                         </div>
                     )}
                 </div>
@@ -121,16 +125,16 @@ export function CourseCardEnhanced({
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5">
                             <BookOpen className="w-3.5 h-3.5" />
-                            <span>{course.lessons} lessons</span>
+                            <span>{t("lessonsCount", { count: course.lessons })}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                             <Clock className="w-3.5 h-3.5" />
-                            <span>{course.duration}</span>
+                            <span>{course.durationHours !== undefined ? t("hoursCount", { count: course.durationHours }) : course.duration}</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-1.5">
                         <Users className="w-3.5 h-3.5" />
-                        <span>{course.trainersEnrolled.toLocaleString()}</span>
+                        <span>{formatNumber(course.trainersEnrolled)}</span>
                     </div>
                 </div>
             </div>

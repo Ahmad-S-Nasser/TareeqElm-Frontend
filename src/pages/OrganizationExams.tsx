@@ -1,8 +1,10 @@
 import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardList } from "lucide-react";
 
 const OrganizationExams = () => {
+    const { t } = useTranslation("organization");
     return (
         <OrganizationPageLayout>
             <div>
@@ -10,15 +12,15 @@ const OrganizationExams = () => {
                     <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                         <ClipboardList className="w-5 h-5 text-primary" />
                     </div>
-                    Exams Management
+                    {t('exams.title')}
                 </h1>
-                <p className="text-muted-foreground mt-1">Schedule exams, track grades and pass rates</p>
+                <p className="text-muted-foreground mt-1">{t('exams.subtitle')}</p>
             </div>
 
             <Card className="border-border/50">
                 <CardContent className="p-12 text-center">
-                    <p className="font-semibold">Not available yet</p>
-                    <p className="text-sm text-muted-foreground mt-1">Exam scheduling and grading are not part of the platform yet. Quiz results are available to instructors on their own courses.</p>
+                    <p className="font-semibold">{t('notAvailable')}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{t('exams.body')}</p>
                 </CardContent>
             </Card>
         </OrganizationPageLayout>

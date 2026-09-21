@@ -1,0 +1,499 @@
+{
+  "welcomeBack": "Welcome back, {{name}}!",
+  "welcomeSubtitle": "Ready to continue your learning journey?",
+  "levelShort": "Lvl {{level}} · {{title}}",
+  "xp": "{{count}} XP",
+  "notificationsAria": "Notifications",
+  "myCourses": "My courses",
+  "browseAll": "Browse all",
+  "noCourses": "You haven't enrolled in any courses yet",
+  "browseCatalog": "Browse the course catalog",
+  "stats": {
+    "streak": "Study streak",
+    "focusScore": "Focus score",
+    "studyHours": "Study hours",
+    "badgesEarned": "Badges earned",
+    "total": "Total",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "hoursValue": "{{value}}h"
+  },
+  "chips": {
+    "cardsDue_one": "{{count}} card due",
+    "cardsDue_other": "{{count}} cards due",
+    "planToday": "Plan today",
+    "askCoach": "Ask the AI coach"
+  },
+  "readiness": {
+    "title": "Exam readiness",
+    "overall": "Overall progress",
+    "ready": "Ready!",
+    "almost": "Almost there",
+    "keepGoing": "Keep going"
+  },
+  "exam": {
+    "upcoming": "Upcoming exam",
+    "daysLeft_one": "{{count}} day left",
+    "daysLeft_other": "{{count}} days left",
+    "weeks": "Weeks",
+    "daysLabel": "Days",
+    "date": "Date",
+    "startPractice": "Start a practice session",
+    "defaultName": "ISTQB Foundation Level"
+  },
+  "plan": {
+    "title": "Today's plan",
+    "completed": "{{done}} of {{total}} completed",
+    "items": {
+      "reviewTestDesign": "Review test design",
+      "practiceBlackBox": "Practice: black-box testing",
+      "flashcardReview": "Flashcard review",
+      "aiReview": "AI review session"
+    }
+  },
+  "courseCard": {
+    "lessons_one": "{{count}} lesson",
+    "lessons_other": "{{count}} lessons"
+  },
+  "weakness": {
+    "title": "AI weakness analysis",
+    "subtitle": "Focus areas based on your performance",
+    "practice": "Practice",
+    "attempted_one": "{{count}} question attempted",
+    "attempted_other": "{{count}} questions attempted",
+    "suggestion": "AI suggests focusing on \"{{topic}}\" in your next study session"
+  },
+  "coachWidget": {
+    "title": "AI study coach",
+    "flashcardsDue_one": "{{count}} flashcard due for review",
+    "flashcardsDue_other": "{{count}} flashcards due for review",
+    "streak_one": "🔥 {{count}}-day streak! Keep it up!",
+    "streak_other": "🔥 {{count}}-day streak! Keep it up!",
+    "focusOn": "Focus on: {{topic}}",
+    "startSession": "Start a study session to get personalized insights",
+    "analyzing": "Analyzing your progress...",
+    "open": "Open AI coach"
+  },
+  "floatingCoach": {
+    "toggle": "Toggle AI coach",
+    "subtitle": "Your learning mentor",
+    "fullView": "Full view",
+    "askAnything": "Ask me anything about your studies!",
+    "suggestions": {
+      "study": "What should I study today?",
+      "progress": "How's my progress?",
+      "motivate": "Motivate me!"
+    },
+    "placeholder": "Ask your coach..."
+  },
+  "chatBar": {
+    "micActivating": "Activating microphone...",
+    "micActivatingDesc": "Speak your question once \"Listening\" appears.",
+    "initializing": "Initializing",
+    "listening": "Listening",
+    "warmingUp": "Please wait, warming up...",
+    "speakNow": "Speak now...",
+    "listeningEllipsis": "Listening...",
+    "placeholder": "Ask AI anything about your studies...",
+    "stopVoice": "Stop voice input",
+    "startVoice": "Start voice input",
+    "send": "Send",
+    "close": "Close suggestions",
+    "suggestions": {
+      "explain": "Explain test levels",
+      "quiz": "Quiz me on ISTQB",
+      "weak": "Review my weak topics",
+      "flashcards": "Create flashcards"
+    }
+  },
+  "voice": {
+    "notSupportedTitle": "Not supported",
+    "notSupported": "Your browser does not support voice recognition. Please use Chrome or Edge.",
+    "errorTitle": "Voice error",
+    "errors": {
+      "generic": "Please try again or check your microphone settings.",
+      "notAllowed": "Microphone access denied. Click the lock icon in the address bar to enable it.",
+      "noSpeech": "No speech detected. The microphone may be too quiet or busy.",
+      "network": "Network issue. Voice recognition needs an internet connection.",
+      "aborted": "Recognition was interrupted. Please try again."
+    }
+  },
+  "coach": {
+    "errorTitle": "AI coach error",
+    "errorFallback": "Failed to get a response from the AI coach",
+    "prompts": {
+      "insights": "Analyze my learning data and give me personalized study insights.",
+      "recommendations": "Based on my study patterns, what should I improve?",
+      "weekly_plan": "Create a personalized weekly study plan for me.",
+      "weak_topics": "What are my weakest topics and how should I improve them?",
+      "motivation": "Give me a motivational update on my progress."
+    },
+    "actions": {
+      "insights": "Daily insights",
+      "recommendations": "Recommendations",
+      "weekly_plan": "Weekly plan",
+      "weak_topics": "Weak topics",
+      "motivation": "Motivate me"
+    },
+    "stats": {
+      "studyHours": "Study hours",
+      "streak": "Streak",
+      "cardsDue": "Cards due",
+      "quizAvg": "Quiz average",
+      "retention": "Retention",
+      "focus": "Focus"
+    },
+    "subtitle": "Your personal learning mentor, powered by AI",
+    "loading": "Loading your learning data...",
+    "nav": {
+      "analytics": "Analytics",
+      "achievements": "Achievements",
+      "flashcards": "Flashcards",
+      "timeBlocking": "Time blocking"
+    },
+    "tabs": {
+      "insights": "Coach insights",
+      "chat": "Chat with coach"
+    },
+    "quickActions": "Quick actions",
+    "smartAlerts": "Smart alerts",
+    "alerts": {
+      "reviewHint": "Reviewing now will strengthen your memory retention",
+      "reviewNow": "Review now",
+      "streak_one": "🔥 {{count}}-day study streak!",
+      "streak_other": "🔥 {{count}}-day study streak!",
+      "streakHint": "Complete one session today to keep it going",
+      "weakTopics": "Weak topics: {{topics}}",
+      "weakTopicsHint": "Extra review is recommended for better retention",
+      "getHelp": "Get help",
+      "fewSessions_one": "Only {{count}} study session this week",
+      "fewSessions_other": "Only {{count}} study sessions this week",
+      "fewSessionsHint": "Aim for at least 5 sessions per week",
+      "planSession": "Plan a session",
+      "noBlocks": "No time blocks planned for today",
+      "noBlocksHint": "AI can create an optimal schedule based on your energy levels",
+      "aiSchedule": "AI schedule"
+    },
+    "askYourCoach": "Ask your coach",
+    "suggestions": {
+      "study": "What should I study today?",
+      "retention": "Why is my retention rate low?",
+      "plan": "Create a study plan for my exam next week",
+      "focus": "How can I improve my focus score?",
+      "cards": "Which flashcards need the most attention?",
+      "track": "Am I on track to pass my exam?"
+    },
+    "chatTitle": "Coach chat",
+    "chatDesc": "Ask anything about your study progress",
+    "clear": "Clear",
+    "emptyChat": "Start a conversation with your AI study coach.",
+    "emptyChatHint": "Use the quick actions or type a question below.",
+    "inputPlaceholder": "Ask your AI coach...",
+    "listSeparator": ", "
+  },
+  "tutor": {
+    "errorTitle": "AI tutor error",
+    "errorFallback": "Failed to get a response from the AI tutor.",
+    "welcome": "Hi! I am your AI tutor. I can help you understand complex topics, create study plans, or quiz you on your courses. What shall we learn today?",
+    "cleared": "Chat history cleared. How else can I help you today?",
+    "micActivating": "Activating microphone...",
+    "micActivatingDesc": "Speak when you see \"Listening\"",
+    "prompts": {
+      "explain": "Explain quantum entanglement",
+      "schedule": "Create a study schedule for my calculus exam",
+      "quiz": "Quiz me on React Hooks",
+      "summarize": "Summarize the last lesson"
+    },
+    "title": "AI personal tutor",
+    "subtitle": "Your personalized learning companion. Available 24/7.",
+    "tabs": {
+      "chat": "Chat & explain",
+      "study": "Study plan",
+      "quiz": "Quiz me"
+    },
+    "conversation": "Conversation",
+    "tabDesc": {
+      "chat": "Ask anything. I can explain concepts, debug code, or translate text.",
+      "study": "Let's build a personalized study schedule based on your goals.",
+      "quiz": "Test your knowledge with adaptive quizzes."
+    },
+    "clear": "Clear",
+    "stopSpeaking": "Stop reading aloud",
+    "readAloud": "Read aloud",
+    "voiceResponse": "AI voice response",
+    "hideTranscript": "Hide transcript",
+    "showTranscript": "Convert to text",
+    "initializing": "Initializing...",
+    "transcribing": "Transcribing...",
+    "warmingUp": "Please wait, the microphone is warming up...",
+    "speakNow": "Speak now...",
+    "answerPlaceholder": "Answer here...",
+    "questionPlaceholder": "Type your question...",
+    "quickActions": "Quick actions",
+    "learningStats": "Learning stats",
+    "topicsMastered": "Topics mastered",
+    "questionsAsked": "Questions asked"
+  },
+  "progress": {
+    "quizPassed": "Quiz passed!",
+    "quizCompleted": "Quiz completed",
+    "youScored": "You scored {{score}}",
+    "lessonUpdateFailed": "Could not update lesson",
+    "quizSubmitFailed": "Could not submit quiz",
+    "loadFailed": "Failed to load your progress.",
+    "lessonsDone": "Lessons done",
+    "quizzesTaken": "Quizzes taken",
+    "avgScore": "Average score",
+    "minutesStudied": "Minutes studied",
+    "recentQuizResults": "Recent quiz results",
+    "noQuizResults": "No quiz results yet",
+    "dayStreak": "Day streak",
+    "title": "My progress",
+    "subtitle": "Track your learning journey and achievements",
+    "loading": "Loading your progress...",
+    "totalStudyTime": "Total study time",
+    "lessonsCompleted": "Lessons completed",
+    "currentStreak": "Current streak",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "totalPoints": "Total points",
+    "weeklyActivity": "Weekly activity",
+    "weeklyActivityDesc": "Your study time over the last 7 days (minutes)",
+    "minutes": "Minutes",
+    "recentAchievements": "Recent achievements",
+    "recentAchievementsDesc": "Badges you've earned recently",
+    "noBadges": "No badges earned yet. Keep studying to unlock your first one!",
+    "viewAllAchievements": "View all achievements",
+    "courseDetails": "Course progress details",
+    "courseDetailsDesc": "Detailed breakdown of your enrolled courses",
+    "notEnrolled": "You are not enrolled in any courses yet.",
+    "browseCourses": "Browse courses",
+    "enrolledOn": "Enrolled {{date}}",
+    "percentCompleted": "{{percent}} completed",
+    "lessonsOf": "{{done}} of {{total}} lessons completed"
+  },
+  "achievements": {
+    "loadFailed": "Failed to load achievements.",
+    "loading": "Loading achievements...",
+    "title": "Achievements",
+    "unlockedOf": "{{earned}} of {{total}} unlocked",
+    "level": "Level {{level}}",
+    "totalXP": "Total XP",
+    "progressToLevel": "Progress to level {{level}}",
+    "xpOf": "{{current}} / {{total}} XP",
+    "badgeProgress": "Badge progress",
+    "xp": "{{count}} XP",
+    "unlocked": "Achievement unlocked!",
+    "dismiss": "Dismiss",
+    "tiers": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum"
+    },
+    "categories": {
+      "all": "All",
+      "streak": "Streaks",
+      "study": "Study",
+      "mastery": "Mastery",
+      "productivity": "Productivity"
+    },
+    "levels": {
+      "beginner": "Beginner",
+      "learner": "Learner",
+      "activeTrainer": "Active Trainer",
+      "focusedTrainer": "Focused Trainer",
+      "dedicatedScholar": "Dedicated Scholar",
+      "knowledgeSeeker": "Knowledge Seeker",
+      "expertLearner": "Expert Learner",
+      "studyMaster": "Study Master"
+    },
+    "items": {
+      "streak-3": {
+        "title": "Getting Started",
+        "desc": "3-day study streak",
+        "req": "3 days"
+      },
+      "streak-7": {
+        "title": "7-Day Streak",
+        "desc": "Study 7 days in a row",
+        "req": "7 days"
+      },
+      "streak-14": {
+        "title": "Consistency Champion",
+        "desc": "14-day study streak",
+        "req": "14 days"
+      },
+      "streak-30": {
+        "title": "Unstoppable",
+        "desc": "30-day study streak",
+        "req": "30 days"
+      },
+      "hours-10": {
+        "title": "Dedicated Learner",
+        "desc": "Study for 10 hours total",
+        "req": "10 hours"
+      },
+      "hours-30": {
+        "title": "30 Hours Studied",
+        "desc": "Accumulate 30 study hours",
+        "req": "30 hours"
+      },
+      "hours-100": {
+        "title": "Century Club",
+        "desc": "100 hours of studying",
+        "req": "100 hours"
+      },
+      "lessons-10": {
+        "title": "Quick Learner",
+        "desc": "Complete 10 lessons",
+        "req": "10 lessons"
+      },
+      "lessons-50": {
+        "title": "Knowledge Seeker",
+        "desc": "Complete 50 lessons",
+        "req": "50 lessons"
+      },
+      "cards-50": {
+        "title": "Card Collector",
+        "desc": "Create 50 flashcards",
+        "req": "50 cards"
+      },
+      "cards-100": {
+        "title": "Memory Master",
+        "desc": "Review 100 flashcards",
+        "req": "100 reviews"
+      },
+      "quiz-ace": {
+        "title": "Quiz Ace",
+        "desc": "Score 100% on a quiz",
+        "req": "Perfect score"
+      },
+      "deep-work": {
+        "title": "Deep Work Master",
+        "desc": "5 sessions of 45+ min",
+        "req": "5 deep sessions"
+      },
+      "multi-course": {
+        "title": "Renaissance Trainer",
+        "desc": "Enroll in 3+ courses",
+        "req": "3 courses"
+      },
+      "planner": {
+        "title": "Master Planner",
+        "desc": "Create 10 time blocks",
+        "req": "10 blocks"
+      },
+      "planner-pro": {
+        "title": "Scheduling Pro",
+        "desc": "Create 50 time blocks",
+        "req": "50 blocks"
+      }
+    }
+  },
+  "notifications": {
+    "loadFailed": "Failed to load notifications.",
+    "items": {
+      "flashcardsDue": {
+        "title_one": "{{count}} flashcard due",
+        "title_other": "{{count}} flashcards due",
+        "messageMany": "You have {{count}} flashcards waiting for review. Reviewing now prevents forgetting!",
+        "messageFew": "{{count}} cards are ready for review. A quick session will strengthen your memory.",
+        "action": "Review now"
+      },
+      "goalUnmet": {
+        "title": "Weekly study goal at risk",
+        "message": "Only {{count}} study sessions this week. Try to fit in {{remaining}} more to stay on track.",
+        "action": "Plan a session"
+      },
+      "focusDrop": {
+        "title": "Focus score dropping",
+        "message": "Your recent study sessions had a low focus score. Try the Pomodoro technique for longer, deeper focus.",
+        "action": "Start Pomodoro"
+      },
+      "streakRisk": {
+        "title_one": "🔥 {{count}}-day streak at risk!",
+        "title_other": "🔥 {{count}}-day streak at risk!",
+        "message": "Complete one lesson or review session today to keep your streak alive!",
+        "action": "Continue learning"
+      },
+      "morningPlan": {
+        "title": "Good morning! Plan your day",
+        "message": "Start your day right: create a study schedule to maximize productivity.",
+        "action": "Plan day"
+      },
+      "quizDrop": {
+        "title": "Quiz scores need attention",
+        "message": "Your quiz average is {{score}}. Consider reviewing weak topics with the AI coach.",
+        "action": "Get help"
+      }
+    },
+    "filters": {
+      "all": "All",
+      "flashcards": "Flashcards",
+      "streaks": "Streaks",
+      "goals": "Goals",
+      "focus": "Focus",
+      "reminders": "Reminders",
+      "achievements": "Achievements"
+    },
+    "title": "Smart notifications",
+    "unread_one": "{{count}} unread alert",
+    "unread_other": "{{count}} unread alerts",
+    "allCaughtUp": "All caught up!",
+    "push": "Push",
+    "markAllRead": "Mark all read",
+    "loading": "Loading notifications...",
+    "emptyAll": "No notifications right now",
+    "emptyFiltered": "No notifications in this category",
+    "emptyAllHint": "Smart alerts will appear based on your study activity",
+    "emptyFilteredHint": "Try a different filter or check back later",
+    "backToDashboard": "Back to dashboard",
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "go": "Go"
+  },
+  "settings": {
+    "nameRequired": "Name is required",
+    "saved": "Settings saved",
+    "savedDesc": "Your profile has been updated.",
+    "saveFailed": "Could not save",
+    "saveFailedDesc": "Could not save your profile.",
+    "checkPasswords": "Check your passwords",
+    "checkPasswordsDesc": "Enter your current password and a new one of at least 8 characters.",
+    "passwordUpdated": "Password updated",
+    "passwordFailed": "Could not update password",
+    "passwordFailedDesc": "Could not update your password.",
+    "title": "Account settings",
+    "subtitle": "Manage your profile details and notifications.",
+    "tabs": {
+      "profile": "Profile",
+      "notifications": "Notifications",
+      "security": "Security"
+    },
+    "personalInfo": "Personal information",
+    "personalInfoDesc": "Update your personal details.",
+    "loadFailed": "Could not load your profile.",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "email": "Email address",
+    "emailHint": "Contact support to change your email.",
+    "saveChanges": "Save changes",
+    "notifPrefs": "Notification preferences",
+    "notifPrefsDesc": "Email notifications are coming soon. These switches are a preview and are not saved yet.",
+    "assignments": "Assignment deadlines",
+    "assignmentsDesc": "Get reminded 24 hours before a due date.",
+    "reminders": "Daily study reminders",
+    "remindersDesc": "Notifications to keep your streak alive.",
+    "announcements": "New announcements",
+    "announcementsDesc": "Updates from your instructors.",
+    "passwordSecurity": "Password & security",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "updating": "Updating...",
+    "updatePassword": "Update password"
+  }
+}

@@ -18,32 +18,34 @@ import {
   Bell,
   User,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
 interface NavItem {
   icon: React.ElementType;
-  label: string;
+  labelKey: string;
   href: string;
   badge?: string;
 }
 
 const navItems: NavItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-  { icon: BookOpen, label: "Browse Courses", href: "/catalog" },
-  { icon: GraduationCap, label: "My Courses", href: "/courses" },
-  { icon: Brain, label: "Flashcards", href: "/flashcards" },
-  { icon: ClipboardCheck, label: "Quizzes", href: "/quizzes" },
-  { icon: FileQuestion, label: "Mock Exams", href: "/mock-exam" },
-  { icon: BarChart3, label: "Analytics", href: "/analytics" },
-  { icon: Sparkles, label: "AI Tutor", href: "/ai-tutor" },
-  { icon: Brain, label: "AI Coach", href: "/ai-coach" },
-  { icon: CalendarDays, label: "Time Blocking", href: "/time-blocking" },
-  { icon: RotateCcw, label: "Spaced Repetition", href: "/spaced-repetition" },
-  { icon: Award, label: "Achievements", href: "/achievements" },
-  { icon: User, label: "My Profile", href: "/profile" },
-  { icon: Bell, label: "Notifications", href: "/notifications" },
+  { icon: LayoutDashboard, labelKey: "dashboard", href: "/dashboard" },
+  { icon: BookOpen, labelKey: "browseCourses", href: "/catalog" },
+  { icon: GraduationCap, labelKey: "myCourses", href: "/courses" },
+  { icon: Brain, labelKey: "flashcards", href: "/flashcards" },
+  { icon: ClipboardCheck, labelKey: "quizzes", href: "/quizzes" },
+  { icon: FileQuestion, labelKey: "mockExams", href: "/mock-exam" },
+  { icon: BarChart3, labelKey: "analytics", href: "/analytics" },
+  { icon: Sparkles, labelKey: "aiTutor", href: "/ai-tutor" },
+  { icon: Brain, labelKey: "aiCoach", href: "/ai-coach" },
+  { icon: CalendarDays, labelKey: "timeBlocking", href: "/time-blocking" },
+  { icon: RotateCcw, labelKey: "spacedRepetition", href: "/spaced-repetition" },
+  { icon: Award, labelKey: "achievements", href: "/achievements" },
+  { icon: User, labelKey: "myProfile", href: "/profile" },
+  { icon: Bell, labelKey: "notifications", href: "/notifications" },
 ];
 
 interface SidebarContentProps {
@@ -55,6 +57,7 @@ interface SidebarContentProps {
 export const ApplicantSidebarContent = ({ collapsed, onItemClick, className }: SidebarContentProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation("nav");
   const { signOut } = useAuth();
 
   const handleSignOut = async () => {
@@ -75,9 +78,9 @@ export const ApplicantSidebarContent = ({ collapsed, onItemClick, className }: S
           <GraduationCap className="w-5 h-5 text-primary-foreground" />
         </div>
         {!collapsed && (
-          <div className="animate-fade-in text-left">
-            <h1 className="font-bold text-lg">TareeqElm</h1>
-            <p className="text-xs text-muted-foreground">Trainer Portal</p>
+          <div className="animate-fade-in text-start">
+            <h1 className="font-bold text-lg">{t("sidebar.brand.applicant")}</h1>
+            <p className="text-xs text-muted-foreground">{t("sidebar.portal.applicant")}</p>
           </div>
         )}
       </div>
@@ -102,8 +105,8 @@ export const ApplicantSidebarContent = ({ collapsed, onItemClick, className }: S
                 !isActive && "group-hover:scale-110"
               )} />
               {!collapsed && (
-                <span className="flex-1 text-left text-sm font-medium animate-fade-in">
-                  {item.label}
+                <span className="flex-1 text-start text-sm font-medium animate-fade-in">
+                  {t(`sidebar.applicant.${item.labelKey}`)}
                 </span>
               )}
               {!collapsed && item.badge && (
@@ -129,8 +132,8 @@ export const ApplicantSidebarContent = ({ collapsed, onItemClick, className }: S
         >
           <Settings className="w-5 h-5 flex-shrink-0" />
           {!collapsed && (
-            <span className="flex-1 text-left text-sm font-medium animate-fade-in">
-              Settings
+            <span className="flex-1 text-start text-sm font-medium animate-fade-in">
+              {t("sidebar.applicant.settings")}
             </span>
           )}
         </button>
@@ -141,11 +144,12 @@ export const ApplicantSidebarContent = ({ collapsed, onItemClick, className }: S
         >
           <LogOut className="w-5 h-5 flex-shrink-0" />
           {!collapsed && (
-            <span className="flex-1 text-left text-sm font-medium animate-fade-in">
-              Sign Out
+            <span className="flex-1 text-start text-sm font-medium animate-fade-in">
+              {t("sidebar.signOut")}
             </span>
           )}
         </button>
+        {!collapsed && <LanguageSwitcher className="mt-2 lg:hidden" />}
       </div>
     </div>
   );
@@ -156,6 +160,7 @@ interface SidebarProps {
 }
 
 export const ApplicantSidebar = ({ onCollapse }: SidebarProps) => {
+  const { t } = useTranslation("nav");
   const [collapsed, setCollapsed] = useState(false);
 
   const toggleCollapse = () => {
@@ -166,7 +171,7 @@ export const ApplicantSidebar = ({ onCollapse }: SidebarProps) => {
 
   return (
     <aside className={cn(
-      "fixed left-0 top-0 h-screen bg-card border-r border-border/50 shadow-soft z-40 transition-all duration-300 flex-col hidden lg:flex",
+      "fixed start-0 top-0 h-screen bg-card border-e border-border/50 shadow-soft z-40 transition-all duration-300 flex-col hidden lg:flex",
       collapsed ? "w-20" : "w-64"
     )}>
       <ApplicantSidebarContent collapsed={collapsed} />
@@ -177,11 +182,12 @@ export const ApplicantSidebar = ({ onCollapse }: SidebarProps) => {
           variant="ghost"
           size="sm"
           onClick={toggleCollapse}
+          aria-label={t(collapsed ? "sidebar.expand" : "sidebar.collapse")}
           className="w-full justify-center"
         >
           <ChevronLeft className={cn(
             "w-4 h-4 transition-transform",
-            collapsed && "rotate-180"
+            collapsed ? "rotate-180 rtl:rotate-0" : "rtl:rotate-180"
           )} />
         </Button>
       </div>

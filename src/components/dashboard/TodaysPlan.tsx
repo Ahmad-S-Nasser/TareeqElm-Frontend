@@ -1,12 +1,16 @@
 import { Check, Circle, Sparkles, BookOpen, Brain, FileQuestion } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface PlanItem {
   id: string;
+  /** Translation key inside the dashboard namespace (or a custom title). */
   title: string;
   type: "lesson" | "flashcard" | "quiz" | "ai-review";
-  duration: string;
+  /** Duration in minutes. */
+  minutes: number;
   completed: boolean;
 }
 
@@ -17,6 +21,8 @@ interface TodaysPlanProps {
 
 export const TodaysPlan = ({ items, onToggleComplete }: TodaysPlanProps) => {
   const navigate = useNavigate();
+  const { t } = useTranslation("dashboard");
+  const { formatPercent, formatNumber, formatDuration } = useFormatters();
   const completedCount = items.filter(item => item.completed).length;
   const progress = Math.round((completedCount / items.length) * 100);
 
@@ -43,14 +49,14 @@ export const TodaysPlan = ({ items, onToggleComplete }: TodaysPlanProps) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-semibold text-lg">Today's Plan</h3>
+          <h3 className="font-semibold text-lg">{t("plan.title")}</h3>
           <p className="text-sm text-muted-foreground">
-            {completedCount} of {items.length} completed
+            {t("plan.completed", { done: formatNumber(completedCount), total: formatNumber(items.length) })}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-sm font-bold text-primary">{progress}%</span>
+            <span className="text-sm font-bold text-primary">{formatPercent(progress)}</span>
           </div>
         </div>
       </div>
@@ -110,12 +116,12 @@ export const TodaysPlan = ({ items, onToggleComplete }: TodaysPlanProps) => {
                   "text-sm font-medium truncate",
                   item.completed && "line-through"
                 )}>
-                  {item.title}
+                  {t(item.title, { defaultValue: item.title })}
                 </p>
               </div>
 
               {/* Duration */}
-              <span className="text-xs text-muted-foreground">{item.duration}</span>
+              <span className="text-xs text-muted-foreground">{formatDuration(item.minutes * 60)}</span>
             </div>
           );
         })}

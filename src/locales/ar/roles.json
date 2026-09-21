@@ -1,0 +1,46 @@
+{
+  "applicant": {
+    "name": "متدرّب",
+    "plural": "متدرّبون",
+    "description": "تعلّم من الدورات وتابع تقدّمك وتدرّب بالاختبارات.",
+    "count_zero": "لا يوجد متدرّبون",
+    "count_one": "متدرّب واحد",
+    "count_two": "متدرّبان",
+    "count_few": "{{count}} متدرّبين",
+    "count_many": "{{count}} متدرّبًا",
+    "count_other": "{{count}} متدرّب"
+  },
+  "instructor": {
+    "name": "مدرّس",
+    "plural": "مدرّسون",
+    "description": "أنشئ الدورات ودرّسها وتابع تقدّم المتدرّبين.",
+    "count_zero": "لا يوجد مدرّسون",
+    "count_one": "مدرّس واحد",
+    "count_two": "مدرّسان",
+    "count_few": "{{count}} مدرّسين",
+    "count_many": "{{count}} مدرّسًا",
+    "count_other": "{{count}} مدرّس"
+  },
+  "organization": {
+    "name": "مؤسسة",
+    "plural": "مؤسسات",
+    "description": "أدِر الأقسام والأعضاء والبرامج التدريبية في مؤسستك.",
+    "count_zero": "لا توجد مؤسسات",
+    "count_one": "مؤسسة واحدة",
+    "count_two": "مؤسستان",
+    "count_few": "{{count}} مؤسسات",
+    "count_many": "{{count}} مؤسسة",
+    "count_other": "{{count}} مؤسسة"
+  },
+  "admin": {
+    "name": "مسؤول النظام",
+    "plural": "مسؤولو النظام",
+    "description": "أدِر المستخدمين والمؤسسات والدورات وإعدادات المنصة.",
+    "count_zero": "لا يوجد مسؤولون",
+    "count_one": "مسؤول واحد",
+    "count_two": "مسؤولان",
+    "count_few": "{{count}} مسؤولين",
+    "count_many": "{{count}} مسؤولًا",
+    "count_other": "{{count}} مسؤول"
+  }
+}

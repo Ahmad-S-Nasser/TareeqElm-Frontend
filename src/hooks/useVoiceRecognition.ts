@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import i18n from '@/i18n';
 import { useToast } from './use-toast';
 
 // Minimal Web Speech API typings (not yet part of lib.dom).
@@ -81,8 +82,8 @@ export const useVoiceRecognition = () => {
 
         if (!SpeechRecognition) {
             toast({
-                title: "Not Supported",
-                description: "Your browser does not support voice recognition. Please use Chrome or Edge.",
+                title: i18n.t('dashboard:voice.notSupportedTitle'),
+                description: i18n.t('dashboard:voice.notSupported'),
                 variant: "destructive"
             });
             return;
@@ -94,7 +95,8 @@ export const useVoiceRecognition = () => {
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
-        recognition.lang = 'en-US';
+        // Follow the active UI language.
+        recognition.lang = i18n.language?.startsWith('ar') ? 'ar-SA' : 'en-US';
 
         const resetSilenceTimer = () => {
             if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
@@ -156,14 +158,14 @@ export const useVoiceRecognition = () => {
             setError(event.error);
             setIsListening(false);
 
-            let description = "Please try again or check your mic settings.";
-            if (event.error === 'not-allowed') description = "Microphone access denied. Click the lock icon in the URL bar to enable it.";
-            else if (event.error === 'no-speech') description = "No speech detected. Mic might be too quiet or busy.";
-            else if (event.error === 'network') description = "Network issue. Voice recognition needs an internet connection.";
-            else if (event.error === 'aborted') description = "Recognition was interrupted. Please try again.";
+            let description = i18n.t('dashboard:voice.errors.generic');
+            if (event.error === 'not-allowed') description = i18n.t('dashboard:voice.errors.notAllowed');
+            else if (event.error === 'no-speech') description = i18n.t('dashboard:voice.errors.noSpeech');
+            else if (event.error === 'network') description = i18n.t('dashboard:voice.errors.network');
+            else if (event.error === 'aborted') description = i18n.t('dashboard:voice.errors.aborted');
 
             toast({
-                title: `Voice Error: ${event.error}`,
+                title: i18n.t('dashboard:voice.errorTitle'),
                 description: description,
                 variant: "destructive"
             });

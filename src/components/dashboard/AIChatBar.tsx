@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Mic, MicOff, Send, Sparkles, X, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useVoiceRecognition } from "@/hooks/useVoiceRecognition";
@@ -14,8 +15,9 @@ interface AIChatBarProps {
 export const AIChatBar = ({
   onSend,
   isLoading = false,
-  placeholder = "Ask AI anything about your studies..."
+  placeholder
 }: AIChatBarProps) => {
+  const { t } = useTranslation("dashboard");
   const [message, setMessage] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVoiceStarting, setIsVoiceStarting] = useState(false);
@@ -55,21 +57,20 @@ export const AIChatBar = ({
       setMessage("");
       startListening((text) => {
         if (text.trim()) {
-          console.log("AIChatBar voice callback sending:", text);
           onSend?.(text);
         }
         setIsExpanded(false);
         setIsVoiceStarting(false);
       });
       toast({
-        title: "Microphone Activating...",
-        description: "Speak your question once 'Listening' appears.",
+        title: t("chatBar.micActivating"),
+        description: t("chatBar.micActivatingDesc"),
       });
     }
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background to-transparent pointer-events-none z-50">
+    <div className="fixed bottom-0 start-0 end-0 p-4 bg-gradient-to-t from-background via-background to-transparent pointer-events-none z-50">
       <div className="max-w-4xl mx-auto pointer-events-auto">
         <div className={cn(
           "relative rounded-2xl bg-card border border-border/50 shadow-elevated transition-all duration-300",
@@ -89,7 +90,7 @@ export const AIChatBar = ({
               {/* Input Wrapper */}
               <div className="flex-1 relative flex flex-col gap-2">
                 {(isListening || isVoiceStarting) && (
-                  <div className="absolute bottom-full left-0 w-full mb-4 bg-background/90 border border-primary/20 backdrop-blur-xl rounded-2xl p-4 shadow-2xl animate-in slide-in-from-bottom-2">
+                  <div className="absolute bottom-full start-0 w-full mb-4 bg-background/90 border border-primary/20 backdrop-blur-xl rounded-2xl p-4 shadow-2xl animate-in slide-in-from-bottom-2">
                     <div className="flex items-center gap-3 mb-2">
                       <div className="flex gap-1 h-4 items-center">
                         {[...Array(4)].map((_, i) => (
@@ -101,11 +102,11 @@ export const AIChatBar = ({
                         ))}
                       </div>
                       <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
-                        {isVoiceStarting ? "Initializing" : "Listening"}
+                        {isVoiceStarting ? t("chatBar.initializing") : t("chatBar.listening")}
                       </span>
                     </div>
                     <p className="text-sm text-foreground/80 italic font-medium truncate">
-                      {isVoiceStarting ? "Please wait, warming up..." : (transcript || "Speak now...")}
+                      {isVoiceStarting ? t("chatBar.warmingUp") : (transcript || t("chatBar.speakNow"))}
                     </p>
                   </div>
                 )}
@@ -114,7 +115,7 @@ export const AIChatBar = ({
                   <input
                     type="text"
                     className="w-full bg-transparent border-none outline-none py-2 text-sm"
-                    placeholder={(isListening || isVoiceStarting) ? "Listening..." : placeholder}
+                    placeholder={(isListening || isVoiceStarting) ? t("chatBar.listeningEllipsis") : (placeholder ?? t("chatBar.placeholder"))}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
@@ -135,6 +136,7 @@ export const AIChatBar = ({
                   )}
                   style={isListening ? { transform: `scale(${1 + (volume / 100)})` } : {}}
                   onClick={toggleVoice}
+                  aria-label={(isListening || isVoiceStarting) ? t("chatBar.stopVoice") : t("chatBar.startVoice")}
                   disabled={isLoading || (isVoiceStarting && !isListening)}
                 >
                   {(isListening || isVoiceStarting) ? (
@@ -148,12 +150,13 @@ export const AIChatBar = ({
                   size="icon"
                   className="rounded-xl shadow-glow-primary bg-primary text-primary-foreground"
                   onClick={handleSend}
+                  aria-label={t("chatBar.send")}
                   disabled={!message.trim() || isLoading || isListening || isVoiceStarting}
                 >
                   {isLoading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    <Send className="w-5 h-5" />
+                    <Send className="w-5 h-5 rtl:-scale-x-100" />
                   )}
                 </Button>
               </div>
@@ -162,12 +165,7 @@ export const AIChatBar = ({
             {/* Quick Suggestions */}
             {isExpanded && !isListening && (
               <div className="px-3 pb-3 flex flex-wrap gap-2 animate-fade-in border-t border-border/10 pt-3">
-                {[
-                  "Explain test levels",
-                  "Quiz me on ISTQB",
-                  "Review my weak topics",
-                  "Create flashcards"
-                ].map((suggestion) => (
+                {(["explain", "quiz", "weak", "flashcards"] as const).map((key) => t(`chatBar.suggestions.${key}`)).map((suggestion) => (
                   <button
                     key={suggestion}
                     onClick={() => {
@@ -180,8 +178,9 @@ export const AIChatBar = ({
                   </button>
                 ))}
                 <button
+                  aria-label={t("chatBar.close")}
                   onClick={() => setIsExpanded(false)}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground ml-auto"
+                  className="px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground ms-auto"
                 >
                   <X className="w-3 h-3" />
                 </button>

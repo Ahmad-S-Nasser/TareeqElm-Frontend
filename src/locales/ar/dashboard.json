@@ -1,0 +1,551 @@
+{
+  "welcomeBack": "مرحبًا بعودتك، {{name}}!",
+  "welcomeSubtitle": "هل أنت مستعد لمواصلة رحلتك التعليمية؟",
+  "levelShort": "المستوى {{level}} · {{title}}",
+  "xp": "{{count}} نقطة خبرة",
+  "notificationsAria": "الإشعارات",
+  "myCourses": "دوراتي",
+  "browseAll": "تصفّح الكل",
+  "noCourses": "لم تسجّل في أي دورة بعد",
+  "browseCatalog": "تصفّح دليل الدورات",
+  "stats": {
+    "streak": "سلسلة الدراسة",
+    "focusScore": "درجة التركيز",
+    "studyHours": "ساعات الدراسة",
+    "badgesEarned": "الأوسمة المكتسبة",
+    "total": "الإجمالي",
+    "days_zero": "0 يوم",
+    "days_one": "يوم واحد",
+    "days_two": "يومان",
+    "days_few": "{{count}} أيام",
+    "days_many": "{{count}} يومًا",
+    "days_other": "{{count}} يوم",
+    "hoursValue": "{{value}} س"
+  },
+  "chips": {
+    "cardsDue_zero": "لا بطاقات مستحقة",
+    "cardsDue_one": "بطاقة واحدة مستحقة",
+    "cardsDue_two": "بطاقتان مستحقتان",
+    "cardsDue_few": "{{count}} بطاقات مستحقة",
+    "cardsDue_many": "{{count}} بطاقة مستحقة",
+    "cardsDue_other": "{{count}} بطاقة مستحقة",
+    "planToday": "خطّط ليومك",
+    "askCoach": "اسأل المدرّب الذكي"
+  },
+  "readiness": {
+    "title": "الجاهزية للاختبار",
+    "overall": "التقدّم الإجمالي",
+    "ready": "جاهز!",
+    "almost": "أوشكت على الوصول",
+    "keepGoing": "واصل التقدّم"
+  },
+  "exam": {
+    "upcoming": "الاختبار القادم",
+    "daysLeft_zero": "لا أيام متبقية",
+    "daysLeft_one": "يوم واحد متبقٍ",
+    "daysLeft_two": "يومان متبقيان",
+    "daysLeft_few": "{{count}} أيام متبقية",
+    "daysLeft_many": "{{count}} يومًا متبقيًا",
+    "daysLeft_other": "{{count}} يوم متبقٍ",
+    "weeks": "أسابيع",
+    "daysLabel": "أيام",
+    "date": "التاريخ",
+    "startPractice": "ابدأ جلسة تدريب",
+    "defaultName": "ISTQB - المستوى الأساسي"
+  },
+  "plan": {
+    "title": "خطة اليوم",
+    "completed": "اكتمل {{done}} من {{total}}",
+    "items": {
+      "reviewTestDesign": "مراجعة تصميم الاختبارات",
+      "practiceBlackBox": "تدريب: اختبار الصندوق الأسود",
+      "flashcardReview": "مراجعة البطاقات",
+      "aiReview": "جلسة مراجعة بالذكاء الاصطناعي"
+    }
+  },
+  "courseCard": {
+    "lessons_zero": "لا دروس",
+    "lessons_one": "درس واحد",
+    "lessons_two": "درسان",
+    "lessons_few": "{{count}} دروس",
+    "lessons_many": "{{count}} درسًا",
+    "lessons_other": "{{count}} درس"
+  },
+  "weakness": {
+    "title": "تحليل نقاط الضعف بالذكاء الاصطناعي",
+    "subtitle": "مجالات التركيز بحسب أدائك",
+    "practice": "تدرّب",
+    "attempted_zero": "لم تُحاوَل أسئلة",
+    "attempted_one": "حاولت سؤالًا واحدًا",
+    "attempted_two": "حاولت سؤالين",
+    "attempted_few": "حاولت {{count}} أسئلة",
+    "attempted_many": "حاولت {{count}} سؤالًا",
+    "attempted_other": "حاولت {{count}} سؤال",
+    "suggestion": "يقترح الذكاء الاصطناعي التركيز على «{{topic}}» في جلسة دراستك القادمة"
+  },
+  "coachWidget": {
+    "title": "مدرّب الدراسة الذكي",
+    "flashcardsDue_zero": "لا بطاقات مستحقة للمراجعة",
+    "flashcardsDue_one": "بطاقة واحدة مستحقة للمراجعة",
+    "flashcardsDue_two": "بطاقتان مستحقتان للمراجعة",
+    "flashcardsDue_few": "{{count}} بطاقات مستحقة للمراجعة",
+    "flashcardsDue_many": "{{count}} بطاقة مستحقة للمراجعة",
+    "flashcardsDue_other": "{{count}} بطاقة مستحقة للمراجعة",
+    "streak_zero": "🔥 لا توجد سلسلة",
+    "streak_one": "🔥 سلسلة يوم واحد! واصل!",
+    "streak_two": "🔥 سلسلة يومين! واصل!",
+    "streak_few": "🔥 سلسلة {{count}} أيام! واصل!",
+    "streak_many": "🔥 سلسلة {{count}} يومًا! واصل!",
+    "streak_other": "🔥 سلسلة {{count}} يوم! واصل!",
+    "focusOn": "ركّز على: {{topic}}",
+    "startSession": "ابدأ جلسة دراسة لتحصل على رؤى مخصّصة",
+    "analyzing": "جارٍ تحليل تقدّمك...",
+    "open": "افتح المدرّب الذكي"
+  },
+  "floatingCoach": {
+    "toggle": "فتح المدرّب الذكي أو إغلاقه",
+    "subtitle": "مرشدك التعليمي",
+    "fullView": "العرض الكامل",
+    "askAnything": "اسألني أي شيء عن دراستك!",
+    "suggestions": {
+      "study": "ماذا أدرس اليوم؟",
+      "progress": "كيف هو تقدّمي؟",
+      "motivate": "حفّزني!"
+    },
+    "placeholder": "اسأل مدرّبك..."
+  },
+  "chatBar": {
+    "micActivating": "جارٍ تشغيل الميكروفون...",
+    "micActivatingDesc": "انطق سؤالك عندما تظهر عبارة «جارٍ الاستماع».",
+    "initializing": "جارٍ التهيئة",
+    "listening": "جارٍ الاستماع",
+    "warmingUp": "يرجى الانتظار، جارٍ التجهيز...",
+    "speakNow": "تحدّث الآن...",
+    "listeningEllipsis": "جارٍ الاستماع...",
+    "placeholder": "اسأل الذكاء الاصطناعي عن أي شيء يخص دراستك...",
+    "stopVoice": "إيقاف الإدخال الصوتي",
+    "startVoice": "بدء الإدخال الصوتي",
+    "send": "إرسال",
+    "close": "إغلاق الاقتراحات",
+    "suggestions": {
+      "explain": "اشرح مستويات الاختبار",
+      "quiz": "اختبرني في ISTQB",
+      "weak": "راجع موضوعاتي الضعيفة",
+      "flashcards": "أنشئ بطاقات"
+    }
+  },
+  "voice": {
+    "notSupportedTitle": "غير مدعوم",
+    "notSupported": "متصفحك لا يدعم التعرّف على الصوت. يرجى استخدام Chrome أو Edge.",
+    "errorTitle": "خطأ في الإدخال الصوتي",
+    "errors": {
+      "generic": "يرجى المحاولة مرة أخرى أو التحقق من إعدادات الميكروفون.",
+      "notAllowed": "تم رفض الوصول إلى الميكروفون. انقر على أيقونة القفل في شريط العنوان لتفعيله.",
+      "noSpeech": "لم يُرصد أي كلام. قد يكون الميكروفون منخفض الصوت أو مشغولًا.",
+      "network": "مشكلة في الشبكة. يحتاج التعرّف على الصوت إلى اتصال بالإنترنت.",
+      "aborted": "تمت مقاطعة التعرّف على الصوت. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "coach": {
+    "errorTitle": "خطأ في المدرّب الذكي",
+    "errorFallback": "تعذّر الحصول على رد من المدرّب الذكي",
+    "prompts": {
+      "insights": "حلّل بيانات تعلّمي وقدّم لي رؤى دراسية مخصّصة.",
+      "recommendations": "بناءً على أنماط دراستي، ما الذي ينبغي أن أحسّنه؟",
+      "weekly_plan": "أنشئ لي خطة دراسة أسبوعية مخصّصة.",
+      "weak_topics": "ما أضعف موضوعاتي وكيف أحسّنها؟",
+      "motivation": "قدّم لي رسالة تحفيزية عن تقدّمي."
+    },
+    "actions": {
+      "insights": "رؤى يومية",
+      "recommendations": "توصيات",
+      "weekly_plan": "خطة أسبوعية",
+      "weak_topics": "موضوعات ضعيفة",
+      "motivation": "حفّزني"
+    },
+    "stats": {
+      "studyHours": "ساعات الدراسة",
+      "streak": "السلسلة",
+      "cardsDue": "بطاقات مستحقة",
+      "quizAvg": "متوسط الاختبارات",
+      "retention": "الاحتفاظ",
+      "focus": "التركيز"
+    },
+    "subtitle": "مرشدك التعليمي الشخصي بالذكاء الاصطناعي",
+    "loading": "جارٍ تحميل بيانات تعلّمك...",
+    "nav": {
+      "analytics": "التحليلات",
+      "achievements": "الإنجازات",
+      "flashcards": "البطاقات",
+      "timeBlocking": "تقسيم الوقت"
+    },
+    "tabs": {
+      "insights": "رؤى المدرّب",
+      "chat": "محادثة المدرّب"
+    },
+    "quickActions": "إجراءات سريعة",
+    "smartAlerts": "تنبيهات ذكية",
+    "alerts": {
+      "reviewHint": "المراجعة الآن ستقوّي احتفاظك بالمعلومات",
+      "reviewNow": "راجع الآن",
+      "streak_zero": "🔥 لا توجد سلسلة دراسة",
+      "streak_one": "🔥 سلسلة دراسة يوم واحد!",
+      "streak_two": "🔥 سلسلة دراسة يومين!",
+      "streak_few": "🔥 سلسلة دراسة {{count}} أيام!",
+      "streak_many": "🔥 سلسلة دراسة {{count}} يومًا!",
+      "streak_other": "🔥 سلسلة دراسة {{count}} يوم!",
+      "streakHint": "أكمل جلسة واحدة اليوم للحفاظ عليها",
+      "weakTopics": "موضوعات ضعيفة: {{topics}}",
+      "weakTopicsHint": "يُنصح بمراجعة إضافية لتحسين الاحتفاظ",
+      "getHelp": "احصل على مساعدة",
+      "fewSessions_zero": "لا جلسات دراسة هذا الأسبوع",
+      "fewSessions_one": "جلسة دراسة واحدة فقط هذا الأسبوع",
+      "fewSessions_two": "جلستا دراسة فقط هذا الأسبوع",
+      "fewSessions_few": "{{count}} جلسات دراسة فقط هذا الأسبوع",
+      "fewSessions_many": "{{count}} جلسة دراسة فقط هذا الأسبوع",
+      "fewSessions_other": "{{count}} جلسة دراسة فقط هذا الأسبوع",
+      "fewSessionsHint": "استهدف 5 جلسات على الأقل أسبوعيًا",
+      "planSession": "خطّط لجلسة",
+      "noBlocks": "لا توجد فترات دراسة مخطّطة لليوم",
+      "noBlocksHint": "يمكن للذكاء الاصطناعي إنشاء جدول مثالي بحسب مستوى طاقتك",
+      "aiSchedule": "جدول ذكي"
+    },
+    "askYourCoach": "اسأل مدرّبك",
+    "suggestions": {
+      "study": "ماذا أدرس اليوم؟",
+      "retention": "لماذا معدّل احتفاظي منخفض؟",
+      "plan": "أنشئ خطة دراسة لاختباري الأسبوع القادم",
+      "focus": "كيف أحسّن درجة تركيزي؟",
+      "cards": "أي البطاقات تحتاج إلى اهتمام أكبر؟",
+      "track": "هل أنا على المسار الصحيح لاجتياز اختباري؟"
+    },
+    "chatTitle": "محادثة المدرّب",
+    "chatDesc": "اسأل عن أي شيء يخص تقدّمك الدراسي",
+    "clear": "مسح",
+    "emptyChat": "ابدأ محادثة مع مدرّب الدراسة الذكي.",
+    "emptyChatHint": "استخدم الإجراءات السريعة أو اكتب سؤالًا في الأسفل.",
+    "inputPlaceholder": "اسأل المدرّب الذكي...",
+    "listSeparator": "، "
+  },
+  "tutor": {
+    "errorTitle": "خطأ في المعلّم الذكي",
+    "errorFallback": "تعذّر الحصول على رد من المعلّم الذكي.",
+    "welcome": "مرحبًا! أنا معلّمك الذكي. يمكنني مساعدتك في فهم الموضوعات المعقّدة، ووضع خطط الدراسة، واختبارك في دوراتك. ماذا سنتعلّم اليوم؟",
+    "cleared": "تم مسح سجل المحادثة. كيف يمكنني مساعدتك اليوم؟",
+    "micActivating": "جارٍ تشغيل الميكروفون...",
+    "micActivatingDesc": "تحدّث عندما تظهر عبارة «جارٍ الاستماع»",
+    "prompts": {
+      "explain": "اشرح التشابك الكمّي",
+      "schedule": "أنشئ جدول دراسة لاختبار التفاضل والتكامل",
+      "quiz": "اختبرني في React Hooks",
+      "summarize": "لخّص الدرس الأخير"
+    },
+    "title": "المعلّم الشخصي الذكي",
+    "subtitle": "رفيقك التعليمي المخصّص. متاح على مدار الساعة.",
+    "tabs": {
+      "chat": "محادثة وشرح",
+      "study": "خطة دراسة",
+      "quiz": "اختبرني"
+    },
+    "conversation": "المحادثة",
+    "tabDesc": {
+      "chat": "اسأل عن أي شيء. يمكنني شرح المفاهيم أو تصحيح الأكواد أو ترجمة النصوص.",
+      "study": "لنضع جدول دراسة مخصّصًا بحسب أهدافك.",
+      "quiz": "اختبر معرفتك باختبارات تكيّفية."
+    },
+    "clear": "مسح",
+    "stopSpeaking": "إيقاف القراءة",
+    "readAloud": "قراءة بصوت عالٍ",
+    "voiceResponse": "رد صوتي من الذكاء الاصطناعي",
+    "hideTranscript": "إخفاء النص",
+    "showTranscript": "تحويل إلى نص",
+    "initializing": "جارٍ التهيئة...",
+    "transcribing": "جارٍ التفريغ...",
+    "warmingUp": "يرجى الانتظار، جارٍ تجهيز الميكروفون...",
+    "speakNow": "تحدّث الآن...",
+    "answerPlaceholder": "اكتب إجابتك هنا...",
+    "questionPlaceholder": "اكتب سؤالك...",
+    "quickActions": "إجراءات سريعة",
+    "learningStats": "إحصاءات التعلّم",
+    "topicsMastered": "موضوعات مُتقَنة",
+    "questionsAsked": "أسئلة مطروحة"
+  },
+  "progress": {
+    "quizPassed": "اجتزت الاختبار!",
+    "quizCompleted": "اكتمل الاختبار",
+    "youScored": "حصلت على {{score}}",
+    "lessonUpdateFailed": "تعذّر تحديث الدرس",
+    "quizSubmitFailed": "تعذّر تسليم الاختبار",
+    "loadFailed": "تعذّر تحميل تقدّمك.",
+    "lessonsDone": "دروس منجزة",
+    "quizzesTaken": "اختبارات مُنجزة",
+    "avgScore": "متوسط الدرجات",
+    "minutesStudied": "دقائق الدراسة",
+    "recentQuizResults": "أحدث نتائج الاختبارات",
+    "noQuizResults": "لا توجد نتائج اختبارات بعد",
+    "dayStreak": "أيام متتالية",
+    "title": "تقدّمي",
+    "subtitle": "تابع رحلتك التعليمية وإنجازاتك",
+    "loading": "جارٍ تحميل تقدّمك...",
+    "totalStudyTime": "إجمالي وقت الدراسة",
+    "lessonsCompleted": "الدروس المكتملة",
+    "currentStreak": "السلسلة الحالية",
+    "days_zero": "0 يوم",
+    "days_one": "يوم واحد",
+    "days_two": "يومان",
+    "days_few": "{{count}} أيام",
+    "days_many": "{{count}} يومًا",
+    "days_other": "{{count}} يوم",
+    "totalPoints": "إجمالي النقاط",
+    "weeklyActivity": "النشاط الأسبوعي",
+    "weeklyActivityDesc": "وقت دراستك خلال آخر 7 أيام (بالدقائق)",
+    "minutes": "دقائق",
+    "recentAchievements": "أحدث الإنجازات",
+    "recentAchievementsDesc": "الأوسمة التي حصلت عليها مؤخرًا",
+    "noBadges": "لم تكسب أي وسام بعد. واصل الدراسة لتفتح أول وسام!",
+    "viewAllAchievements": "عرض كل الإنجازات",
+    "courseDetails": "تفاصيل التقدّم في الدورات",
+    "courseDetailsDesc": "تفصيل دوراتك المسجّل فيها",
+    "notEnrolled": "لست مسجّلًا في أي دورة بعد.",
+    "browseCourses": "تصفّح الدورات",
+    "enrolledOn": "تاريخ التسجيل: {{date}}",
+    "percentCompleted": "اكتمل {{percent}}",
+    "lessonsOf": "اكتمل {{done}} من {{total}} دروس"
+  },
+  "achievements": {
+    "loadFailed": "تعذّر تحميل الإنجازات.",
+    "loading": "جارٍ تحميل الإنجازات...",
+    "title": "الإنجازات",
+    "unlockedOf": "تم فتح {{earned}} من {{total}}",
+    "level": "المستوى {{level}}",
+    "totalXP": "إجمالي نقاط الخبرة",
+    "progressToLevel": "التقدّم نحو المستوى {{level}}",
+    "xpOf": "{{current}} / {{total}} نقطة خبرة",
+    "badgeProgress": "تقدّم الأوسمة",
+    "xp": "{{count}} نقطة خبرة",
+    "unlocked": "تم فتح إنجاز جديد!",
+    "dismiss": "إغلاق",
+    "tiers": {
+      "bronze": "برونزي",
+      "silver": "فضي",
+      "gold": "ذهبي",
+      "platinum": "بلاتيني"
+    },
+    "categories": {
+      "all": "الكل",
+      "streak": "السلاسل",
+      "study": "الدراسة",
+      "mastery": "الإتقان",
+      "productivity": "الإنتاجية"
+    },
+    "levels": {
+      "beginner": "مبتدئ",
+      "learner": "متعلّم",
+      "activeTrainer": "متدرّب نشيط",
+      "focusedTrainer": "متدرّب مركّز",
+      "dedicatedScholar": "طالب علم مجتهد",
+      "knowledgeSeeker": "باحث عن المعرفة",
+      "expertLearner": "متعلّم خبير",
+      "studyMaster": "أستاذ الدراسة"
+    },
+    "items": {
+      "streak-3": {
+        "title": "بداية موفّقة",
+        "desc": "سلسلة دراسة لمدة 3 أيام",
+        "req": "3 أيام"
+      },
+      "streak-7": {
+        "title": "سلسلة 7 أيام",
+        "desc": "ادرس 7 أيام متتالية",
+        "req": "7 أيام"
+      },
+      "streak-14": {
+        "title": "بطل الاستمرارية",
+        "desc": "سلسلة دراسة لمدة 14 يومًا",
+        "req": "14 يومًا"
+      },
+      "streak-30": {
+        "title": "لا يُقهر",
+        "desc": "سلسلة دراسة لمدة 30 يومًا",
+        "req": "30 يومًا"
+      },
+      "hours-10": {
+        "title": "متعلّم مجتهد",
+        "desc": "ادرس 10 ساعات إجمالًا",
+        "req": "10 ساعات"
+      },
+      "hours-30": {
+        "title": "30 ساعة دراسة",
+        "desc": "اجمع 30 ساعة دراسة",
+        "req": "30 ساعة"
+      },
+      "hours-100": {
+        "title": "نادي المئة",
+        "desc": "100 ساعة من الدراسة",
+        "req": "100 ساعة"
+      },
+      "lessons-10": {
+        "title": "متعلّم سريع",
+        "desc": "أكمل 10 دروس",
+        "req": "10 دروس"
+      },
+      "lessons-50": {
+        "title": "باحث عن المعرفة",
+        "desc": "أكمل 50 درسًا",
+        "req": "50 درسًا"
+      },
+      "cards-50": {
+        "title": "جامع البطاقات",
+        "desc": "أنشئ 50 بطاقة",
+        "req": "50 بطاقة"
+      },
+      "cards-100": {
+        "title": "سيد الذاكرة",
+        "desc": "راجع 100 بطاقة",
+        "req": "100 مراجعة"
+      },
+      "quiz-ace": {
+        "title": "بطل الاختبارات",
+        "desc": "احصل على 100% في اختبار",
+        "req": "درجة كاملة"
+      },
+      "deep-work": {
+        "title": "سيد التركيز العميق",
+        "desc": "5 جلسات مدة كل منها 45 دقيقة فأكثر",
+        "req": "5 جلسات تركيز عميق"
+      },
+      "multi-course": {
+        "title": "متدرّب موسوعي",
+        "desc": "سجّل في 3 دورات أو أكثر",
+        "req": "3 دورات"
+      },
+      "planner": {
+        "title": "سيد التخطيط",
+        "desc": "أنشئ 10 فترات زمنية",
+        "req": "10 فترات"
+      },
+      "planner-pro": {
+        "title": "محترف الجدولة",
+        "desc": "أنشئ 50 فترة زمنية",
+        "req": "50 فترة"
+      }
+    }
+  },
+  "notifications": {
+    "loadFailed": "تعذّر تحميل الإشعارات.",
+    "items": {
+      "flashcardsDue": {
+        "title_zero": "لا بطاقات مستحقة",
+        "title_one": "بطاقة واحدة مستحقة",
+        "title_two": "بطاقتان مستحقتان",
+        "title_few": "{{count}} بطاقات مستحقة",
+        "title_many": "{{count}} بطاقة مستحقة",
+        "title_other": "{{count}} بطاقة مستحقة",
+        "messageMany": "لديك {{count}} بطاقة بانتظار المراجعة. المراجعة الآن تمنع النسيان!",
+        "messageFew": "{{count}} بطاقات جاهزة للمراجعة. جلسة قصيرة ستقوّي ذاكرتك.",
+        "action": "راجع الآن"
+      },
+      "goalUnmet": {
+        "title": "هدفك الدراسي الأسبوعي في خطر",
+        "message": "لم تنجز سوى {{count}} جلسات دراسة هذا الأسبوع. حاول إضافة {{remaining}} جلسات أخرى لتبقى على المسار.",
+        "action": "خطّط لجلسة"
+      },
+      "focusDrop": {
+        "title": "درجة التركيز في انخفاض",
+        "message": "كانت درجة التركيز في جلساتك الأخيرة منخفضة. جرّب تقنية بومودورو لتركيز أطول وأعمق.",
+        "action": "ابدأ بومودورو"
+      },
+      "streakRisk": {
+        "title_zero": "🔥 سلسلتك في خطر!",
+        "title_one": "🔥 سلسلة يوم واحد في خطر!",
+        "title_two": "🔥 سلسلة يومين في خطر!",
+        "title_few": "🔥 سلسلة {{count}} أيام في خطر!",
+        "title_many": "🔥 سلسلة {{count}} يومًا في خطر!",
+        "title_other": "🔥 سلسلة {{count}} يوم في خطر!",
+        "message": "أكمل درسًا أو جلسة مراجعة اليوم لتحافظ على سلسلتك!",
+        "action": "واصل التعلّم"
+      },
+      "morningPlan": {
+        "title": "صباح الخير! خطّط ليومك",
+        "message": "ابدأ يومك بشكل صحيح: أنشئ جدول دراسة لزيادة إنتاجيتك.",
+        "action": "خطّط اليوم"
+      },
+      "quizDrop": {
+        "title": "درجات الاختبارات تحتاج إلى اهتمام",
+        "message": "متوسط اختباراتك {{score}}. فكّر في مراجعة الموضوعات الضعيفة مع المدرّب الذكي.",
+        "action": "احصل على مساعدة"
+      }
+    },
+    "filters": {
+      "all": "الكل",
+      "flashcards": "البطاقات",
+      "streaks": "السلاسل",
+      "goals": "الأهداف",
+      "focus": "التركيز",
+      "reminders": "التذكيرات",
+      "achievements": "الإنجازات"
+    },
+    "title": "الإشعارات الذكية",
+    "unread_zero": "لا تنبيهات غير مقروءة",
+    "unread_one": "تنبيه واحد غير مقروء",
+    "unread_two": "تنبيهان غير مقروءين",
+    "unread_few": "{{count}} تنبيهات غير مقروءة",
+    "unread_many": "{{count}} تنبيهًا غير مقروء",
+    "unread_other": "{{count}} تنبيه غير مقروء",
+    "allCaughtUp": "لا جديد لديك!",
+    "push": "إشعارات فورية",
+    "markAllRead": "تحديد الكل كمقروء",
+    "loading": "جارٍ تحميل الإشعارات...",
+    "emptyAll": "لا توجد إشعارات حاليًا",
+    "emptyFiltered": "لا توجد إشعارات في هذه الفئة",
+    "emptyAllHint": "ستظهر التنبيهات الذكية بحسب نشاطك الدراسي",
+    "emptyFilteredHint": "جرّب فلترًا آخر أو عد لاحقًا",
+    "backToDashboard": "العودة إلى لوحة التحكم",
+    "priority": {
+      "high": "عالية",
+      "medium": "متوسطة",
+      "low": "منخفضة"
+    },
+    "go": "انتقل"
+  },
+  "settings": {
+    "nameRequired": "الاسم مطلوب",
+    "saved": "تم حفظ الإعدادات",
+    "savedDesc": "تم تحديث ملفك الشخصي.",
+    "saveFailed": "تعذّر الحفظ",
+    "saveFailedDesc": "تعذّر حفظ ملفك الشخصي.",
+    "checkPasswords": "تحقّق من كلمتي المرور",
+    "checkPasswordsDesc": "أدخل كلمة المرور الحالية وكلمة مرور جديدة لا تقل عن 8 أحرف.",
+    "passwordUpdated": "تم تحديث كلمة المرور",
+    "passwordFailed": "تعذّر تحديث كلمة المرور",
+    "passwordFailedDesc": "تعذّر تحديث كلمة المرور.",
+    "title": "إعدادات الحساب",
+    "subtitle": "أدر بيانات ملفك الشخصي وإشعاراتك.",
+    "tabs": {
+      "profile": "الملف الشخصي",
+      "notifications": "الإشعارات",
+      "security": "الأمان"
+    },
+    "personalInfo": "المعلومات الشخصية",
+    "personalInfoDesc": "حدّث بياناتك الشخصية.",
+    "loadFailed": "تعذّر تحميل ملفك الشخصي.",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "email": "البريد الإلكتروني",
+    "emailHint": "تواصل مع الدعم لتغيير بريدك الإلكتروني.",
+    "saveChanges": "حفظ التغييرات",
+    "notifPrefs": "تفضيلات الإشعارات",
+    "notifPrefsDesc": "إشعارات البريد الإلكتروني قادمة قريبًا. هذه المفاتيح للمعاينة فقط ولا يتم حفظها بعد.",
+    "assignments": "مواعيد تسليم الواجبات",
+    "assignmentsDesc": "تلقَّ تذكيرًا قبل موعد التسليم بـ 24 ساعة.",
+    "reminders": "تذكيرات الدراسة اليومية",
+    "remindersDesc": "إشعارات تساعدك على الحفاظ على سلسلتك.",
+    "announcements": "الإعلانات الجديدة",
+    "announcementsDesc": "مستجدات من مدرّسيك.",
+    "passwordSecurity": "كلمة المرور والأمان",
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "updating": "جارٍ التحديث...",
+    "updatePassword": "تحديث كلمة المرور"
+  }
+}

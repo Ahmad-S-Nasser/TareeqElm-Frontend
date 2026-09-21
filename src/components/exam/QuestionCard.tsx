@@ -1,5 +1,7 @@
 import { Question } from "./types";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -30,13 +32,15 @@ export function QuestionCard({
     isLast,
     totalQuestions,
 }: QuestionCardProps) {
+    const { t } = useTranslation(["quizzes", "common"]);
+    const { formatNumber } = useFormatters();
     return (
         <div className="rounded-2xl bg-card border border-border/50 shadow-soft overflow-hidden animate-fade-in">
             {/* Header */}
             <div className="p-4 border-b border-border/50 bg-muted/30 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <span className="px-3 py-1 rounded-lg bg-primary/10 text-primary text-sm font-semibold">
-                        Question {question.number} of {totalQuestions}
+                        {t("exam.questionOf", { number: formatNumber(question.number), total: formatNumber(totalQuestions) })}
                     </span>
                     <span className="px-2 py-1 rounded-md bg-muted text-muted-foreground text-xs">
                         {question.topic}
@@ -52,7 +56,7 @@ export function QuestionCard({
                     )}
                 >
                     <Flag className="w-4 h-4" />
-                    {isFlagged ? "Flagged" : "Flag for Review"}
+                    {isFlagged ? t("exam.flagged") : t("exam.flagForReview")}
                 </Button>
             </div>
 
@@ -107,16 +111,16 @@ export function QuestionCard({
                     disabled={isFirst}
                     className="gap-2"
                 >
-                    <ChevronLeft className="w-4 h-4" />
-                    Previous
+                    <ChevronLeft className="w-4 h-4 rtl:rotate-180" />
+                    {t("common:actions.previous")}
                 </Button>
                 <Button
                     variant={isLast ? "gradient" : "default"}
                     onClick={onNext}
                     className="gap-2"
                 >
-                    {isLast ? "Review Answers" : "Next"}
-                    {!isLast && <ChevronRight className="w-4 h-4" />}
+                    {isLast ? t("exam.reviewAnswers") : t("common:actions.next")}
+                    {!isLast && <ChevronRight className="w-4 h-4 rtl:rotate-180" />}
                 </Button>
             </div>
         </div>

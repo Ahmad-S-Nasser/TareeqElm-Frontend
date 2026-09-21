@@ -12,6 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertCircle, Brain, RotateCcw, CheckCircle2, XCircle, Clock, Layers, TrendingUp, Zap, Plus, Loader2, Sparkles, BookOpen, Target, Lightbulb, Wand2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
+import { useFormatters } from "@/lib/format";
 import api, { getApiError } from "@/lib/api";
 import { ReviewModeSelector, type ReviewMode } from "@/components/spaced-repetition/ReviewModeSelector";
 import { MemoryStrengthBadge } from "@/components/spaced-repetition/MemoryStrengthBadge";
@@ -21,7 +24,8 @@ interface ReviewCard {
   id: string;
   question: string;
   answer: string;
-  topic: string;
+  /** Null when the card has no topic; shown as the localized "General". */
+  topic: string | null;
   interval: number;
   easeFactor: number;
   repetitions: number;
@@ -47,7 +51,7 @@ const toCard = (d: FlashcardDto): ReviewCard => ({
   id: d.Id,
   question: d.Question,
   answer: d.Answer,
-  topic: d.Topic || "General",
+  topic: d.Topic || null,
   interval: d.IntervalDays,
   easeFactor: Number(d.EaseFactor),
   repetitions: d.Repetitions,
@@ -56,13 +60,15 @@ const toCard = (d: FlashcardDto): ReviewCard => ({
 });
 
 const difficultyConfig = {
-  again: { label: "Again", icon: XCircle, color: "border-destructive/30 text-destructive hover:bg-destructive/10", interval: "1d" },
-  hard: { label: "Hard", icon: RotateCcw, color: "border-warning/30 text-warning-foreground hover:bg-warning/10", interval: "" },
-  good: { label: "Good", icon: CheckCircle2, color: "border-success/30 text-success hover:bg-success/10", interval: "" },
-  easy: { label: "Easy", icon: Zap, color: "border-primary/30 text-primary hover:bg-primary/10", interval: "" },
+  again: { icon: XCircle, color: "border-destructive/30 text-destructive hover:bg-destructive/10" },
+  hard: { icon: RotateCcw, color: "border-warning/30 text-warning-foreground hover:bg-warning/10" },
+  good: { icon: CheckCircle2, color: "border-success/30 text-success hover:bg-success/10" },
+  easy: { icon: Zap, color: "border-primary/30 text-primary hover:bg-primary/10" },
 };
 
 const SpacedRepetition = () => {
+  const { t } = useTranslation(["learning", "common"]);
+  const { formatNumber, formatPercent } = useFormatters();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [sessionIds, setSessionIds] = useState<string[]>([]);
@@ -70,7 +76,7 @@ const SpacedRepetition = () => {
   const [isReviewing, setIsReviewing] = useState(false);
   const [sessionStats, setSessionStats] = useState({ reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 });
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [newCard, setNewCard] = useState({ question: "", answer: "", topic: "General" });
+  const [newCard, setNewCard] = useState({ question: "", answer: "", topic: "" });
   const [reviewMode, setReviewMode] = useState<ReviewMode>("all-due");
   const [explanation, setExplanation] = useState<string | null>(null);
   const [generateTopic, setGenerateTopic] = useState("");
@@ -112,7 +118,7 @@ const SpacedRepetition = () => {
 
   const getIntervalLabel = (card: ReviewCard, difficulty: Difficulty) => {
     const result = calculateNextInterval({ ...card }, difficulty);
-    return `${result.interval}d`;
+    return t("spaced.daysShort", { count: result.interval });
   };
 
   const reviewMutation = useMutation({
@@ -122,7 +128,7 @@ const SpacedRepetition = () => {
       // The server owns the scheduling; store its result without refetching the deck mid-session
       queryClient.setQueryData<ReviewCard[]>(["flashcards", "review"], (prev) => (prev ?? []).map((c) => (c.id === updated.id ? updated : c)));
     },
-    onError: (err) => toast.error(getApiError(err, "Failed to save review")),
+    onError: (err) => toast.error(getApiError(err, i18n.t("learning:spaced.toast.saveReviewFailed"))),
   });
 
   const handleRate = async (difficulty: Difficulty) => {
@@ -137,7 +143,7 @@ const SpacedRepetition = () => {
     setExplanation(null);
     if (currentIndex + 1 >= reviewDeckSize) {
       setIsReviewing(false);
-      toast.success(`Session complete! Reviewed ${sessionStats.reviewed + 1} cards.`);
+      toast.success(t("spaced.toast.sessionComplete", { count: sessionStats.reviewed + 1 }));
     } else {
       setCurrentIndex((i) => i + 1);
     }
@@ -145,7 +151,7 @@ const SpacedRepetition = () => {
 
   const startSession = () => {
     const deck = getReviewDeck;
-    if (deck.length === 0) { toast.info("No cards available for this mode!"); return; }
+    if (deck.length === 0) { toast.info(t("spaced.toast.noCards")); return; }
     setSessionIds(deck.map((c) => c.id));
     setCurrentIndex(0); setShowAnswer(false); setExplanation(null);
     setSessionStats({ reviewed: 0, again: 0, hard: 0, good: 0, easy: 0 });
@@ -154,27 +160,27 @@ const SpacedRepetition = () => {
 
   const addMutation = useMutation({
     mutationFn: async () => (await api.post<FlashcardDto>("/Flashcards", {
-      Question: newCard.question, Answer: newCard.answer, Topic: newCard.topic || "General",
+      Question: newCard.question, Answer: newCard.answer, Topic: newCard.topic.trim() || null,
     })).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["flashcards"] });
-      setNewCard({ question: "", answer: "", topic: "General" });
+      setNewCard({ question: "", answer: "", topic: "" });
       setAddDialogOpen(false);
-      toast.success("Card added!");
+      toast.success(t("spaced.toast.cardAdded"));
     },
-    onError: (err) => toast.error(getApiError(err, "Failed to save card")),
+    onError: (err) => toast.error(getApiError(err, i18n.t("learning:spaced.toast.saveCardFailed"))),
   });
 
   const addCard = () => {
-    if (!newCard.question || !newCard.answer) { toast.error("Fill question and answer"); return; }
+    if (!newCard.question || !newCard.answer) { toast.error(t("spaced.toast.fillBoth")); return; }
     addMutation.mutate();
   };
 
   // Explain the current card (template-based explanation from the server)
   const explainMutation = useMutation({
     mutationFn: async (id: string) => (await api.post<{ Explanation: string; Generator: string }>(`/Flashcards/${id}/explain`)).data,
-    onSuccess: (data) => setExplanation(data.Explanation || "No explanation available."),
-    onError: (err) => toast.error(getApiError(err, "Failed to get explanation")),
+    onSuccess: (data) => setExplanation(data.Explanation || t("spaced.noExplanation")),
+    onError: (err) => toast.error(getApiError(err, i18n.t("learning:spaced.toast.explainFailed"))),
   });
   const isExplaining = explainMutation.isPending;
   const explainCard = () => { if (currentCard) explainMutation.mutate(currentCard.id); };
@@ -184,16 +190,16 @@ const SpacedRepetition = () => {
     mutationFn: async (topic: string) => (await api.post<FlashcardDto[]>("/Flashcards/generate", { Topic: topic, Count: 8 })).data,
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ["flashcards"] });
-      if (created.length === 0) { toast.info("No cards generated. Try a different topic."); return; }
+      if (created.length === 0) { toast.info(t("spaced.toast.noneGenerated")); return; }
       setGenerateTopic("");
       setGenerateDialogOpen(false);
-      toast.success(`Generated ${created.length} flashcards!`);
+      toast.success(t("spaced.toast.generated", { count: created.length }));
     },
-    onError: (err) => toast.error(getApiError(err, "Failed to generate cards")),
+    onError: (err) => toast.error(getApiError(err, i18n.t("learning:spaced.toast.generateFailed"))),
   });
   const isGeneratingCards = generateMutation.isPending;
   const generateCards = () => {
-    if (!generateTopic.trim()) { toast.error("Enter a topic"); return; }
+    if (!generateTopic.trim()) { toast.error(t("spaced.toast.enterTopic")); return; }
     generateMutation.mutate(generateTopic.trim());
   };
 
@@ -215,13 +221,13 @@ const SpacedRepetition = () => {
       <ApplicantSidebar onCollapse={setSidebarCollapsed} />
       <Header sidebarCollapsed={sidebarCollapsed} userRole="Trainer" mobileSidebar={<ApplicantSidebarContent onItemClick={() => {}} />} />
 
-      <main className={cn("pt-20 pb-10 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64", "ml-0")}>
+      <main className={cn("pt-20 pb-10 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ms-20" : "lg:ms-64", "ms-0")}>
         <div className="max-w-5xl mx-auto space-y-6">
           {cardsQuery.isError && (
             <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
               <AlertCircle className="w-4 h-4" />
-              <span className="flex-1">{getApiError(cardsQuery.error, "Failed to load flashcards")}</span>
-              <Button size="sm" variant="outline" onClick={() => cardsQuery.refetch()}>Retry</Button>
+              <span className="flex-1">{getApiError(cardsQuery.error, t("spaced.loadFailed"))}</span>
+              <Button size="sm" variant="outline" onClick={() => cardsQuery.refetch()}>{t("common:actions.retry")}</Button>
             </div>
           )}
           {/* Hero Header */}
@@ -232,45 +238,45 @@ const SpacedRepetition = () => {
                   <div className="p-2.5 rounded-xl bg-accent/15">
                     <Brain className="w-6 h-6 text-accent" />
                   </div>
-                  Spaced Repetition
+                  {t("spaced.title")}
                 </h1>
-                <p className="text-muted-foreground text-sm mt-2 max-w-md">Master your knowledge with scientifically-proven interval-based review.</p>
+                <p className="text-muted-foreground text-sm mt-2 max-w-md">{t("spaced.subtitle")}</p>
               </div>
               <div className="flex gap-2 flex-wrap">
                 <Dialog open={generateDialogOpen} onOpenChange={setGenerateDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="gap-2 border-accent/30 text-accent hover:bg-accent/10">
-                      <Wand2 className="w-4 h-4" /> AI Generate
+                      <Wand2 className="w-4 h-4" /> {t("spaced.aiGenerate")}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
-                    <DialogHeader><DialogTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-accent" /> AI Flashcard Generator</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-accent" /> {t("spaced.generatorTitle")}</DialogTitle></DialogHeader>
                     <div className="space-y-4 pt-2">
-                      <p className="text-sm text-muted-foreground">Enter a topic and the AI will generate study flashcards for you.</p>
-                      <Input placeholder="e.g. React Hooks, Calculus Derivatives, World War II" value={generateTopic} onChange={(e) => setGenerateTopic(e.target.value)} />
+                      <p className="text-sm text-muted-foreground">{t("spaced.generatorDesc")}</p>
+                      <Input placeholder={t("spaced.generatorPlaceholder")} value={generateTopic} onChange={(e) => setGenerateTopic(e.target.value)} />
                       <Button onClick={generateCards} className="w-full gap-2" disabled={isGeneratingCards}>
                         {isGeneratingCards ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-                        {isGeneratingCards ? "Generating..." : "Generate Flashcards"}
+                        {isGeneratingCards ? t("spaced.generating") : t("spaced.generate")}
                       </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
                 <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="gap-2"><Plus className="w-4 h-4" /> Add Card</Button>
+                    <Button variant="outline" className="gap-2"><Plus className="w-4 h-4" /> {t("spaced.addCard")}</Button>
                   </DialogTrigger>
                   <DialogContent>
-                    <DialogHeader><DialogTitle>Add Review Card</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle>{t("spaced.addTitle")}</DialogTitle></DialogHeader>
                     <div className="space-y-4 pt-2">
-                      <Input placeholder="Topic (e.g. Test Design)" value={newCard.topic} onChange={(e) => setNewCard({ ...newCard, topic: e.target.value })} />
-                      <Textarea placeholder="Question" value={newCard.question} onChange={(e) => setNewCard({ ...newCard, question: e.target.value })} rows={3} />
-                      <Textarea placeholder="Answer" value={newCard.answer} onChange={(e) => setNewCard({ ...newCard, answer: e.target.value })} rows={3} />
-                      <Button onClick={addCard} className="w-full" disabled={addMutation.isPending}>Add Card</Button>
+                      <Input placeholder={t("spaced.topicPlaceholder")} value={newCard.topic} onChange={(e) => setNewCard({ ...newCard, topic: e.target.value })} />
+                      <Textarea placeholder={t("spaced.questionPlaceholder")} value={newCard.question} onChange={(e) => setNewCard({ ...newCard, question: e.target.value })} rows={3} />
+                      <Textarea placeholder={t("spaced.answerPlaceholder")} value={newCard.answer} onChange={(e) => setNewCard({ ...newCard, answer: e.target.value })} rows={3} />
+                      <Button onClick={addCard} className="w-full" disabled={addMutation.isPending}>{t("spaced.addCard")}</Button>
                     </div>
                   </DialogContent>
                 </Dialog>
                 <Button onClick={startSession} className="gap-2 shadow-md" disabled={isReviewing}>
-                  <Zap className="w-4 h-4" /> Start Review ({getReviewDeck.length})
+                  <Zap className="w-4 h-4" /> {t("spaced.startReview", { count: formatNumber(getReviewDeck.length) })}
                 </Button>
               </div>
             </div>
@@ -282,17 +288,17 @@ const SpacedRepetition = () => {
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {[
-              { icon: Layers, label: "Total Cards", value: cards.length, color: "text-foreground", iconColor: "text-muted-foreground" },
-              { icon: Clock, label: "Due Today", value: dueCards.length, color: "text-primary", iconColor: "text-primary" },
-              { icon: BookOpen, label: "New", value: newCards.length, color: "text-warning-foreground", iconColor: "text-warning" },
-              { icon: TrendingUp, label: "Learning", value: learningCards.length, color: "text-success", iconColor: "text-success" },
-              { icon: Target, label: "Mastered", value: masteredCards.length, color: "text-accent", iconColor: "text-accent" },
+              { icon: Layers, label: t("spaced.stats.total"), value: cards.length, color: "text-foreground", iconColor: "text-muted-foreground" },
+              { icon: Clock, label: t("spaced.stats.dueToday"), value: dueCards.length, color: "text-primary", iconColor: "text-primary" },
+              { icon: BookOpen, label: t("spaced.stats.new"), value: newCards.length, color: "text-warning-foreground", iconColor: "text-warning" },
+              { icon: TrendingUp, label: t("spaced.stats.learning"), value: learningCards.length, color: "text-success", iconColor: "text-success" },
+              { icon: Target, label: t("spaced.stats.mastered"), value: masteredCards.length, color: "text-accent", iconColor: "text-accent" },
             ].map((stat) => (
               <Card key={stat.label} className="overflow-hidden">
                 <CardContent className="p-4 text-center">
                   <stat.icon className={cn("w-5 h-5 mx-auto mb-1.5", stat.iconColor)} />
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">{stat.label}</p>
-                  <p className={cn("text-2xl font-bold mt-0.5", stat.color)}>{stat.value}</p>
+                  <p className="text-[11px] text-muted-foreground tracking-wider font-medium">{stat.label}</p>
+                  <p className={cn("text-2xl font-bold mt-0.5", stat.color)}>{formatNumber(stat.value)}</p>
                 </CardContent>
               </Card>
             ))}
@@ -303,12 +309,12 @@ const SpacedRepetition = () => {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-accent" /> Retention Rate
+                  <Sparkles className="w-4 h-4 text-accent" /> {t("spaced.retentionRate")}
                 </span>
-                <span className="text-sm font-bold text-accent">{retentionRate}%</span>
+                <span className="text-sm font-bold text-accent">{formatPercent(retentionRate)}</span>
               </div>
               <Progress value={retentionRate} className="h-2" />
-              <p className="text-[11px] text-muted-foreground mt-1.5">{masteredCards.length} of {cards.length} cards mastered (3+ successful reviews)</p>
+              <p className="text-[11px] text-muted-foreground mt-1.5">{t("spaced.retentionHint", { mastered: formatNumber(masteredCards.length), total: formatNumber(cards.length) })}</p>
             </CardContent>
           </Card>
 
@@ -319,10 +325,10 @@ const SpacedRepetition = () => {
               <CardContent className="p-6 sm:p-8 max-w-2xl mx-auto">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs border-accent/30 text-accent">{currentCard.topic}</Badge>
+                    <Badge variant="outline" className="text-xs border-accent/30 text-accent">{currentCard.topic ?? t("spaced.generalTopic")}</Badge>
                     <MemoryStrengthBadge repetitions={currentCard.repetitions} easeFactor={currentCard.easeFactor} />
                   </div>
-                  <span className="text-xs text-muted-foreground font-medium">{currentIndex + 1} / {reviewDeckSize}</span>
+                  <span className="text-xs text-muted-foreground font-medium"><bdi>{formatNumber(currentIndex + 1)} / {formatNumber(reviewDeckSize)}</bdi></span>
                 </div>
                 <div className="text-center space-y-6">
                   <div className="py-4">
@@ -338,17 +344,17 @@ const SpacedRepetition = () => {
                       {!explanation && (
                         <Button variant="outline" size="sm" className="gap-2 border-accent/30 text-accent hover:bg-accent/10" onClick={explainCard} disabled={isExplaining}>
                           {isExplaining ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Lightbulb className="w-3.5 h-3.5" />}
-                          Explain This Card
+                          {t("spaced.explainCard")}
                         </Button>
                       )}
                       {explanation && (
-                        <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 text-left">
-                          <p className="text-xs font-semibold text-accent mb-2 flex items-center gap-1.5"><Lightbulb className="w-3.5 h-3.5" /> Explanation</p>
+                        <div className="bg-accent/5 border border-accent/20 rounded-xl p-4 text-start">
+                          <p className="text-xs font-semibold text-accent mb-2 flex items-center gap-1.5"><Lightbulb className="w-3.5 h-3.5" /> {t("spaced.explanation")}</p>
                           <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{explanation}</p>
                         </div>
                       )}
 
-                      <p className="text-xs text-muted-foreground">How well did you remember?</p>
+                      <p className="text-xs text-muted-foreground">{t("spaced.howWell")}</p>
                       <div className="grid grid-cols-4 gap-2">
                         {(["again", "hard", "good", "easy"] as Difficulty[]).map((d) => {
                           const cfg = difficultyConfig[d];
@@ -356,7 +362,7 @@ const SpacedRepetition = () => {
                           return (
                             <Button key={d} variant="outline" onClick={() => handleRate(d)} className={cn("flex flex-col gap-1 h-auto py-3", cfg.color)}>
                               <Icon className="w-4 h-4" />
-                              <span className="text-xs font-semibold">{cfg.label}</span>
+                              <span className="text-xs font-semibold">{t(`spaced.rating.${d}`)}</span>
                               <span className="text-[10px] opacity-60">{getIntervalLabel(currentCard, d)}</span>
                             </Button>
                           );
@@ -365,7 +371,7 @@ const SpacedRepetition = () => {
                     </>
                   ) : (
                     <Button onClick={() => setShowAnswer(true)} size="lg" className="mt-4 shadow-md gap-2">
-                      <BookOpen className="w-4 h-4" /> Show Answer
+                      <BookOpen className="w-4 h-4" /> {t("spaced.showAnswer")}
                     </Button>
                   )}
                 </div>
@@ -378,16 +384,16 @@ const SpacedRepetition = () => {
                 <div className="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2 className="w-8 h-8 text-success" />
                 </div>
-                <h2 className="text-xl font-bold mb-2">Session Complete!</h2>
-                <p className="text-muted-foreground mb-6">You reviewed {sessionStats.reviewed} cards</p>
+                <h2 className="text-xl font-bold mb-2">{t("spaced.sessionComplete")}</h2>
+                <p className="text-muted-foreground mb-6">{t("spaced.reviewedCount", { count: sessionStats.reviewed })}</p>
                 <div className="flex justify-center gap-6 text-sm mb-6">
-                  <div className="text-center"><p className="text-lg font-bold text-destructive">{sessionStats.again}</p><p className="text-[11px] text-muted-foreground">Again</p></div>
-                  <div className="text-center"><p className="text-lg font-bold text-warning-foreground">{sessionStats.hard}</p><p className="text-[11px] text-muted-foreground">Hard</p></div>
-                  <div className="text-center"><p className="text-lg font-bold text-success">{sessionStats.good}</p><p className="text-[11px] text-muted-foreground">Good</p></div>
-                  <div className="text-center"><p className="text-lg font-bold text-primary">{sessionStats.easy}</p><p className="text-[11px] text-muted-foreground">Easy</p></div>
+                  <div className="text-center"><p className="text-lg font-bold text-destructive">{formatNumber(sessionStats.again)}</p><p className="text-[11px] text-muted-foreground">{t("spaced.rating.again")}</p></div>
+                  <div className="text-center"><p className="text-lg font-bold text-warning-foreground">{formatNumber(sessionStats.hard)}</p><p className="text-[11px] text-muted-foreground">{t("spaced.rating.hard")}</p></div>
+                  <div className="text-center"><p className="text-lg font-bold text-success">{formatNumber(sessionStats.good)}</p><p className="text-[11px] text-muted-foreground">{t("spaced.rating.good")}</p></div>
+                  <div className="text-center"><p className="text-lg font-bold text-primary">{formatNumber(sessionStats.easy)}</p><p className="text-[11px] text-muted-foreground">{t("spaced.rating.easy")}</p></div>
                 </div>
                 <Button onClick={startSession} className="gap-2" disabled={getReviewDeck.length === 0}>
-                  <RotateCcw className="w-4 h-4" /> Review Again ({getReviewDeck.length})
+                  <RotateCcw className="w-4 h-4" /> {t("spaced.reviewAgain", { count: formatNumber(getReviewDeck.length) })}
                 </Button>
               </CardContent>
             </Card>
@@ -400,14 +406,14 @@ const SpacedRepetition = () => {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <Layers className="w-4 h-4 text-muted-foreground" /> All Cards
-                <Badge variant="secondary" className="ml-auto text-[11px]">{cards.length}</Badge>
+                <Layers className="w-4 h-4 text-muted-foreground" /> {t("spaced.allCards")}
+                <Badge variant="secondary" className="ms-auto text-[11px]">{formatNumber(cards.length)}</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <div className="space-y-2">
                 {cards.length === 0 && !cardsQuery.isError && (
-                  <p className="text-sm text-muted-foreground text-center py-6">No flashcards yet. Add a card or use AI Generate to create some from a topic.</p>
+                  <p className="text-sm text-muted-foreground text-center py-6">{t("spaced.empty")}</p>
                 )}
                 {cards.map((card) => {
                   const isDue = card.nextReview <= new Date();
@@ -418,18 +424,18 @@ const SpacedRepetition = () => {
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate">{card.question}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{card.topic}</Badge>
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{card.topic ?? t("spaced.generalTopic")}</Badge>
                           <MemoryStrengthBadge repetitions={card.repetitions} easeFactor={card.easeFactor} />
                           <span className="text-[10px] text-muted-foreground">
-                            {card.repetitions === 0 ? "New" : card.repetitions >= 3 ? "Mastered" : `${card.repetitions} reviews`}
+                            {card.repetitions === 0 ? t("spaced.stats.new") : card.repetitions >= 3 ? t("spaced.stats.mastered") : t("spaced.reviewsCount", { count: card.repetitions })}
                           </span>
                         </div>
                       </div>
                       {isDue ? (
-                        <Badge className="bg-primary/15 text-primary border-primary/30 text-[10px] flex-shrink-0">Due</Badge>
+                        <Badge className="bg-primary/15 text-primary border-primary/30 text-[10px] flex-shrink-0">{t("spaced.due")}</Badge>
                       ) : (
                         <span className="text-[10px] text-muted-foreground flex-shrink-0">
-                          Next: {Math.ceil((card.nextReview.getTime() - Date.now()) / 86400000)}d
+                          {t("spaced.next", { days: t("spaced.daysShort", { count: Math.ceil((card.nextReview.getTime() - Date.now()) / 86400000) }) })}
                         </span>
                       )}
                     </div>
@@ -442,13 +448,13 @@ const SpacedRepetition = () => {
           {/* Tips */}
           <Card className="border-accent/15 bg-gradient-to-r from-accent/5 to-primary/5">
             <CardContent className="p-5">
-              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">🧠 How Spaced Repetition Works</h3>
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">{t("spaced.tips.title")}</h3>
               <ul className="text-sm text-muted-foreground space-y-1.5">
-                <li>• Cards you find <strong>easy</strong> appear less frequently (longer intervals).</li>
-                <li>• Cards you struggle with (<strong>again/hard</strong>) reset to shorter intervals.</li>
-                <li>• Use <strong>AI Generate</strong> to create flashcards from any topic instantly.</li>
-                <li>• Click <strong>Explain This Card</strong> during review for AI-powered explanations.</li>
-                <li>• The <strong>forgetting curve</strong> shows why regular review matters.</li>
+                <li>{t("spaced.tips.easy")}</li>
+                <li>{t("spaced.tips.hard")}</li>
+                <li>{t("spaced.tips.generate")}</li>
+                <li>{t("spaced.tips.explain")}</li>
+                <li>{t("spaced.tips.curve")}</li>
               </ul>
             </CardContent>
           </Card>

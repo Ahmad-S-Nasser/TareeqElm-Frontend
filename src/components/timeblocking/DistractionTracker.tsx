@@ -9,16 +9,18 @@ import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Plus, Phone, MessageSquare, Coffee, Users, Zap, TrendingUp } from "lucide-react";
 import api, { getApiError } from "@/lib/api";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import { formatDate, useFormatters } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { format, startOfWeek, addDays } from "date-fns";
 
 const distractionTypes = [
-  { value: "phone", label: "Phone/Social Media", icon: Phone, color: "bg-destructive" },
-  { value: "messages", label: "Messages/Chat", icon: MessageSquare, color: "bg-warning" },
-  { value: "break", label: "Unplanned Break", icon: Coffee, color: "bg-accent" },
-  { value: "people", label: "People/Interruption", icon: Users, color: "bg-primary" },
-  { value: "other", label: "Other", icon: Zap, color: "bg-muted-foreground" },
+  { value: "phone", icon: Phone, color: "bg-destructive" },
+  { value: "messages", icon: MessageSquare, color: "bg-warning" },
+  { value: "break", icon: Coffee, color: "bg-accent" },
+  { value: "people", icon: Users, color: "bg-primary" },
+  { value: "other", icon: Zap, color: "bg-muted-foreground" },
 ];
 
 interface DistractionDto {
@@ -35,6 +37,9 @@ interface DistractionTrackerProps {
 }
 
 export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
+  const { t, i18n } = useTranslation(["learning", "common"]);
+  const { formatNumber } = useFormatters();
+  const rtl = i18n.dir() === "rtl";
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newDistraction, setNewDistraction] = useState({
     type: "phone",
@@ -62,9 +67,10 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
     return weekDays.map((day) => {
       const dateStr = format(day, "yyyy-MM-dd");
       const count = distractions.filter((d) => format(new Date(d.LoggedAt), "yyyy-MM-dd") === dateStr).length;
-      return { day: format(day, "EEE"), count };
+      return { day: formatDate(day, { weekday: "short" }), count };
     });
-  }, [distractions, weekStart]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [distractions, weekStart, i18n.language]);
 
   const logMutation = useMutation({
     mutationFn: async () => (await api.post<DistractionDto>("/distractions", {
@@ -75,11 +81,11 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
     })).data,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["distractions"] });
-      toast.success("Distraction logged — stay focused! 💪");
+      toast.success(t("distraction.logged"));
       setDialogOpen(false);
       setNewDistraction({ type: "phone", description: "", duration: 5 });
     },
-    onError: (err) => toast.error(getApiError(err, "Failed to log distraction")),
+    onError: (err) => toast.error(getApiError(err, t("distraction.logFailed"))),
   });
 
   const logDistraction = () => logMutation.mutate();
@@ -97,7 +103,7 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
   }, {} as Record<string, number>);
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
   const topType = sortedTypes[0]?.[0];
-  const topTypeInfo = distractionTypes.find((t) => t.value === topType);
+  const topTypeInfo = distractionTypes.find((dt) => dt.value === topType);
 
   return (
     <Card className="overflow-hidden">
@@ -105,31 +111,31 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-destructive" />
-            Distraction Tracker
+            {t("distraction.title")}
           </CardTitle>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" variant="outline" className="gap-1.5 h-8">
-                <Plus className="w-3.5 h-3.5" /> Log
+                <Plus className="w-3.5 h-3.5" /> {t("distraction.log")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Log a Distraction</DialogTitle>
+                <DialogTitle>{t("distraction.logTitle")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-2">
                 <div>
-                  <label className="text-sm text-muted-foreground mb-2 block">Type</label>
+                  <label className="text-sm text-muted-foreground mb-2 block">{t("distraction.type")}</label>
                   <Select value={newDistraction.type} onValueChange={(v) => setNewDistraction({ ...newDistraction, type: v })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {distractionTypes.map((t) => (
-                        <SelectItem key={t.value} value={t.value}>
+                      {distractionTypes.map((dt) => (
+                        <SelectItem key={dt.value} value={dt.value}>
                           <span className="flex items-center gap-2">
-                            <t.icon className="w-4 h-4" />
-                            {t.label}
+                            <dt.icon className="w-4 h-4" />
+                            {t(`distraction.types.${dt.value}`)}
                           </span>
                         </SelectItem>
                       ))}
@@ -137,15 +143,15 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm text-muted-foreground mb-2 block">Description (optional)</label>
+                  <label className="text-sm text-muted-foreground mb-2 block">{t("distraction.description")}</label>
                   <Input
-                    placeholder="What distracted you?"
+                    placeholder={t("distraction.descPlaceholder")}
                     value={newDistraction.description}
                     onChange={(e) => setNewDistraction({ ...newDistraction, description: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="text-sm text-muted-foreground mb-2 block">Duration (minutes)</label>
+                  <label className="text-sm text-muted-foreground mb-2 block">{t("distraction.duration")}</label>
                   <Input
                     type="number"
                     min={1}
@@ -155,7 +161,7 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
                   />
                 </div>
                 <Button onClick={logDistraction} className="w-full" disabled={logMutation.isPending}>
-                  Log Distraction
+                  {t("distraction.logButton")}
                 </Button>
               </div>
             </DialogContent>
@@ -166,32 +172,32 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
         {distractionsQuery.isError && (
           <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 p-2 text-xs text-destructive">
             <AlertCircle className="w-3.5 h-3.5" />
-            <span className="flex-1">{getApiError(distractionsQuery.error, "Failed to load distractions")}</span>
-            <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => distractionsQuery.refetch()}>Retry</Button>
+            <span className="flex-1">{getApiError(distractionsQuery.error, t("distraction.loadFailed"))}</span>
+            <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => distractionsQuery.refetch()}>{t("common:actions.retry")}</Button>
           </div>
         )}
         {/* Today's Stats */}
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl bg-destructive/10 border border-destructive/20 p-3 text-center">
-            <p className="text-2xl font-bold text-destructive">{todayDistractions.length}</p>
-            <p className="text-[10px] text-muted-foreground uppercase">Today</p>
+            <p className="text-2xl font-bold text-destructive">{formatNumber(todayDistractions.length)}</p>
+            <p className="text-[10px] text-muted-foreground">{t("distraction.today")}</p>
           </div>
           <div className="rounded-xl bg-warning/10 border border-warning/20 p-3 text-center">
             <p className="text-2xl font-bold text-warning-foreground">
-              {Math.floor(totalTimeLost / 60)}m
+              {t("distraction.minutesShort", { value: formatNumber(Math.floor(totalTimeLost / 60)) })}
             </p>
-            <p className="text-[10px] text-muted-foreground uppercase">Time Lost</p>
+            <p className="text-[10px] text-muted-foreground">{t("distraction.timeLost")}</p>
           </div>
           <div className="rounded-xl bg-muted p-3 text-center">
             {topTypeInfo ? (
               <>
                 <topTypeInfo.icon className="w-5 h-5 mx-auto text-muted-foreground" />
-                <p className="text-[10px] text-muted-foreground uppercase mt-1">Top Type</p>
+                <p className="text-[10px] text-muted-foreground mt-1">{t("distraction.topType")}</p>
               </>
             ) : (
               <>
                 <p className="text-lg font-bold text-success">✓</p>
-                <p className="text-[10px] text-muted-foreground uppercase">Focused!</p>
+                <p className="text-[10px] text-muted-foreground">{t("distraction.focused")}</p>
               </>
             )}
           </div>
@@ -201,12 +207,12 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
         <div>
           <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
             <TrendingUp className="w-3.5 h-3.5" />
-            Weekly Distractions
+            {t("distraction.weekly")}
           </p>
           <div className="h-28">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weeklyData} barSize={20}>
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
+                <XAxis dataKey="day" reversed={rtl} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} />
                 <YAxis hide domain={[0, "auto"]} />
                 <Tooltip
                   cursor={{ fill: "hsl(var(--muted) / 0.3)", radius: 6 }}
@@ -215,8 +221,9 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
                     border: "1px solid hsl(var(--border))",
                     borderRadius: "0.5rem",
                     fontSize: "11px",
+                    textAlign: rtl ? "right" : "left",
                   }}
-                  formatter={(value: number) => [`${value} distractions`, "Count"]}
+                  formatter={(value: number) => [t("distraction.countLabel", { count: value }), t("distraction.count")]}
                 />
                 <Bar dataKey="count" radius={[4, 4, 2, 2]}>
                   {weeklyData.map((entry, index) => (
@@ -234,18 +241,18 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
         {/* Recent Distractions */}
         {todayDistractions.length > 0 && (
           <div>
-            <p className="text-xs text-muted-foreground mb-2">Recent</p>
+            <p className="text-xs text-muted-foreground mb-2">{t("distraction.recent")}</p>
             <div className="space-y-1.5 max-h-32 overflow-y-auto">
               {todayDistractions.slice(0, 5).map((d) => {
-                const typeInfo = distractionTypes.find((t) => t.value === d.Type);
+                const typeInfo = distractionTypes.find((dt) => dt.value === d.Type);
                 return (
                   <div key={d.Id} className="flex items-center gap-2 text-sm p-2 rounded-lg bg-muted/50">
                     {typeInfo && <typeInfo.icon className="w-3.5 h-3.5 text-muted-foreground" />}
                     <span className="flex-1 truncate text-xs">
-                      {d.Description || typeInfo?.label || "Distraction"}
+                      {d.Description || (typeInfo ? t(`distraction.types.${typeInfo.value}`) : t("distraction.generic"))}
                     </span>
                     <Badge variant="outline" className="text-[10px]">
-                      {Math.round(d.DurationSeconds / 60)}m
+                      {t("distraction.minutesShort", { value: formatNumber(Math.round(d.DurationSeconds / 60)) })}
                     </Badge>
                   </div>
                 );
@@ -256,8 +263,8 @@ export function DistractionTracker({ sessionId }: DistractionTrackerProps) {
 
         {!distractionsQuery.isLoading && !distractionsQuery.isError && todayDistractions.length === 0 && (
           <div className="text-center py-4 text-muted-foreground">
-            <p className="text-sm">No distractions logged today</p>
-            <p className="text-xs mt-1">Great focus! Keep it up 🎯</p>
+            <p className="text-sm">{t("distraction.none")}</p>
+            <p className="text-xs mt-1">{t("distraction.greatFocus")} 🎯</p>
           </div>
         )}
       </CardContent>

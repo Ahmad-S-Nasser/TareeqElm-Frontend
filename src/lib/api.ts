@@ -1,4 +1,6 @@
 import axios, { AxiosError } from 'axios';
+import i18n from '@/i18n';
+import { normalizeLanguage } from '@/i18n/config';
 
 const baseURL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'https://localhost:9889/api' : '');
 if (!baseURL) {
@@ -25,6 +27,8 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Lets the backend localise its own messages / emails to the user's active language.
+    config.headers['Accept-Language'] = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
     return config;
   },
   (error) => Promise.reject(error)
@@ -51,28 +55,35 @@ api.interceptors.response.use(
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
-export const getApiError = (error: unknown, fallback = 'Something went wrong. Please try again.'): string => {
+export const getApiError = (error: unknown, fallback?: string): string => {
+  const t = (key: string) => i18n.t(key, { ns: 'errors' });
+  const fallbackText = fallback ?? t('generic');
   if (!axios.isAxiosError(error)) {
-    return (isRecord(error) && typeof error.message === 'string' && error.message) || fallback;
+    return (isRecord(error) && typeof error.message === 'string' && error.message) || fallbackText;
   }
-  if (!error.response) return 'Cannot reach the server. Check your connection and try again.';
+  if (!error.response) return t('network');
 
   const { status, data } = error.response as { status: number; data: unknown };
-  if (status === 429) return 'Too many attempts. Please wait a minute and try again.';
-  if (status === 403) return 'You do not have permission to do that.';
-  if (status >= 500) return 'The server ran into a problem. Please try again in a moment.';
-  if (typeof data === 'string' && data.trim()) return data;
+  if (status === 429) return t('tooManyRequests');
+  if (status >= 500) return t('server');
   if (isRecord(data)) {
     if (isRecord(data.errors)) {
       const first = Object.values(data.errors).flat()[0];
       if (typeof first === 'string') return first;
     }
+    // Business-rule errors carry a stable `code` and a title the server already localised for the
+    // Accept-Language header we send, so it is more specific than the generic status messages below.
+    if (typeof data.code === 'string' && typeof data.title === 'string' && data.title.trim()) return data.title;
+  }
+  if (status === 403) return t('forbidden');
+  if (typeof data === 'string' && data.trim()) return data;
+  if (isRecord(data)) {
     if (typeof data.detail === 'string') return data.detail;
     if (typeof data.title === 'string') return data.title;
   }
-  if (status === 404) return 'We could not find what you were looking for.';
-  if (status === 409) return 'This conflicts with existing data. Refresh the page and try again.';
-  return fallback;
+  if (status === 404) return t('notFound');
+  if (status === 409) return t('conflict');
+  return fallbackText;
 };
 
 export default api;

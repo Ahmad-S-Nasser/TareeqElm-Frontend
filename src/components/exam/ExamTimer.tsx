@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 interface ExamTimerProps {
@@ -13,6 +14,7 @@ export function ExamTimer({
     urgencyLevel,
     isPaused,
 }: ExamTimerProps) {
+    const { t } = useTranslation("quizzes");
     const radius = 54;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference * (1 - percentageRemaining / 100);
@@ -84,6 +86,7 @@ export function ExamTimer({
                 {/* Time display */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span
+                        dir="ltr"
                         className={cn(
                             "text-2xl font-bold tabular-nums tracking-tight",
                             colors.text
@@ -93,13 +96,13 @@ export function ExamTimer({
                     </span>
                     {isPaused && (
                         <span className="text-xs text-muted-foreground font-medium mt-1">
-                            PAUSED
+                            {t("exam.paused")}
                         </span>
                     )}
                 </div>
             </div>
             <span className="text-xs text-muted-foreground mt-2 font-medium">
-                Time Remaining
+                {t("exam.timeRemaining")}
             </span>
         </div>
     );

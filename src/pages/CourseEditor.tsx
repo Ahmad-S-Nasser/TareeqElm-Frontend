@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
+import { courseStatusLabel } from "@/hooks/useInstructorStats";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,10 +26,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Copy, Eye, EyeOff, Lock, Unlock, Trash2, Archive, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEnrolledTrainers } from "@/hooks/useEnrolledTrainers";
-import { format } from "date-fns";
 import { getApiError } from "@/lib/api";
 
 const CourseEditor = () => {
+    const { t } = useTranslation("instructor");
+    const { formatDate, formatPercent } = useFormatters();
     const { courseId } = useParams();
     const navigate = useNavigate();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -116,15 +120,15 @@ const CourseEditor = () => {
         if (!courseId) return;
         const { error } = await updateCourse(courseId, { Status: "Archived" });
         if (!error) setCourseInfo(prev => ({ ...prev, Status: "Archived" }));
-        else toast({ variant: "destructive", title: "Archive failed", description: getApiError(error) });
+        else toast({ variant: "destructive", title: t("courseEditor.settings.archiveFailed"), description: getApiError(error) });
     };
 
     const handleDeleteCourse = async () => {
         if (!courseId) return;
-        if (!window.confirm("Permanently delete this course and all of its content?")) return;
+        if (!window.confirm(t("courseEditor.settings.deleteConfirm"))) return;
         const { error } = await deleteCourse(courseId);
         if (error) {
-            toast({ variant: "destructive", title: "Delete failed", description: getApiError(error, "The course could not be deleted.") });
+            toast({ variant: "destructive", title: t("courseEditor.settings.deleteFailed"), description: getApiError(error, t("courseEditor.settings.deleteFailedDesc")) });
             return;
         }
         navigate("/instructor/courses");
@@ -137,47 +141,47 @@ const CourseEditor = () => {
 
             <main className={cn(
                 "pt-20 pb-8 px-6 transition-all duration-300",
-                sidebarCollapsed ? "ml-20" : "ml-64"
+                sidebarCollapsed ? "ms-20" : "ms-64"
             )}>
                 <div className="max-w-5xl mx-auto space-y-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <Button variant="ghost" onClick={() => navigate("/instructor/courses")}>
-                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                Back
+                                <ArrowLeft className="w-4 h-4 me-2 rtl:rotate-180" />
+                                {t("courseEditor.back")}
                             </Button>
-                            <h1 className="text-2xl font-bold">Edit Course</h1>
+                            <h1 className="text-2xl font-bold">{t("courseEditor.title")}</h1>
                         </div>
                         {loadingCourse && <Loader2 className="w-6 h-6 animate-spin text-primary" />}
                     </div>
 
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
                         <TabsList>
-                            <TabsTrigger value="info">Course Info</TabsTrigger>
-                            <TabsTrigger value="curriculum">Curriculum</TabsTrigger>
-                            <TabsTrigger value="trainers">Trainers</TabsTrigger>
-                            <TabsTrigger value="settings">Settings</TabsTrigger>
+                            <TabsTrigger value="info">{t("courseEditor.tabs.info")}</TabsTrigger>
+                            <TabsTrigger value="curriculum">{t("courseEditor.tabs.curriculum")}</TabsTrigger>
+                            <TabsTrigger value="trainers">{t("courseEditor.tabs.trainers")}</TabsTrigger>
+                            <TabsTrigger value="settings">{t("courseEditor.tabs.settings")}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="info" className="space-y-4">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Basic Information</CardTitle>
-                                    <CardDescription>Manage your course details and settings.</CardDescription>
+                                    <CardTitle>{t("courseEditor.info.title")}</CardTitle>
+                                    <CardDescription>{t("courseEditor.info.description")}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="title">Course Title</Label>
+                                        <Label htmlFor="title">{t("courseEditor.info.courseTitle")}</Label>
                                         <Input
                                             id="title"
                                             value={courseInfo.Title}
                                             onChange={(e) => setCourseInfo({ ...courseInfo, Title: e.target.value })}
-                                            placeholder="e.g. Master React"
+                                            placeholder={t("courseEditor.info.titlePlaceholder")}
                                         />
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="description">Description</Label>
+                                        <Label htmlFor="description">{t("courseEditor.info.descriptionLabel")}</Label>
                                         <Textarea
                                             id="description"
                                             value={courseInfo.Description}
@@ -188,7 +192,7 @@ const CourseEditor = () => {
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="category">Category</Label>
+                                            <Label htmlFor="category">{t("courseEditor.info.category")}</Label>
                                             <Input
                                                 id="category"
                                                 value={courseInfo.Category}
@@ -196,25 +200,25 @@ const CourseEditor = () => {
                                             />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="level">Level</Label>
+                                            <Label htmlFor="level">{t("courseEditor.info.level")}</Label>
                                             <Select
                                                 value={courseInfo.Level}
                                                 onValueChange={(val) => setCourseInfo({ ...courseInfo, Level: val })}
                                             >
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Select level" />
+                                                    <SelectValue placeholder={t("courseEditor.info.selectLevel")} />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="beginner">Beginner</SelectItem>
-                                                    <SelectItem value="intermediate">Intermediate</SelectItem>
-                                                    <SelectItem value="advanced">Advanced</SelectItem>
+                                                    <SelectItem value="beginner">{t("level.beginner")}</SelectItem>
+                                                    <SelectItem value="intermediate">{t("level.intermediate")}</SelectItem>
+                                                    <SelectItem value="advanced">{t("level.advanced")}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="minApplicants">Minimum Applicants</Label>
+                                        <Label htmlFor="minApplicants">{t("courseEditor.info.minApplicants")}</Label>
                                         <Input
                                             id="minApplicants"
                                             type="number"
@@ -224,22 +228,22 @@ const CourseEditor = () => {
                                             placeholder="0"
                                             className="max-w-[200px]"
                                         />
-                                        <p className="text-sm text-muted-foreground">Minimum number of trainers required to start the course.</p>
+                                        <p className="text-sm text-muted-foreground">{t("courseEditor.info.minApplicantsHint")}</p>
                                     </div>
 
                                     <div className="pt-4 border-t">
-                                        <Label className="mb-2 block">Syllabus Analysis</Label>
+                                        <Label className="mb-2 block">{t("courseEditor.info.syllabus")}</Label>
                                         <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center hover:bg-muted/50 transition-colors">
                                             <Upload className="w-8 h-8 text-muted-foreground mb-2" />
                                             {analyzing ? (
                                                 <div className="flex items-center gap-2 text-primary">
                                                     <Loader2 className="w-4 h-4 animate-spin" />
-                                                    <span>Analyzing syllabus...</span>
+                                                    <span>{t("courseEditor.info.analyzing")}</span>
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <p className="text-sm font-medium">Upload Text Syllabus (.txt or .md)</p>
-                                                    <p className="text-xs text-muted-foreground mb-4">A suggested outline is created from the topics; review it before saving</p>
+                                                    <p className="text-sm font-medium">{t("courseEditor.info.uploadText")}</p>
+                                                    <p className="text-xs text-muted-foreground mb-4">{t("courseEditor.info.uploadHint")}</p>
                                                     <div className="relative">
                                                         <Input
                                                             type="file"
@@ -258,8 +262,8 @@ const CourseEditor = () => {
 
                                     <div className="flex justify-end pt-4">
                                         <Button onClick={handleSaveInfo}>
-                                            <Save className="w-4 h-4 mr-2" />
-                                            Save Changes
+                                            <Save className="w-4 h-4 me-2" />
+                                            {t("courseEditor.info.save")}
                                         </Button>
                                     </div>
                                 </CardContent>
@@ -269,8 +273,8 @@ const CourseEditor = () => {
                         <TabsContent value="curriculum">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Course Curriculum</CardTitle>
-                                    <CardDescription>Drag and drop chapters and lessons to reorder.</CardDescription>
+                                    <CardTitle>{t("courseEditor.curriculum.title")}</CardTitle>
+                                    <CardDescription>{t("courseEditor.curriculum.description")}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <ChapterList
@@ -284,11 +288,11 @@ const CourseEditor = () => {
                                             disabled={savingCurriculum}
                                         >
                                             {savingCurriculum ? (
-                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                <Loader2 className="w-4 h-4 me-2 animate-spin" />
                                             ) : (
-                                                <Save className="w-4 h-4 mr-2" />
+                                                <Save className="w-4 h-4 me-2" />
                                             )}
-                                            Save Curriculum
+                                            {t("courseEditor.curriculum.save")}
                                         </Button>
                                     </div>
                                 </CardContent>
@@ -298,17 +302,17 @@ const CourseEditor = () => {
                         <TabsContent value="trainers">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Enrolled Trainers</CardTitle>
-                                    <CardDescription>Manage and view trainers enrolled in this course.</CardDescription>
+                                    <CardTitle>{t("courseEditor.trainers.title")}</CardTitle>
+                                    <CardDescription>{t("courseEditor.trainers.description")}</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>Trainer</TableHead>
-                                                <TableHead>Enrolled Date</TableHead>
-                                                <TableHead>Progress</TableHead>
-                                                <TableHead>Status</TableHead>
+                                                <TableHead>{t("courseEditor.trainers.trainer")}</TableHead>
+                                                <TableHead>{t("courseEditor.trainers.enrolledDate")}</TableHead>
+                                                <TableHead>{t("courseEditor.trainers.progress")}</TableHead>
+                                                <TableHead>{t("courseEditor.trainers.status")}</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -316,24 +320,24 @@ const CourseEditor = () => {
                                                 <TableRow><TableCell colSpan={4} className="text-center py-6"><Loader2 className="w-5 h-5 animate-spin inline text-primary" /></TableCell></TableRow>
                                             )}
                                             {!trainersLoading && trainersError && (
-                                                <TableRow><TableCell colSpan={4} className="text-center py-6 text-destructive">{getApiError(trainersError, "Failed to load trainers.")}</TableCell></TableRow>
+                                                <TableRow><TableCell colSpan={4} className="text-center py-6 text-destructive">{getApiError(trainersError, t("courseEditor.trainers.loadFailed"))}</TableCell></TableRow>
                                             )}
                                             {!trainersLoading && !trainersError && enrolledTrainers.length === 0 && (
-                                                <TableRow><TableCell colSpan={4} className="text-center py-6 text-muted-foreground">No trainers enrolled yet.</TableCell></TableRow>
+                                                <TableRow><TableCell colSpan={4} className="text-center py-6 text-muted-foreground">{t("courseEditor.trainers.empty")}</TableCell></TableRow>
                                             )}
                                             {enrolledTrainers.map((trainer) => (
                                                 <TableRow key={trainer.TrainerId}>
                                                     <TableCell className="flex items-center gap-3">
                                                         <Avatar>
                                                             <AvatarImage src={trainer.AvatarUrl || undefined} />
-                                                            <AvatarFallback>{trainer.FullName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}</AvatarFallback>
+                                                            <AvatarFallback>{(trainer.FullName ?? "").split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}</AvatarFallback>
                                                         </Avatar>
                                                         <div>
-                                                            <p className="font-medium">{trainer.FullName}</p>
-                                                            <p className="text-xs text-muted-foreground">{trainer.Email}</p>
+                                                            <p className="font-medium">{trainer.FullName ?? t("common:deletedUser")}</p>
+                                                            <p className="text-xs text-muted-foreground" dir="ltr">{trainer.Email}</p>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell>{format(new Date(trainer.EnrolledAt), "MMM d, yyyy")}</TableCell>
+                                                    <TableCell>{formatDate(trainer.EnrolledAt)}</TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
                                                             <div className="h-2 w-full max-w-[100px] bg-secondary rounded-full overflow-hidden">
@@ -342,12 +346,12 @@ const CourseEditor = () => {
                                                                     style={{ width: `${trainer.ProgressPercentage}%` }}
                                                                 />
                                                             </div>
-                                                            <span className="text-xs text-muted-foreground">{Math.round(trainer.ProgressPercentage)}%</span>
+                                                            <span className="text-xs text-muted-foreground">{formatPercent(Math.round(trainer.ProgressPercentage))}</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
                                                         <Badge variant={trainer.CompletedAt ? "default" : "secondary"}>
-                                                            {trainer.CompletedAt ? "Completed" : "Active"}
+                                                            {trainer.CompletedAt ? t("courseEditor.trainers.completed") : t("courseEditor.trainers.active")}
                                                         </Badge>
                                                     </TableCell>
                                                 </TableRow>
@@ -363,11 +367,11 @@ const CourseEditor = () => {
                                 <CardHeader>
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <CardTitle>Course Visibility</CardTitle>
-                                            <CardDescription>Control how your course is viewed by others.</CardDescription>
+                                            <CardTitle>{t("courseEditor.settings.visibility")}</CardTitle>
+                                            <CardDescription>{t("courseEditor.settings.visibilityDesc")}</CardDescription>
                                         </div>
                                         <Badge variant={courseInfo.Status === "Published" ? "default" : "secondary"}>
-                                            {courseInfo.Status}
+                                            {courseStatusLabel(t, courseInfo.Status)}
                                         </Badge>
                                     </div>
                                 </CardHeader>
@@ -376,10 +380,10 @@ const CourseEditor = () => {
                                         <div className="space-y-0.5">
                                             <div className="flex items-center gap-2">
                                                 {courseInfo.Status === "Published" ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                                                <Label className="text-base">Publish Course</Label>
+                                                <Label className="text-base">{t("courseEditor.settings.publish")}</Label>
                                             </div>
                                             <p className="text-sm text-muted-foreground">
-                                                Make this course visible to trainers.
+                                                {t("courseEditor.settings.publishHint")}
                                             </p>
                                         </div>
                                         <Switch
@@ -392,44 +396,44 @@ const CourseEditor = () => {
 
                             <Card className="border-destructive/50">
                                 <CardHeader>
-                                    <CardTitle className="text-destructive">Danger Zone</CardTitle>
-                                    <CardDescription>Irreversible actions for this course.</CardDescription>
+                                    <CardTitle className="text-destructive">{t("courseEditor.settings.danger")}</CardTitle>
+                                    <CardDescription>{t("courseEditor.settings.dangerDesc")}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <Alert variant="destructive">
                                         <AlertTriangle className="h-4 w-4" />
-                                        <AlertTitle>Warning</AlertTitle>
+                                        <AlertTitle>{t("courseEditor.settings.warning")}</AlertTitle>
                                         <AlertDescription>
-                                            Archiving a course will hide it from trainers but keep data. Deleting is permanent.
+                                            {t("courseEditor.settings.warningDesc")}
                                         </AlertDescription>
                                     </Alert>
 
                                     <div className="flex items-center justify-between pt-2">
                                         <div>
-                                            <p className="font-medium">Archive Course</p>
-                                            <p className="text-sm text-muted-foreground">Hide from public view.</p>
+                                            <p className="font-medium">{t("courseEditor.settings.archiveCourse")}</p>
+                                            <p className="text-sm text-muted-foreground">{t("courseEditor.settings.archiveHint")}</p>
                                         </div>
                                         <Button
                                             variant="outline"
                                             className="text-warning hover:text-warning border-warning/50 hover:bg-warning/10"
                                             onClick={handleArchiveCourse}
                                         >
-                                            <Archive className="w-4 h-4 mr-2" />
-                                            Archive
+                                            <Archive className="w-4 h-4 me-2" />
+                                            {t("courseEditor.settings.archive")}
                                         </Button>
                                     </div>
 
                                     <div className="flex items-center justify-between pt-2">
                                         <div>
-                                            <p className="font-medium text-destructive">Delete Course</p>
-                                            <p className="text-sm text-muted-foreground">Permanently remove this course.</p>
+                                            <p className="font-medium text-destructive">{t("courseEditor.settings.deleteCourse")}</p>
+                                            <p className="text-sm text-muted-foreground">{t("courseEditor.settings.deleteHint")}</p>
                                         </div>
                                         <Button
                                             variant="destructive"
                                             onClick={handleDeleteCourse}
                                         >
-                                            <Trash2 className="w-4 h-4 mr-2" />
-                                            Delete Course
+                                            <Trash2 className="w-4 h-4 me-2" />
+                                            {t("courseEditor.settings.deleteCourse")}
                                         </Button>
                                     </div>
                                 </CardContent>

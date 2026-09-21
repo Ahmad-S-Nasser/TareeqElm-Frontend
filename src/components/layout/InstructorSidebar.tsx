@@ -21,32 +21,34 @@ import {
   Layers,
   Trophy,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 
 interface NavItem {
   icon: React.ElementType;
-  label: string;
+  labelKey: string;
   href: string;
   badge?: string;
 }
 
 const navItems: NavItem[] = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/instructor" },
-  { icon: BookOpen, label: "My Courses", href: "/instructor/courses" },
-  { icon: Upload, label: "Create Course", href: "/instructor/create-course" },
-  { icon: ListTree, label: "Curriculum", href: "/instructor/curriculum" },
-  { icon: Users, label: "Trainers", href: "/instructor/trainers" },
-  { icon: ClipboardList, label: "Assignments", href: "/instructor/assignments" },
-  { icon: FileQuestion, label: "Quizzes & Exams", href: "/instructor/quizzes" },
-  { icon: MessageSquare, label: "Discussions", href: "/instructor/discussions" },
-  { icon: Megaphone, label: "Announcements", href: "/instructor/announcements" },
-  { icon: Layers, label: "Flashcards", href: "/instructor/flashcards" },
-  { icon: BarChart3, label: "Analytics", href: "/instructor/analytics" },
-  { icon: Trophy, label: "Leaderboard", href: "/instructor/leaderboard" },
-  { icon: FileEdit, label: "Content Tools", href: "/instructor/content" },
-  { icon: Sparkles, label: "AI Assistant", href: "/instructor/ai-tools" },
+  { icon: LayoutDashboard, labelKey: "dashboard", href: "/instructor" },
+  { icon: BookOpen, labelKey: "myCourses", href: "/instructor/courses" },
+  { icon: Upload, labelKey: "createCourse", href: "/instructor/create-course" },
+  { icon: ListTree, labelKey: "curriculum", href: "/instructor/curriculum" },
+  { icon: Users, labelKey: "trainers", href: "/instructor/trainers" },
+  { icon: ClipboardList, labelKey: "assignments", href: "/instructor/assignments" },
+  { icon: FileQuestion, labelKey: "quizzesExams", href: "/instructor/quizzes" },
+  { icon: MessageSquare, labelKey: "discussions", href: "/instructor/discussions" },
+  { icon: Megaphone, labelKey: "announcements", href: "/instructor/announcements" },
+  { icon: Layers, labelKey: "flashcards", href: "/instructor/flashcards" },
+  { icon: BarChart3, labelKey: "analytics", href: "/instructor/analytics" },
+  { icon: Trophy, labelKey: "leaderboard", href: "/instructor/leaderboard" },
+  { icon: FileEdit, labelKey: "contentTools", href: "/instructor/content" },
+  { icon: Sparkles, labelKey: "aiAssistant", href: "/instructor/ai-tools" },
 ];
 
 interface SidebarContentProps {
@@ -58,6 +60,7 @@ interface SidebarContentProps {
 export const InstructorSidebarContent = ({ collapsed, onItemClick, className }: SidebarContentProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation("nav");
   const { signOut } = useAuth();
 
   const handleSignOut = async () => {
@@ -78,9 +81,9 @@ export const InstructorSidebarContent = ({ collapsed, onItemClick, className }: 
           <GraduationCap className="w-5 h-5 text-white" />
         </div>
         {!collapsed && (
-          <div className="animate-fade-in text-left">
-            <h1 className="font-bold text-lg">TareeqElm</h1>
-            <p className="text-xs text-muted-foreground">Instructor Portal</p>
+          <div className="animate-fade-in text-start">
+            <h1 className="font-bold text-lg">{t("sidebar.brand.applicant")}</h1>
+            <p className="text-xs text-muted-foreground">{t("sidebar.portal.instructor")}</p>
           </div>
         )}
       </div>
@@ -105,8 +108,8 @@ export const InstructorSidebarContent = ({ collapsed, onItemClick, className }: 
                 !isActive && "group-hover:scale-110"
               )} />
               {!collapsed && (
-                <span className="flex-1 text-left text-sm font-medium animate-fade-in">
-                  {item.label}
+                <span className="flex-1 text-start text-sm font-medium animate-fade-in">
+                  {t(`sidebar.instructor.${item.labelKey}`)}
                 </span>
               )}
               {!collapsed && item.badge && (
@@ -132,8 +135,8 @@ export const InstructorSidebarContent = ({ collapsed, onItemClick, className }: 
         >
           <Bell className="w-5 h-5 flex-shrink-0" />
           {!collapsed && (
-            <span className="flex-1 text-left text-sm font-medium animate-fade-in">
-              Notifications
+            <span className="flex-1 text-start text-sm font-medium animate-fade-in">
+              {t("sidebar.instructor.notifications")}
             </span>
           )}
         </button>
@@ -143,8 +146,8 @@ export const InstructorSidebarContent = ({ collapsed, onItemClick, className }: 
         >
           <Settings className="w-5 h-5 flex-shrink-0" />
           {!collapsed && (
-            <span className="flex-1 text-left text-sm font-medium animate-fade-in">
-              Settings
+            <span className="flex-1 text-start text-sm font-medium animate-fade-in">
+              {t("sidebar.instructor.settings")}
             </span>
           )}
         </button>
@@ -155,11 +158,12 @@ export const InstructorSidebarContent = ({ collapsed, onItemClick, className }: 
         >
           <LogOut className="w-5 h-5 flex-shrink-0" />
           {!collapsed && (
-            <span className="flex-1 text-left text-sm font-medium animate-fade-in">
-              Sign Out
+            <span className="flex-1 text-start text-sm font-medium animate-fade-in">
+              {t("sidebar.signOut")}
             </span>
           )}
         </button>
+        {!collapsed && <LanguageSwitcher className="mt-2 lg:hidden" />}
       </div>
     </div>
   );
@@ -170,6 +174,7 @@ interface SidebarProps {
 }
 
 export const InstructorSidebar = ({ onCollapse }: SidebarProps) => {
+  const { t } = useTranslation("nav");
   const [collapsed, setCollapsed] = useState(false);
 
   const toggleCollapse = () => {
@@ -180,7 +185,7 @@ export const InstructorSidebar = ({ onCollapse }: SidebarProps) => {
 
   return (
     <aside className={cn(
-      "fixed left-0 top-0 h-screen bg-card border-r border-border/50 shadow-soft z-40 transition-all duration-300 flex-col hidden lg:flex",
+      "fixed start-0 top-0 h-screen bg-card border-e border-border/50 shadow-soft z-40 transition-all duration-300 flex-col hidden lg:flex",
       collapsed ? "w-20" : "w-64"
     )}>
       <InstructorSidebarContent collapsed={collapsed} />
@@ -191,11 +196,12 @@ export const InstructorSidebar = ({ onCollapse }: SidebarProps) => {
           variant="ghost"
           size="sm"
           onClick={toggleCollapse}
+          aria-label={t(collapsed ? "sidebar.expand" : "sidebar.collapse")}
           className="w-full justify-center"
         >
           <ChevronLeft className={cn(
             "w-4 h-4 transition-transform",
-            collapsed && "rotate-180"
+            collapsed ? "rotate-180 rtl:rotate-0" : "rtl:rotate-180"
           )} />
         </Button>
       </div>

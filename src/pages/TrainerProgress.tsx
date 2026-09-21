@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -15,6 +17,9 @@ const TrainerProgress = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     const navigate = useNavigate();
+    const { t, i18n } = useTranslation("dashboard");
+    const { formatNumber, formatPercent, formatDate, formatDuration } = useFormatters();
+    const rtl = i18n.dir() === "rtl";
     const { stats, loading: statsLoading, error: statsError } = useTrainerStats();
     const { earned, totalXP, loading: achievementsLoading } = useAchievements();
     const loading = statsLoading || achievementsLoading;
@@ -31,24 +36,24 @@ const TrainerProgress = () => {
 
             <main className={cn(
                 "pt-20 pb-8 px-4 sm:px-6 transition-all duration-300",
-                sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
-                "ml-0"
+                sidebarCollapsed ? "lg:ms-20" : "lg:ms-64",
+                "ms-0"
             )}>
                 <div className="max-w-7xl mx-auto space-y-8">
                     <div>
-                        <h1 className="text-3xl font-bold">My Progress</h1>
-                        <p className="text-muted-foreground mt-1">Track your learning journey and achievements</p>
+                        <h1 className="text-3xl font-bold">{t("progress.title")}</h1>
+                        <p className="text-muted-foreground mt-1">{t("progress.subtitle")}</p>
                     </div>
 
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-24">
                             <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-                            <p className="text-muted-foreground">Loading your progress...</p>
+                            <p className="text-muted-foreground">{t("progress.loading")}</p>
                         </div>
                     ) : statsError || !stats ? (
                         <div className="text-center py-24">
                             <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-3" />
-                            <p className="font-medium mb-1">Could not load your progress</p>
+                            <p className="font-medium mb-1">{t("progress.loadFailed")}</p>
                             <p className="text-sm text-muted-foreground">{statsError}</p>
                         </div>
                     ) : (<>
@@ -61,8 +66,8 @@ const TrainerProgress = () => {
                                         <Clock className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Total Study Time</p>
-                                        <h3 className="text-2xl font-bold">{Math.floor(stats.totalStudyTime / 60)}h {stats.totalStudyTime % 60}m</h3>
+                                        <p className="text-sm text-muted-foreground">{t("progress.totalStudyTime")}</p>
+                                        <h3 className="text-2xl font-bold">{formatDuration(stats.totalStudyTime * 60)}</h3>
                                     </div>
                                 </div>
                             </CardContent>
@@ -74,8 +79,8 @@ const TrainerProgress = () => {
                                         <BookOpen className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Lessons Completed</p>
-                                        <h3 className="text-2xl font-bold">{stats.lessonsCompleted}</h3>
+                                        <p className="text-sm text-muted-foreground">{t("progress.lessonsCompleted")}</p>
+                                        <h3 className="text-2xl font-bold">{formatNumber(stats.lessonsCompleted)}</h3>
                                     </div>
                                 </div>
                             </CardContent>
@@ -87,8 +92,8 @@ const TrainerProgress = () => {
                                         <Flame className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Current Streak</p>
-                                        <h3 className="text-2xl font-bold">{stats.currentStreak} Days</h3>
+                                        <p className="text-sm text-muted-foreground">{t("progress.currentStreak")}</p>
+                                        <h3 className="text-2xl font-bold">{t("progress.days", { count: stats.currentStreak })}</h3>
                                     </div>
                                 </div>
                             </CardContent>
@@ -100,8 +105,8 @@ const TrainerProgress = () => {
                                         <Trophy className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Total Points</p>
-                                        <h3 className="text-2xl font-bold">{totalXP}</h3>
+                                        <p className="text-sm text-muted-foreground">{t("progress.totalPoints")}</p>
+                                        <h3 className="text-2xl font-bold">{formatNumber(totalXP)}</h3>
                                     </div>
                                 </div>
                             </CardContent>
@@ -114,9 +119,9 @@ const TrainerProgress = () => {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <TrendingUp className="w-5 h-5 text-primary" />
-                                    Weekly Activity
+                                    {t("progress.weeklyActivity")}
                                 </CardTitle>
-                                <CardDescription>Your study time over the last 7 days (minutes)</CardDescription>
+                                <CardDescription>{t("progress.weeklyActivityDesc")}</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="h-[300px] w-full">
@@ -129,11 +134,12 @@ const TrainerProgress = () => {
                                                 </linearGradient>
                                             </defs>
                                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                                            <XAxis dataKey="day" axisLine={false} tickLine={false} />
-                                            <YAxis axisLine={false} tickLine={false} />
+                                            <XAxis dataKey="day" axisLine={false} tickLine={false} reversed={rtl} />
+                                            <YAxis axisLine={false} tickLine={false} orientation={rtl ? "right" : "left"} tickFormatter={(v: number) => formatNumber(v)} />
                                             <Tooltip
                                                 cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1 }}
-                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', textAlign: rtl ? 'right' : 'left' }}
+                                                formatter={(value: number) => [formatNumber(value), t("progress.minutes")]}
                                             />
                                             <Area
                                                 type="monotone"
@@ -153,14 +159,14 @@ const TrainerProgress = () => {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Award className="w-5 h-5 text-yellow-500" />
-                                    Recent Achievements
+                                    {t("progress.recentAchievements")}
                                 </CardTitle>
-                                <CardDescription>Badges you've earned recently</CardDescription>
+                                <CardDescription>{t("progress.recentAchievementsDesc")}</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {recentAchievements.length === 0 && (
                                     <p className="text-sm text-muted-foreground text-center py-4">
-                                        No badges earned yet. Keep studying to unlock your first one!
+                                        {t("progress.noBadges")}
                                     </p>
                                 )}
                                 {recentAchievements.map(achievement => (
@@ -174,7 +180,7 @@ const TrainerProgress = () => {
                                         </div>
                                     </div>
                                 ))}
-                                <Button variant="outline" className="w-full text-xs" onClick={() => navigate("/achievements")}>View All Achievements</Button>
+                                <Button variant="outline" className="w-full text-xs" onClick={() => navigate("/achievements")}>{t("progress.viewAllAchievements")}</Button>
                             </CardContent>
                         </Card>
                     </div>
@@ -182,15 +188,15 @@ const TrainerProgress = () => {
                     {/* Course Progress List */}
                     <Card>
                         <CardHeader>
-                            <CardTitle>Course Progress Details</CardTitle>
-                            <CardDescription>Detailed breakdown of your enrolled courses</CardDescription>
+                            <CardTitle>{t("progress.courseDetails")}</CardTitle>
+                            <CardDescription>{t("progress.courseDetailsDesc")}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-6">
                                 {stats.courses.length === 0 && (
                                     <div className="text-center py-6">
-                                        <p className="text-sm text-muted-foreground mb-3">You are not enrolled in any courses yet.</p>
-                                        <Button variant="outline" size="sm" onClick={() => navigate("/courses")}>Browse courses</Button>
+                                        <p className="text-sm text-muted-foreground mb-3">{t("progress.notEnrolled")}</p>
+                                        <Button variant="outline" size="sm" onClick={() => navigate("/courses")}>{t("progress.browseCourses")}</Button>
                                     </div>
                                 )}
                                 {stats.courses.map(course => (
@@ -198,16 +204,16 @@ const TrainerProgress = () => {
                                         <div className="flex justify-between items-center sm:flex-row flex-col sm:gap-0 gap-2">
                                             <div>
                                                 <h4 className="font-semibold">{course.title}</h4>
-                                                <p className="text-xs text-muted-foreground">Enrolled {new Date(course.enrolledAt).toLocaleDateString()}</p>
+                                                <p className="text-xs text-muted-foreground">{t("progress.enrolledOn", { date: formatDate(course.enrolledAt) })}</p>
                                             </div>
                                             <span className="font-mono font-medium bg-secondary px-2 py-1 rounded text-xs">
-                                                {course.progress}% Completed
+                                                {t("progress.percentCompleted", { percent: formatPercent(course.progress) })}
                                             </span>
                                         </div>
                                         <div className="space-y-1">
                                             <Progress value={course.progress} className="h-2" />
                                             <div className="flex justify-between text-xs text-muted-foreground">
-                                                <span>{course.completedLessons} of {course.totalLessons} lessons completed</span>
+                                                <span>{t("progress.lessonsOf", { done: formatNumber(course.completedLessons), total: formatNumber(course.totalLessons) })}</span>
                                             </div>
                                         </div>
                                     </div>

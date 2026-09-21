@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Bell, Lock, Save, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { getApiError } from "@/lib/api";
 import { useProfile, splitName, initials } from "@/hooks/useProfile";
@@ -17,6 +18,7 @@ import { useProfile, splitName, initials } from "@/hooks/useProfile";
 const TrainerSettings = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const { toast } = useToast();
+    const { t } = useTranslation(["dashboard", "common"]);
     const { data: me, isLoading: profileLoading, isError, error, saveProfile, changePassword } = useProfile();
 
     const [name, setName] = useState({ firstName: "", lastName: "" });
@@ -34,28 +36,28 @@ const TrainerSettings = () => {
     const handleSave = async () => {
         const fullName = `${name.firstName} ${name.lastName}`.trim();
         if (!fullName) {
-            toast({ variant: "destructive", title: "Name is required" });
+            toast({ variant: "destructive", title: t("settings.nameRequired") });
             return;
         }
         try {
             await saveProfile.mutateAsync({ FullName: fullName });
-            toast({ title: "Settings Saved", description: "Your profile has been updated." });
+            toast({ title: t("settings.saved"), description: t("settings.savedDesc") });
         } catch (err) {
-            toast({ variant: "destructive", title: "Could not save", description: getApiError(err, "Could not save your profile.") });
+            toast({ variant: "destructive", title: t("settings.saveFailed"), description: getApiError(err, t("settings.saveFailedDesc")) });
         }
     };
 
     const handlePassword = async () => {
         if (!passwords.current || passwords.next.length < 8) {
-            toast({ variant: "destructive", title: "Check your passwords", description: "Enter your current password and a new one of at least 8 characters." });
+            toast({ variant: "destructive", title: t("settings.checkPasswords"), description: t("settings.checkPasswordsDesc") });
             return;
         }
         try {
             await changePassword.mutateAsync({ CurrentPassword: passwords.current, NewPassword: passwords.next });
             setPasswords({ current: "", next: "" });
-            toast({ title: "Password updated" });
+            toast({ title: t("settings.passwordUpdated") });
         } catch (err) {
-            toast({ variant: "destructive", title: "Could not update password", description: getApiError(err, "Could not update your password.") });
+            toast({ variant: "destructive", title: t("settings.passwordFailed"), description: getApiError(err, t("settings.passwordFailedDesc")) });
         }
     };
 
@@ -66,34 +68,34 @@ const TrainerSettings = () => {
 
             <main className={cn(
                 "pt-20 pb-8 px-6 transition-all duration-300",
-                sidebarCollapsed ? "ml-20" : "ml-64"
+                sidebarCollapsed ? "ms-20" : "ms-64"
             )}>
                 <div className="max-w-4xl mx-auto space-y-6">
                     <div>
-                        <h1 className="text-3xl font-bold">Account Settings</h1>
+                        <h1 className="text-3xl font-bold">{t("settings.title")}</h1>
                         <p className="text-muted-foreground mt-1">
-                            Manage your profile details and notifications.
+                            {t("settings.subtitle")}
                         </p>
                     </div>
 
                     <Tabs defaultValue="profile" className="space-y-6">
                         <TabsList>
-                            <TabsTrigger value="profile" className="gap-2"><User className="w-4 h-4" /> Profile</TabsTrigger>
-                            <TabsTrigger value="notifications" className="gap-2"><Bell className="w-4 h-4" /> Notifications</TabsTrigger>
-                            <TabsTrigger value="security" className="gap-2"><Lock className="w-4 h-4" /> Security</TabsTrigger>
+                            <TabsTrigger value="profile" className="gap-2"><User className="w-4 h-4" /> {t("settings.tabs.profile")}</TabsTrigger>
+                            <TabsTrigger value="notifications" className="gap-2"><Bell className="w-4 h-4" /> {t("settings.tabs.notifications")}</TabsTrigger>
+                            <TabsTrigger value="security" className="gap-2"><Lock className="w-4 h-4" /> {t("settings.tabs.security")}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="profile">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Personal Information</CardTitle>
-                                    <CardDescription>Update your personal details.</CardDescription>
+                                    <CardTitle>{t("settings.personalInfo")}</CardTitle>
+                                    <CardDescription>{t("settings.personalInfoDesc")}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     {profileLoading ? (
                                         <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
                                     ) : isError ? (
-                                        <p className="text-destructive text-sm">{getApiError(error, "Could not load your profile.")}</p>
+                                        <p className="text-destructive text-sm">{getApiError(error, t("settings.loadFailed"))}</p>
                                     ) : (
                                         <>
                                             <div className="flex items-center gap-6">
@@ -105,26 +107,26 @@ const TrainerSettings = () => {
 
                                             <div className="grid gap-4 md:grid-cols-2">
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="firstName">First Name</Label>
+                                                    <Label htmlFor="firstName">{t("settings.firstName")}</Label>
                                                     <Input id="firstName" value={name.firstName} onChange={(e) => setName({ ...name, firstName: e.target.value })} />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label htmlFor="lastName">Last Name</Label>
+                                                    <Label htmlFor="lastName">{t("settings.lastName")}</Label>
                                                     <Input id="lastName" value={name.lastName} onChange={(e) => setName({ ...name, lastName: e.target.value })} />
                                                 </div>
                                             </div>
 
                                             <div className="space-y-2">
-                                                <Label htmlFor="email">Email Address</Label>
-                                                <Input id="email" value={me?.Email ?? ""} disabled className="bg-muted" />
-                                                <p className="text-xs text-muted-foreground">Contact support to change your email.</p>
+                                                <Label htmlFor="email">{t("settings.email")}</Label>
+                                                <Input id="email" dir="ltr" value={me?.Email ?? ""} disabled className="bg-muted text-start" />
+                                                <p className="text-xs text-muted-foreground">{t("settings.emailHint")}</p>
                                             </div>
                                         </>
                                     )}
                                 </CardContent>
                                 <CardFooter className="border-t px-6 py-4">
                                     <Button onClick={handleSave} disabled={saveProfile.isPending || profileLoading || isError}>
-                                        {saveProfile.isPending ? "Saving..." : <><Save className="w-4 h-4 mr-2" /> Save Changes</>}
+                                        {saveProfile.isPending ? t("common:states.saving") : <><Save className="w-4 h-4 me-2" /> {t("settings.saveChanges")}</>}
                                     </Button>
                                 </CardFooter>
                             </Card>
@@ -133,15 +135,15 @@ const TrainerSettings = () => {
                         <TabsContent value="notifications">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Notification Preferences</CardTitle>
-                                    <CardDescription>Email notifications are coming soon. These switches are a preview and are not saved yet.</CardDescription>
+                                    <CardTitle>{t("settings.notifPrefs")}</CardTitle>
+                                    <CardDescription>{t("settings.notifPrefsDesc")}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-0.5">
-                                                <Label>Assignment Deadlines</Label>
-                                                <p className="text-sm text-muted-foreground">Get reminded 24 hours before a due date.</p>
+                                                <Label>{t("settings.assignments")}</Label>
+                                                <p className="text-sm text-muted-foreground">{t("settings.assignmentsDesc")}</p>
                                             </div>
                                             <Switch
                                                 checked={notifications.assignments}
@@ -150,8 +152,8 @@ const TrainerSettings = () => {
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-0.5">
-                                                <Label>Daily Study Reminders</Label>
-                                                <p className="text-sm text-muted-foreground">Notifications to keep your streak alive.</p>
+                                                <Label>{t("settings.reminders")}</Label>
+                                                <p className="text-sm text-muted-foreground">{t("settings.remindersDesc")}</p>
                                             </div>
                                             <Switch
                                                 checked={notifications.reminders}
@@ -160,8 +162,8 @@ const TrainerSettings = () => {
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-0.5">
-                                                <Label>New Announcements</Label>
-                                                <p className="text-sm text-muted-foreground">Updates from your instructors.</p>
+                                                <Label>{t("settings.announcements")}</Label>
+                                                <p className="text-sm text-muted-foreground">{t("settings.announcementsDesc")}</p>
                                             </div>
                                             <Switch
                                                 checked={notifications.announcements}
@@ -176,20 +178,20 @@ const TrainerSettings = () => {
                         <TabsContent value="security">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Password & Security</CardTitle>
+                                    <CardTitle>{t("settings.passwordSecurity")}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <div className="space-y-2">
-                                        <Label>Current Password</Label>
+                                        <Label>{t("settings.currentPassword")}</Label>
                                         <Input type="password" autoComplete="current-password" value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>New Password</Label>
+                                        <Label>{t("settings.newPassword")}</Label>
                                         <Input type="password" autoComplete="new-password" value={passwords.next} onChange={(e) => setPasswords({ ...passwords, next: e.target.value })} />
                                     </div>
                                 </CardContent>
                                 <CardFooter className="border-t px-6 py-4">
-                                    <Button onClick={handlePassword} disabled={changePassword.isPending}>{changePassword.isPending ? "Updating..." : "Update Password"}</Button>
+                                    <Button onClick={handlePassword} disabled={changePassword.isPending}>{changePassword.isPending ? t("settings.updating") : t("settings.updatePassword")}</Button>
                                 </CardFooter>
                             </Card>
                         </TabsContent>

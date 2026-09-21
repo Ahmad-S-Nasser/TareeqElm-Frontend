@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -26,6 +28,8 @@ const AIStudyCoach = () => {
   const { levelInfo, totalXP } = useAchievements();
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { t } = useTranslation("dashboard");
+  const { formatNumber, formatPercent } = useFormatters();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -41,20 +45,20 @@ const AIStudyCoach = () => {
   };
 
   const quickActions = [
-    { label: "Daily Insights", icon: Lightbulb, mode: "insights", color: "text-amber-500" },
-    { label: "Recommendations", icon: Target, mode: "recommendations", color: "text-emerald-500" },
-    { label: "Weekly Plan", icon: CalendarDays, mode: "weekly_plan", color: "text-blue-500" },
-    { label: "Weak Topics", icon: AlertTriangle, mode: "weak_topics", color: "text-rose-500" },
-    { label: "Motivate Me", icon: Flame, mode: "motivation", color: "text-orange-500" },
+    { label: t("coach.actions.insights"), icon: Lightbulb, mode: "insights", color: "text-amber-500" },
+    { label: t("coach.actions.recommendations"), icon: Target, mode: "recommendations", color: "text-emerald-500" },
+    { label: t("coach.actions.weekly_plan"), icon: CalendarDays, mode: "weekly_plan", color: "text-blue-500" },
+    { label: t("coach.actions.weak_topics"), icon: AlertTriangle, mode: "weak_topics", color: "text-rose-500" },
+    { label: t("coach.actions.motivation"), icon: Flame, mode: "motivation", color: "text-orange-500" },
   ];
 
   const statCards = trainerData ? [
-    { label: "Study Hours", value: `${trainerData.TotalStudyHours}h`, icon: Clock, color: "text-primary" },
-    { label: "Streak", value: `${trainerData.Streak} days`, icon: Flame, color: "text-orange-500" },
-    { label: "Cards Due", value: `${trainerData.FlashcardsDue}`, icon: RotateCcw, color: "text-rose-500" },
-    { label: "Quiz Avg", value: `${trainerData.QuizAverage}%`, icon: TrendingUp, color: "text-emerald-500" },
-    { label: "Retention", value: `${trainerData.RetentionRate}%`, icon: Brain, color: "text-violet-500" },
-    { label: "Focus", value: `${trainerData.AvgFocusScore}%`, icon: Target, color: "text-blue-500" },
+    { label: t("coach.stats.studyHours"), value: t("stats.hoursValue", { value: formatNumber(trainerData.TotalStudyHours) }), icon: Clock, color: "text-primary" },
+    { label: t("coach.stats.streak"), value: t("stats.days", { count: trainerData.Streak }), icon: Flame, color: "text-orange-500" },
+    { label: t("coach.stats.cardsDue"), value: formatNumber(trainerData.FlashcardsDue), icon: RotateCcw, color: "text-rose-500" },
+    { label: t("coach.stats.quizAvg"), value: formatPercent(trainerData.QuizAverage), icon: TrendingUp, color: "text-emerald-500" },
+    { label: t("coach.stats.retention"), value: formatPercent(trainerData.RetentionRate), icon: Brain, color: "text-violet-500" },
+    { label: t("coach.stats.focus"), value: formatPercent(trainerData.AvgFocusScore), icon: Target, color: "text-blue-500" },
   ] : [];
 
   return (
@@ -62,7 +66,7 @@ const AIStudyCoach = () => {
       <ApplicantSidebar onCollapse={setSidebarCollapsed} />
       <Header sidebarCollapsed={sidebarCollapsed} userRole="Trainer" mobileSidebar={<ApplicantSidebarContent onItemClick={() => {}} />} />
 
-      <main className={cn("pt-20 pb-8 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ml-20" : "lg:ml-64", "ml-0")}>
+      <main className={cn("pt-20 pb-8 px-4 sm:px-6 transition-all duration-300", sidebarCollapsed ? "lg:ms-20" : "lg:ms-64", "ms-0")}>
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header with Level */}
           <section className="animate-slide-up">
@@ -72,19 +76,19 @@ const AIStudyCoach = () => {
                   <Brain className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold">AI Study Coach</h1>
-                  <p className="text-muted-foreground text-sm">Your personal learning mentor — powered by AI</p>
+                  <h1 className="text-2xl font-bold">{t("coachWidget.title")}</h1>
+                  <p className="text-muted-foreground text-sm">{t("coach.subtitle")}</p>
                 </div>
               </div>
               {levelInfo && (
                 <div className="hidden sm:flex items-center gap-3">
-                  <div className="text-right">
-                    <p className="text-xs text-muted-foreground">Level {levelInfo.level}</p>
+                  <div className="text-end">
+                    <p className="text-xs text-muted-foreground">{t("achievements.level", { level: formatNumber(levelInfo.level) })}</p>
                     <p className="text-sm font-semibold">{levelInfo.title}</p>
                   </div>
                   <div className="w-24">
                     <Progress value={(levelInfo.currentXP / levelInfo.xpForNext) * 100} className="h-2" />
-                    <p className="text-[10px] text-muted-foreground text-center mt-0.5">{totalXP} XP</p>
+                    <p className="text-[10px] text-muted-foreground text-center mt-0.5">{t("xp", { count: formatNumber(totalXP) })}</p>
                   </div>
                 </div>
               )}
@@ -95,7 +99,7 @@ const AIStudyCoach = () => {
           {dataLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-primary" />
-              <span className="ml-2 text-muted-foreground">Loading your learning data...</span>
+              <span className="ms-2 text-muted-foreground">{t("coach.loading")}</span>
             </div>
           ) : (
             <section className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 animate-slide-up" style={{ animationDelay: "100ms" }}>
@@ -114,29 +118,29 @@ const AIStudyCoach = () => {
           {/* Quick Navigation */}
           <section className="flex gap-2 flex-wrap animate-slide-up" style={{ animationDelay: "150ms" }}>
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/analytics')}>
-              <BarChart3 className="w-3.5 h-3.5" /> Analytics
+              <BarChart3 className="w-3.5 h-3.5" /> {t("coach.nav.analytics")}
             </Button>
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/achievements')}>
-              <Award className="w-3.5 h-3.5" /> Achievements
+              <Award className="w-3.5 h-3.5" /> {t("coach.nav.achievements")}
             </Button>
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/spaced-repetition')}>
-              <RotateCcw className="w-3.5 h-3.5" /> Flashcards
+              <RotateCcw className="w-3.5 h-3.5" /> {t("coach.nav.flashcards")}
             </Button>
             <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/time-blocking')}>
-              <Clock className="w-3.5 h-3.5" /> Time Blocking
+              <Clock className="w-3.5 h-3.5" /> {t("coach.nav.timeBlocking")}
             </Button>
           </section>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid grid-cols-2 w-full max-w-md">
-              <TabsTrigger value="overview" className="gap-2"><Sparkles className="w-4 h-4" /> Coach Insights</TabsTrigger>
-              <TabsTrigger value="chat" className="gap-2"><Bot className="w-4 h-4" /> Chat with Coach</TabsTrigger>
+              <TabsTrigger value="overview" className="gap-2"><Sparkles className="w-4 h-4" /> {t("coach.tabs.insights")}</TabsTrigger>
+              <TabsTrigger value="chat" className="gap-2"><Bot className="w-4 h-4" /> {t("coach.tabs.chat")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
               {/* Quick Actions */}
               <section className="animate-slide-up" style={{ animationDelay: "200ms" }}>
-                <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
+                <h2 className="text-lg font-semibold mb-3">{t("coach.quickActions")}</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   {quickActions.map((action) => (
                     <Button
@@ -155,17 +159,17 @@ const AIStudyCoach = () => {
 
               {/* Smart Alerts */}
               <section className="animate-slide-up" style={{ animationDelay: "300ms" }}>
-                <h2 className="text-lg font-semibold mb-3">Smart Alerts</h2>
+                <h2 className="text-lg font-semibold mb-3">{t("coach.smartAlerts")}</h2>
                 <div className="space-y-3">
                   {trainerData && trainerData.FlashcardsDue > 0 && (
                     <Card className="border-rose-500/30 bg-rose-500/5">
                       <CardContent className="p-4 flex items-center gap-3">
                         <RotateCcw className="w-5 h-5 text-rose-500 shrink-0" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">{trainerData.FlashcardsDue} flashcards due for review</p>
-                          <p className="text-xs text-muted-foreground">Reviewing now will strengthen your memory retention</p>
+                          <p className="text-sm font-medium">{t("coachWidget.flashcardsDue", { count: trainerData.FlashcardsDue })}</p>
+                          <p className="text-xs text-muted-foreground">{t("coach.alerts.reviewHint")}</p>
                         </div>
-                        <Button size="sm" variant="outline" className="shrink-0" onClick={() => navigate('/spaced-repetition')}>Review Now</Button>
+                        <Button size="sm" variant="outline" className="shrink-0" onClick={() => navigate('/spaced-repetition')}>{t("coach.alerts.reviewNow")}</Button>
                       </CardContent>
                     </Card>
                   )}
@@ -174,8 +178,8 @@ const AIStudyCoach = () => {
                       <CardContent className="p-4 flex items-center gap-3">
                         <Flame className="w-5 h-5 text-orange-500 shrink-0" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">🔥 {trainerData.Streak}-day study streak!</p>
-                          <p className="text-xs text-muted-foreground">Complete one session today to keep it going</p>
+                          <p className="text-sm font-medium">{t("coach.alerts.streak", { count: trainerData.Streak })}</p>
+                          <p className="text-xs text-muted-foreground">{t("coach.alerts.streakHint")}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -185,10 +189,10 @@ const AIStudyCoach = () => {
                       <CardContent className="p-4 flex items-center gap-3">
                         <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">Weak topics: {trainerData.WeakTopics.slice(0, 2).join(', ')}</p>
-                          <p className="text-xs text-muted-foreground">Extra review recommended for better retention</p>
+                          <p className="text-sm font-medium">{t("coach.alerts.weakTopics", { topics: trainerData.WeakTopics.slice(0, 2).join(t("coach.listSeparator")) })}</p>
+                          <p className="text-xs text-muted-foreground">{t("coach.alerts.weakTopicsHint")}</p>
                         </div>
-                        <Button size="sm" variant="outline" className="shrink-0" onClick={() => { setActiveTab("chat"); generateInsights("weak_topics"); }}>Get Help</Button>
+                        <Button size="sm" variant="outline" className="shrink-0" onClick={() => { setActiveTab("chat"); generateInsights("weak_topics"); }}>{t("coach.alerts.getHelp")}</Button>
                       </CardContent>
                     </Card>
                   )}
@@ -197,10 +201,10 @@ const AIStudyCoach = () => {
                       <CardContent className="p-4 flex items-center gap-3">
                         <Clock className="w-5 h-5 text-blue-500 shrink-0" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">Only {trainerData.SessionsThisWeek} study sessions this week</p>
-                          <p className="text-xs text-muted-foreground">Try to aim for at least 5 sessions per week</p>
+                          <p className="text-sm font-medium">{t("coach.alerts.fewSessions", { count: trainerData.SessionsThisWeek })}</p>
+                          <p className="text-xs text-muted-foreground">{t("coach.alerts.fewSessionsHint")}</p>
                         </div>
-                        <Button size="sm" variant="outline" className="shrink-0" onClick={() => navigate('/time-blocking')}>Plan Session</Button>
+                        <Button size="sm" variant="outline" className="shrink-0" onClick={() => navigate('/time-blocking')}>{t("coach.alerts.planSession")}</Button>
                       </CardContent>
                     </Card>
                   )}
@@ -209,10 +213,10 @@ const AIStudyCoach = () => {
                       <CardContent className="p-4 flex items-center gap-3">
                         <CalendarDays className="w-5 h-5 text-violet-500 shrink-0" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">No time blocks planned for today</p>
-                          <p className="text-xs text-muted-foreground">AI can create an optimal schedule based on your energy levels</p>
+                          <p className="text-sm font-medium">{t("coach.alerts.noBlocks")}</p>
+                          <p className="text-xs text-muted-foreground">{t("coach.alerts.noBlocksHint")}</p>
                         </div>
-                        <Button size="sm" variant="outline" className="shrink-0" onClick={() => navigate('/time-blocking')}>AI Schedule</Button>
+                        <Button size="sm" variant="outline" className="shrink-0" onClick={() => navigate('/time-blocking')}>{t("coach.alerts.aiSchedule")}</Button>
                       </CardContent>
                     </Card>
                   )}
@@ -221,18 +225,11 @@ const AIStudyCoach = () => {
 
               {/* Suggested Questions */}
               <section className="animate-slide-up" style={{ animationDelay: "400ms" }}>
-                <h2 className="text-lg font-semibold mb-3">Ask Your Coach</h2>
+                <h2 className="text-lg font-semibold mb-3">{t("coach.askYourCoach")}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {[
-                    "What should I study today?",
-                    "Why is my retention rate low?",
-                    "Create a study plan for my exam next week",
-                    "How can I improve my focus score?",
-                    "Which flashcards need the most attention?",
-                    "Am I on track to pass my exam?",
-                  ].map((q) => (
-                    <Button key={q} variant="ghost" className="justify-start text-left h-auto py-3 px-4 text-sm text-muted-foreground hover:text-foreground hover:bg-muted" onClick={() => { setActiveTab("chat"); sendMessage(q, "chat"); }} disabled={isLoading}>
-                      <Sparkles className="w-4 h-4 mr-2 text-primary shrink-0" />
+                  {(["study", "retention", "plan", "focus", "cards", "track"] as const).map((k) => t(`coach.suggestions.${k}`)).map((q) => (
+                    <Button key={q} variant="ghost" className="justify-start text-start h-auto py-3 px-4 text-sm text-muted-foreground hover:text-foreground hover:bg-muted" onClick={() => { setActiveTab("chat"); sendMessage(q, "chat"); }} disabled={isLoading}>
+                      <Sparkles className="w-4 h-4 me-2 text-primary shrink-0" />
                       {q}
                     </Button>
                   ))}
@@ -244,11 +241,11 @@ const AIStudyCoach = () => {
               <Card className="h-[600px] flex flex-col">
                 <CardHeader className="flex flex-row items-center justify-between pb-3">
                   <div>
-                    <CardTitle className="text-lg">Coach Chat</CardTitle>
-                    <CardDescription>Ask anything about your study progress</CardDescription>
+                    <CardTitle className="text-lg">{t("coach.chatTitle")}</CardTitle>
+                    <CardDescription>{t("coach.chatDesc")}</CardDescription>
                   </div>
                   <Button variant="ghost" size="sm" onClick={clearMessages} className="text-muted-foreground">
-                    <Trash2 className="w-4 h-4 mr-1" /> Clear
+                    <Trash2 className="w-4 h-4 me-1" /> {t("coach.clear")}
                   </Button>
                 </CardHeader>
                 <CardContent className="flex-1 overflow-hidden p-0">
@@ -257,32 +254,32 @@ const AIStudyCoach = () => {
                       {messages.length === 0 && (
                         <div className="text-center py-12 text-muted-foreground">
                           <Brain className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                          <p className="text-sm">Start a conversation with your AI Study Coach.</p>
-                          <p className="text-xs mt-1">Use the Quick Actions or type a question below.</p>
+                          <p className="text-sm">{t("coach.emptyChat")}</p>
+                          <p className="text-xs mt-1">{t("coach.emptyChatHint")}</p>
                         </div>
                       )}
                       {messages.map((msg) => (
-                        <div key={msg.Id} className={cn("flex gap-3 max-w-[85%]", msg.Role === 'user' ? "ml-auto flex-row-reverse" : "mr-auto")}>
+                        <div key={msg.Id} className={cn("flex gap-3 max-w-[85%]", msg.Role === 'user' ? "ms-auto flex-row-reverse" : "me-auto")}>
                           <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", msg.Role === 'user' ? "bg-primary text-primary-foreground" : "bg-muted")}>
                             {msg.Role === 'user' ? <User className="w-4 h-4" /> : <Brain className="w-4 h-4" />}
                           </div>
-                          <div className={cn("rounded-2xl px-4 py-3 text-sm", msg.Role === 'user' ? "bg-primary text-primary-foreground rounded-tr-none" : "bg-muted border border-border/50 rounded-tl-none")}>
+                          <div className={cn("rounded-2xl px-4 py-3 text-sm", msg.Role === 'user' ? "bg-primary text-primary-foreground rounded-se-none" : "bg-muted border border-border/50 rounded-ss-none")}>
                             {msg.Role === 'assistant' ? (
-                              <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>ul]:mb-2 [&>ol]:mb-2 [&>h1]:text-base [&>h2]:text-sm [&>h3]:text-sm">
+                              <div dir="auto" className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-2 [&>ul]:mb-2 [&>ol]:mb-2 [&>h1]:text-base [&>h2]:text-sm [&>h3]:text-sm">
                                 <ReactMarkdown>{msg.Content}</ReactMarkdown>
                               </div>
                             ) : (
-                              <span className="whitespace-pre-wrap">{msg.Content}</span>
+                              <span dir="auto" className="whitespace-pre-wrap">{msg.Content}</span>
                             )}
                           </div>
                         </div>
                       ))}
                       {isLoading && messages[messages.length - 1]?.Role !== 'assistant' && (
-                        <div className="flex gap-3 mr-auto">
+                        <div className="flex gap-3 me-auto">
                           <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
                             <Brain className="w-4 h-4" />
                           </div>
-                          <div className="bg-muted rounded-2xl rounded-tl-none px-4 py-3 flex items-center gap-1">
+                          <div className="bg-muted rounded-2xl rounded-ss-none px-4 py-3 flex items-center gap-1">
                             <span className="w-2 h-2 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                             <span className="w-2 h-2 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                             <span className="w-2 h-2 bg-foreground/30 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -294,9 +291,9 @@ const AIStudyCoach = () => {
                 </CardContent>
                 <div className="p-4 border-t">
                   <form className="flex gap-2" onSubmit={handleSend}>
-                    <Input placeholder="Ask your AI Coach..." value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} disabled={isLoading} className="rounded-xl" />
-                    <Button type="submit" size="icon" disabled={isLoading || !inputMessage.trim()}>
-                      <Send className="w-4 h-4" />
+                    <Input placeholder={t("coach.inputPlaceholder")} value={inputMessage} onChange={(e) => setInputMessage(e.target.value)} disabled={isLoading} className="rounded-xl" />
+                    <Button type="submit" size="icon" aria-label={t("chatBar.send")} disabled={isLoading || !inputMessage.trim()}>
+                      <Send className="w-4 h-4 rtl:-scale-x-100" />
                     </Button>
                   </form>
                 </div>

@@ -26,6 +26,8 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 
 const CourseCatalog = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -33,6 +35,8 @@ const CourseCatalog = () => {
   const [levelFilter, setLevelFilter] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("browse");
   const navigate = useNavigate();
+  const { t } = useTranslation("courses");
+  const { formatNumber, formatPercent } = useFormatters();
 
   const {
     courses,
@@ -54,7 +58,7 @@ const CourseCatalog = () => {
 
   const handleEnroll = async (courseId: string) => {
     setEnrollingId(courseId);
-    const { error } = await enrollInCourse(courseId);
+    await enrollInCourse(courseId, courses.find((c) => c.Id === courseId)?.Title);
     setEnrollingId(null);
 
     // If successful, the hook's 'courses' state will be refreshed automatically
@@ -89,10 +93,10 @@ const CourseCatalog = () => {
             />
           )}
           {isEnrolled && (
-            <div className="absolute top-3 right-3">
+            <div className="absolute top-3 end-3">
               <Badge className="bg-success text-white">
-                <CheckCircle2 className="w-3 h-3 mr-1" />
-                Enrolled
+                <CheckCircle2 className="w-3 h-3 me-1" />
+                {t("catalog.enrolled")}
               </Badge>
             </div>
           )}
@@ -111,14 +115,14 @@ const CourseCatalog = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground line-clamp-2">
-            {course.Description || "No description available"}
+            {course.Description || t("catalog.noDescription")}
           </p>
 
           {isEnrolled && course.Enrollment && (
             <div className="space-y-1">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium">{course.Enrollment.ProgressPercentage}%</span>
+                <span className="text-muted-foreground">{t("catalog.progress")}</span>
+                <span className="font-medium">{formatPercent(course.Enrollment.ProgressPercentage)}</span>
               </div>
               <Progress value={course.Enrollment.ProgressPercentage} className="h-2" />
             </div>
@@ -128,10 +132,10 @@ const CourseCatalog = () => {
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
-                <span>{course.DurationHours || 0}h</span>
+                <span>{t("hoursShort", { value: formatNumber(course.DurationHours || 0) })}</span>
               </div>
-              <Badge variant="secondary" className="capitalize">
-                {course.Level}
+              <Badge variant="secondary">
+                {course.Level ? t(`level.${course.Level.toLowerCase()}`, { defaultValue: course.Level }) : ""}
               </Badge>
             </div>
 
@@ -147,7 +151,7 @@ const CourseCatalog = () => {
                 {enrollingId === course.Id ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  "Enroll"
+                  t("catalog.enroll")
                 )}
               </Button>
             )}
@@ -161,7 +165,7 @@ const CourseCatalog = () => {
                   navigate(`/courses/${course.Id}`);
                 }}
               >
-                Continue
+                {t("catalog.continue")}
               </Button>
             )}
           </div>
@@ -181,8 +185,8 @@ const CourseCatalog = () => {
       <main
         className={cn(
           "pt-20 pb-8 px-4 sm:px-6 transition-all duration-300",
-          sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
-          "ml-0"
+          sidebarCollapsed ? "lg:ms-20" : "lg:ms-64",
+          "ms-0"
         )}
       >
         <div className="max-w-7xl mx-auto space-y-6">
@@ -193,10 +197,10 @@ const CourseCatalog = () => {
                 <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow">
                   <GraduationCap className="w-5 h-5 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold">Course Catalog</h1>
+                <h1 className="text-2xl font-bold">{t("catalog.title")}</h1>
               </div>
               <p className="text-muted-foreground">
-                Discover and enroll in courses to advance your learning
+                {t("catalog.subtitle")}
               </p>
             </div>
           </div>
@@ -206,35 +210,35 @@ const CourseCatalog = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <TabsList>
                 <TabsTrigger value="browse">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Browse Courses
+                  <BookOpen className="w-4 h-4 me-2" />
+                  {t("catalog.browseTab")}
                 </TabsTrigger>
                 <TabsTrigger value="enrolled">
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                  My Courses
+                  <CheckCircle2 className="w-4 h-4 me-2" />
+                  {t("catalog.myCoursesTab")}
                 </TabsTrigger>
               </TabsList>
 
               {/* Filters */}
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search courses..."
+                    placeholder={t("searchPlaceholder")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 w-64"
+                    className="ps-9 w-64"
                   />
                 </div>
                 <Select value={levelFilter} onValueChange={setLevelFilter}>
                   <SelectTrigger className="w-36">
-                    <SelectValue placeholder="Level" />
+                    <SelectValue placeholder={t("list.level")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Levels</SelectItem>
-                    <SelectItem value="beginner">Beginner</SelectItem>
-                    <SelectItem value="intermediate">Intermediate</SelectItem>
-                    <SelectItem value="advanced">Advanced</SelectItem>
+                    <SelectItem value="all">{t("catalog.allLevels")}</SelectItem>
+                    <SelectItem value="beginner">{t("level.beginner")}</SelectItem>
+                    <SelectItem value="intermediate">{t("level.intermediate")}</SelectItem>
+                    <SelectItem value="advanced">{t("level.advanced")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -249,9 +253,9 @@ const CourseCatalog = () => {
                 <Card className="py-12">
                   <CardContent className="flex flex-col items-center text-center">
                     <BookOpen className="w-12 h-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No courses found</h3>
+                    <h3 className="text-lg font-semibold mb-2">{t("list.noneFound")}</h3>
                     <p className="text-muted-foreground">
-                      Try adjusting your search or filters
+                      {t("list.adjustFilters")}
                     </p>
                   </CardContent>
                 </Card>
@@ -271,12 +275,12 @@ const CourseCatalog = () => {
                 <Card className="py-12">
                   <CardContent className="flex flex-col items-center text-center">
                     <GraduationCap className="w-12 h-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No enrolled courses</h3>
+                    <h3 className="text-lg font-semibold mb-2">{t("catalog.noEnrolled")}</h3>
                     <p className="text-muted-foreground mb-4">
-                      Browse and enroll in courses to start learning
+                      {t("catalog.noEnrolledHint")}
                     </p>
                     <Button onClick={() => setActiveTab("browse")}>
-                      Browse Courses
+                      {t("catalog.browseTab")}
                     </Button>
                   </CardContent>
                 </Card>

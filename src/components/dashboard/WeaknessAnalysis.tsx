@@ -1,5 +1,7 @@
 import { TrendingDown, ArrowRight, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { useFormatters } from "@/lib/format";
 import { Progress } from "@/components/ui/progress";
 
 interface WeaknessItem {
@@ -14,6 +16,8 @@ interface WeaknessAnalysisProps {
 }
 
 export const WeaknessAnalysis = ({ weaknesses, onPractice }: WeaknessAnalysisProps) => {
+  const { t } = useTranslation("dashboard");
+  const { formatPercent } = useFormatters();
   return (
     <div className="rounded-2xl bg-card border border-border/50 shadow-card p-5">
       {/* Header */}
@@ -22,8 +26,8 @@ export const WeaknessAnalysis = ({ weaknesses, onPractice }: WeaknessAnalysisPro
           <Sparkles className="w-4 h-4 text-accent" />
         </div>
         <div>
-          <h3 className="font-semibold">AI Weakness Analysis</h3>
-          <p className="text-xs text-muted-foreground">Focus areas based on your performance</p>
+          <h3 className="font-semibold">{t("weakness.title")}</h3>
+          <p className="text-xs text-muted-foreground">{t("weakness.subtitle")}</p>
         </div>
       </div>
 
@@ -41,7 +45,7 @@ export const WeaknessAnalysis = ({ weaknesses, onPractice }: WeaknessAnalysisPro
                 <span className="text-sm font-medium">{item.topic}</span>
               </div>
               <span className="text-sm text-muted-foreground">
-                {item.score}%
+                {formatPercent(item.score)}
               </span>
             </div>
             <div className="flex items-center gap-3">
@@ -55,11 +59,11 @@ export const WeaknessAnalysis = ({ weaknesses, onPractice }: WeaknessAnalysisPro
                 className="opacity-0 group-hover:opacity-100 transition-opacity h-7 px-2"
                 onClick={() => onPractice?.(item.topic)}
               >
-                Practice <ArrowRight className="w-3 h-3 ml-1" />
+                {t("weakness.practice")} <ArrowRight className="w-3 h-3 ms-1 rtl:rotate-180" />
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {item.questionsAttempted} questions attempted
+              {t("weakness.attempted", { count: item.questionsAttempted })}
             </p>
           </div>
         ))}
@@ -68,8 +72,8 @@ export const WeaknessAnalysis = ({ weaknesses, onPractice }: WeaknessAnalysisPro
       {/* AI Suggestion */}
       <div className="mt-4 p-3 rounded-xl bg-accent/5 border border-accent/20">
         <p className="text-sm text-accent">
-          <Sparkles className="w-4 h-4 inline-block mr-1.5" />
-          AI suggests focusing on "{weaknesses[0]?.topic}" for your next study session
+          <Sparkles className="w-4 h-4 inline-block me-1.5" />
+          {t("weakness.suggestion", { topic: weaknesses[0]?.topic })}
         </p>
       </div>
     </div>

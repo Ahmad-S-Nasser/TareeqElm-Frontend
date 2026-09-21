@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { OrganizationPageLayout } from "@/components/layout/OrganizationPageLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { Megaphone, Plus, Users, BookOpen, Building2, Clock, Pin, Loader2 } from
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import api, { getApiError } from "@/lib/api";
+import { useFormatters } from "@/lib/format";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Announcement {
@@ -39,6 +41,8 @@ const audienceColor: Record<string, string> = {
 const OrganizationAnnouncements = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [form, setForm] = useState({ title: "", body: "", audience: "all", audienceDetail: "" });
+    const { t } = useTranslation(["organization", "common"]);
+    const { formatDate } = useFormatters();
     const { toast } = useToast();
     const queryClient = useQueryClient();
 
@@ -55,9 +59,9 @@ const OrganizationAnnouncements = () => {
             queryClient.invalidateQueries({ queryKey: ["organization-announcements"] });
             setIsOpen(false);
             setForm({ title: "", body: "", audience: "all", audienceDetail: "" });
-            toast({ title: "Announcement Published" });
+            toast({ title: t("announcements.published") });
         },
-        onError: (err: unknown) => toast({ variant: "destructive", title: "Error", description: getApiError(err, "Could not publish announcement") }),
+        onError: (err: unknown) => toast({ variant: "destructive", title: t("common:states.error"), description: getApiError(err, t("announcements.publishFailed")) }),
     });
 
     const togglePinMutation = useMutation({
@@ -65,11 +69,11 @@ const OrganizationAnnouncements = () => {
             await api.put(`/Announcements/${id}/pin`, { Pinned: !pinned });
         },
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["organization-announcements"] }),
-        onError: (err: unknown) => toast({ variant: "destructive", title: "Error", description: getApiError(err, "Could not update announcement") }),
+        onError: (err: unknown) => toast({ variant: "destructive", title: t("common:states.error"), description: getApiError(err, t("announcements.updateFailed")) }),
     });
 
     const handleCreate = () => {
-        if (!form.title || !form.body) { toast({ variant: "destructive", title: "Missing fields" }); return; }
+        if (!form.title || !form.body) { toast({ variant: "destructive", title: t("announcements.missingFields") }); return; }
         createMutation.mutate({
             Title: form.title, Body: form.body, Audience: form.audience,
             AudienceDetail: form.audienceDetail || undefined,
@@ -84,52 +88,52 @@ const OrganizationAnnouncements = () => {
                         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                             <Megaphone className="w-5 h-5 text-primary" />
                         </div>
-                        Announcements
+                        {t("announcements.title")}
                     </h1>
-                    <p className="text-muted-foreground mt-1">Broadcast announcements to trainers, instructors, and departments</p>
+                    <p className="text-muted-foreground mt-1">{t("announcements.subtitle")}</p>
                 </div>
                 <Dialog open={isOpen} onOpenChange={setIsOpen}>
                     <DialogTrigger asChild>
-                        <Button className="gap-2"><Plus className="w-4 h-4" /> New Announcement</Button>
+                        <Button className="gap-2"><Plus className="w-4 h-4" /> {t("announcements.new")}</Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-lg">
-                        <DialogHeader><DialogTitle>Create Announcement</DialogTitle></DialogHeader>
+                        <DialogHeader><DialogTitle>{t("announcements.createTitle")}</DialogTitle></DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                                <Label>Title</Label>
-                                <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="Announcement title..." />
+                                <Label>{t("announcements.titleLabel")}</Label>
+                                <Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder={t("announcements.titlePlaceholder")} />
                             </div>
                             <div className="space-y-2">
-                                <Label>Message</Label>
-                                <Textarea value={form.body} onChange={e => setForm({ ...form, body: e.target.value })} placeholder="Write your announcement..." rows={4} />
+                                <Label>{t("announcements.message")}</Label>
+                                <Textarea value={form.body} onChange={e => setForm({ ...form, body: e.target.value })} placeholder={t("announcements.messagePlaceholder")} rows={4} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Audience</Label>
+                                    <Label>{t("announcements.audience")}</Label>
                                     <Select value={form.audience} onValueChange={v => setForm({ ...form, audience: v })}>
                                         <SelectTrigger><SelectValue /></SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="all">All Users</SelectItem>
-                                            <SelectItem value="trainers">All Trainers</SelectItem>
-                                            <SelectItem value="instructors">All Instructors</SelectItem>
-                                            <SelectItem value="department">Specific Department</SelectItem>
-                                            <SelectItem value="course">Specific Course</SelectItem>
+                                            <SelectItem value="all">{t("announcements.audiences.all")}</SelectItem>
+                                            <SelectItem value="trainers">{t("announcements.audiences.trainers")}</SelectItem>
+                                            <SelectItem value="instructors">{t("announcements.audiences.instructors")}</SelectItem>
+                                            <SelectItem value="department">{t("announcements.audiences.department")}</SelectItem>
+                                            <SelectItem value="course">{t("announcements.audiences.course")}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                                 {(form.audience === "department" || form.audience === "course") && (
                                     <div className="space-y-2">
-                                        <Label>{form.audience === "department" ? "Department" : "Course"} Name</Label>
-                                        <Input value={form.audienceDetail} onChange={e => setForm({ ...form, audienceDetail: e.target.value })} placeholder="Enter name..." />
+                                        <Label>{form.audience === "department" ? t("announcements.departmentName") : t("announcements.courseName")}</Label>
+                                        <Input value={form.audienceDetail} onChange={e => setForm({ ...form, audienceDetail: e.target.value })} placeholder={t("announcements.namePlaceholder")} />
                                     </div>
                                 )}
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
+                            <Button variant="outline" onClick={() => setIsOpen(false)}>{t("common:actions.cancel")}</Button>
                             <Button onClick={handleCreate} disabled={createMutation.isPending}>
-                                {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                                Publish
+                                {createMutation.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
+                                {t("announcements.publish")}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -139,9 +143,9 @@ const OrganizationAnnouncements = () => {
             {isLoading ? (
                 <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
             ) : isError ? (
-                <Card className="border-border/50"><CardContent className="p-12 text-center text-destructive">{getApiError(error, "Could not load announcements.")}</CardContent></Card>
+                <Card className="border-border/50"><CardContent className="p-12 text-center text-destructive">{getApiError(error, t("announcements.loadFailed"))}</CardContent></Card>
             ) : announcements.length === 0 ? (
-                <Card className="border-border/50"><CardContent className="p-12 text-center text-muted-foreground">No announcements yet. Create one to get started.</CardContent></Card>
+                <Card className="border-border/50"><CardContent className="p-12 text-center text-muted-foreground">{t("announcements.empty")}</CardContent></Card>
             ) : (
                 <div className="space-y-3">
                     {announcements.map((ann) => {
@@ -159,15 +163,15 @@ const OrganizationAnnouncements = () => {
                                             <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                                 <Badge variant="outline" className={cn("text-xs gap-1", audienceColor[ann.Audience] || "")}>
                                                     <AudIcon className="w-3 h-3" />
-                                                    {ann.Audience === "all" ? "Everyone" :
-                                                     ann.AudienceDetail ? `${ann.Audience}: ${ann.AudienceDetail}` :
-                                                     ann.Audience.charAt(0).toUpperCase() + ann.Audience.slice(1)}
+                                                    {ann.Audience === "all" ? t("announcements.everyone") :
+                                                     ann.AudienceDetail ? t("announcements.audienceWithDetail", { audience: t(`announcements.audienceShort.${ann.Audience}`, { defaultValue: ann.Audience }), detail: ann.AudienceDetail }) :
+                                                     t(`announcements.audienceShort.${ann.Audience}`, { defaultValue: ann.Audience })}
                                                 </Badge>
-                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{new Date(ann.CreatedAt).toLocaleDateString()}</span>
-                                                <span>by {ann.AuthorName}</span>
+                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{formatDate(ann.CreatedAt)}</span>
+                                                <span>{t("announcements.by", { name: ann.AuthorName ?? t("common:deletedUser") })}</span>
                                             </div>
                                         </div>
-                                        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => togglePinMutation.mutate({ id: ann.Id, pinned: ann.Pinned })}>
+                                        <Button variant="ghost" size="icon" className="shrink-0" aria-label={ann.Pinned ? t("announcements.unpin") : t("announcements.pin")} title={ann.Pinned ? t("announcements.unpin") : t("announcements.pin")} onClick={() => togglePinMutation.mutate({ id: ann.Id, pinned: ann.Pinned })}>
                                             <Pin className={cn("w-4 h-4", ann.Pinned ? "text-primary fill-primary" : "text-muted-foreground")} />
                                         </Button>
                                     </div>

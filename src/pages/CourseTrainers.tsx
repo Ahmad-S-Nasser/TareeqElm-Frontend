@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useFormatters } from "@/lib/format";
 import { useParams, useNavigate } from "react-router-dom";
 import { InstructorSidebar } from "@/components/layout/InstructorSidebar";
 import { Header } from "@/components/layout/Header";
@@ -19,10 +21,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ArrowLeft, Users, BookOpen, Clock, Trophy, Loader2 } from "lucide-react";
-import { format } from "date-fns";
 import { getApiError } from "@/lib/api";
 
 const CourseTrainers = () => {
+  const { t } = useTranslation("instructor");
+  const { formatDate, formatPercent, formatNumber } = useFormatters();
   const { courseId } = useParams<{ courseId: string }>();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const navigate = useNavigate();
@@ -34,7 +37,7 @@ const CourseTrainers = () => {
     fetchInstructorCourses();
   }, [fetchInstructorCourses]);
 
-  const courseTitle = courses.find((c) => c.Id === courseId)?.Title ?? trainers[0]?.CourseTitle ?? "Course";
+  const courseTitle = courses.find((c) => c.Id === courseId)?.Title ?? trainers[0]?.CourseTitle ?? t("trainers.course.fallbackCourse");
 
   const scored = trainers.filter((t) => t.QuizAverage != null);
   const avgQuiz = scored.length
@@ -59,17 +62,17 @@ const CourseTrainers = () => {
       <main
         className={cn(
           "pt-20 pb-8 px-6 transition-all duration-300",
-          sidebarCollapsed ? "ml-20" : "ml-64"
+          sidebarCollapsed ? "ms-20" : "ms-64"
         )}
       >
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/instructor/courses")}>
-              <ArrowLeft className="w-5 h-5" />
+            <Button variant="ghost" size="icon" aria-label={t("trainers.course.back")} onClick={() => navigate("/instructor/courses")}>
+              <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">Enrolled Trainers</h1>
+              <h1 className="text-2xl font-bold">{t("trainers.course.title")}</h1>
               <p className="text-muted-foreground">{courseTitle}</p>
             </div>
           </div>
@@ -83,8 +86,8 @@ const CourseTrainers = () => {
                     <Users className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{trainers.length}</p>
-                    <p className="text-xs text-muted-foreground">Total Trainers</p>
+                    <p className="text-2xl font-bold">{formatNumber(trainers.length)}</p>
+                    <p className="text-xs text-muted-foreground">{t("trainers.course.stats.total")}</p>
                   </div>
                 </div>
               </CardContent>
@@ -97,9 +100,9 @@ const CourseTrainers = () => {
                   </div>
                   <div>
                     <p className="text-2xl font-bold">
-                      {trainers.filter(s => s.CompletedAt).length}
+                      {formatNumber(trainers.filter(s => s.CompletedAt).length)}
                     </p>
-                    <p className="text-xs text-muted-foreground">Completed</p>
+                    <p className="text-xs text-muted-foreground">{t("trainers.course.stats.completed")}</p>
                   </div>
                 </div>
               </CardContent>
@@ -112,9 +115,9 @@ const CourseTrainers = () => {
                   </div>
                   <div>
                     <p className="text-2xl font-bold">
-                      {Math.round(trainers.reduce((sum, s) => sum + s.ProgressPercentage, 0) / (trainers.length || 1))}%
+                      {formatPercent(Math.round(trainers.reduce((sum, s) => sum + s.ProgressPercentage, 0) / (trainers.length || 1)))}
                     </p>
-                    <p className="text-xs text-muted-foreground">Avg. Progress</p>
+                    <p className="text-xs text-muted-foreground">{t("trainers.course.stats.avgProgress")}</p>
                   </div>
                 </div>
               </CardContent>
@@ -126,8 +129,8 @@ const CourseTrainers = () => {
                     <Clock className="w-5 h-5 text-accent" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">{avgQuiz != null ? `${avgQuiz}%` : "-"}</p>
-                    <p className="text-xs text-muted-foreground">Avg. Quiz Score</p>
+                    <p className="text-2xl font-bold">{avgQuiz != null ? formatPercent(avgQuiz) : "-"}</p>
+                    <p className="text-xs text-muted-foreground">{t("trainers.course.stats.avgQuiz")}</p>
                   </div>
                 </div>
               </CardContent>
@@ -137,7 +140,7 @@ const CourseTrainers = () => {
           {/* Trainers Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Trainer List</CardTitle>
+              <CardTitle>{t("trainers.course.list")}</CardTitle>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -146,23 +149,23 @@ const CourseTrainers = () => {
                 </div>
               ) : error ? (
                 <div className="text-center py-8">
-                  <p className="text-destructive">{getApiError(error, "Failed to load trainers.")}</p>
+                  <p className="text-destructive">{getApiError(error, t("trainers.course.loadFailed"))}</p>
                 </div>
               ) : trainers.length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No trainers enrolled yet</p>
+                  <p className="text-muted-foreground">{t("trainers.course.empty")}</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Trainer</TableHead>
-                      <TableHead>Enrolled</TableHead>
-                      <TableHead>Progress</TableHead>
-                      <TableHead>Lessons</TableHead>
-                      <TableHead>Avg. Score</TableHead>
-                      <TableHead>Last Active</TableHead>
+                      <TableHead>{t("trainers.course.columns.trainer")}</TableHead>
+                      <TableHead>{t("trainers.course.columns.enrolled")}</TableHead>
+                      <TableHead>{t("trainers.course.columns.progress")}</TableHead>
+                      <TableHead>{t("trainers.course.columns.lessons")}</TableHead>
+                      <TableHead>{t("trainers.course.columns.avgScore")}</TableHead>
+                      <TableHead>{t("trainers.course.columns.lastActive")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -175,26 +178,26 @@ const CourseTrainers = () => {
                               <AvatarFallback>{getInitials(trainer.FullName)}</AvatarFallback>
                             </Avatar>
                             <div>
-                              <p className="font-medium">{trainer.FullName}</p>
-                              <p className="text-xs text-muted-foreground">{trainer.Email}</p>
+                              <p className="font-medium">{trainer.FullName ?? t("common:deletedUser")}</p>
+                              <p className="text-xs text-muted-foreground" dir="ltr">{trainer.Email}</p>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {format(new Date(trainer.EnrolledAt), "MMM d, yyyy")}
+                          {formatDate(trainer.EnrolledAt)}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Progress value={trainer.ProgressPercentage} className="w-20 h-2" />
-                            <span className="text-sm">{Math.round(trainer.ProgressPercentage)}%</span>
+                            <span className="text-sm">{formatPercent(Math.round(trainer.ProgressPercentage))}</span>
                           </div>
                         </TableCell>
-                        <TableCell>{trainer.LessonsCompleted}</TableCell>
+                        <TableCell>{formatNumber(trainer.LessonsCompleted)}</TableCell>
                         <TableCell>
-                          {trainer.QuizAverage != null ? `${Math.round(trainer.QuizAverage)}%` : "-"}
+                          {trainer.QuizAverage != null ? formatPercent(Math.round(trainer.QuizAverage)) : "-"}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {trainer.LastActive ? format(new Date(trainer.LastActive), "MMM d, yyyy") : "Never"}
+                          {trainer.LastActive ? formatDate(trainer.LastActive) : t("trainers.course.never")}
                         </TableCell>
                       </TableRow>
                     ))}

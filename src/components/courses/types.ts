@@ -4,6 +4,8 @@ export interface Course {
     description: string;
     progress: number;
     duration: string;
+    /** Numeric duration; when set the card formats it per language instead of `duration`. */
+    durationHours?: number;
     lessons: number;
     category: CourseCategory;
     level: CourseLevel;

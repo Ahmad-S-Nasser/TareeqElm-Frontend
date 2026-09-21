@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 import { CourseCardEnhanced, categoryLabels, levelLabels, CourseCategory, CourseLevel, Course } from "@/components/courses";
+import { useFormatters } from "@/lib/format";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,6 +36,8 @@ type FilterTab = "all" | "in-progress" | "completed" | "not-started";
 
 const Courses = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation(["courses", "common"]);
+    const { formatNumber } = useFormatters();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTab, setActiveTab] = useState<FilterTab>("all");
@@ -50,7 +54,7 @@ const Courses = () => {
 
     const loading = catalogQuery.isLoading || (!!user && enrollmentsQuery.isLoading);
     const errorMessage = catalogQuery.error
-        ? getApiError(catalogQuery.error, "Failed to load courses.")
+        ? getApiError(catalogQuery.error, t("loadFailed"))
         : null;
 
     const allCourses = useMemo<Course[]>(() => {
@@ -63,11 +67,12 @@ const Courses = () => {
             title: c.Title,
             description: c.Description || "",
             progress: progressByCourse.get(c.Id) ?? 0,
-            duration: `${c.DurationHours ?? 0} hours`,
+            duration: "",
+            durationHours: c.DurationHours ?? 0,
             lessons: c.LessonsCount,
             category: (c.Category?.toLowerCase() ?? "certification") as CourseCategory,
             level: (c.Level?.toLowerCase() ?? "beginner") as CourseLevel,
-            instructor: c.InstructorName || "Instructor",
+            instructor: c.InstructorName ?? "",
             rating: 0,
             trainersEnrolled: c.EnrolledCount,
             tags: [],
@@ -126,7 +131,7 @@ const Courses = () => {
         total: allCourses.length,
         inProgress: allCourses.filter(c => c.progress > 0 && c.progress < 100).length,
         completed: allCourses.filter(c => c.progress === 100).length,
-        totalHours: allCourses.reduce((sum, c) => sum + parseInt(c.duration || "0"), 0),
+        totalHours: allCourses.reduce((sum, c) => sum + (c.durationHours ?? 0), 0),
     };
 
     return (
@@ -141,8 +146,8 @@ const Courses = () => {
             <main
                 className={cn(
                     "pt-20 pb-8 px-4 sm:px-6 transition-all duration-300",
-                    sidebarCollapsed ? "lg:ml-20" : "lg:ml-64",
-                    "ml-0"
+                    sidebarCollapsed ? "lg:ms-20" : "lg:ms-64",
+                    "ms-0"
                 )}
             >
                 <div className="max-w-7xl mx-auto space-y-6">
@@ -154,10 +159,10 @@ const Courses = () => {
                                     <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow-primary">
                                         <BookOpen className="w-5 h-5 text-primary-foreground" />
                                     </div>
-                                    <h1 className="text-2xl font-bold">Courses</h1>
+                                    <h1 className="text-2xl font-bold">{t("list.title")}</h1>
                                 </div>
                                 <p className="text-muted-foreground">
-                                    Explore our comprehensive library of testing and QA courses
+                                    {t("list.subtitle")}
                                 </p>
                             </div>
                         </div>
@@ -174,8 +179,8 @@ const Courses = () => {
                                     <GraduationCap className="w-5 h-5 text-primary" />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.total}</p>
-                                    <p className="text-xs text-muted-foreground">Total Courses</p>
+                                    <p className="text-2xl font-bold">{formatNumber(stats.total)}</p>
+                                    <p className="text-xs text-muted-foreground">{t("list.totalCourses")}</p>
                                 </div>
                             </div>
                         </div>
@@ -186,8 +191,8 @@ const Courses = () => {
                                     <TrendingUp className="w-5 h-5 text-warning" />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.inProgress}</p>
-                                    <p className="text-xs text-muted-foreground">In Progress</p>
+                                    <p className="text-2xl font-bold">{formatNumber(stats.inProgress)}</p>
+                                    <p className="text-xs text-muted-foreground">{t("list.inProgress")}</p>
                                 </div>
                             </div>
                         </div>
@@ -198,8 +203,8 @@ const Courses = () => {
                                     <Sparkles className="w-5 h-5 text-success" />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.completed}</p>
-                                    <p className="text-xs text-muted-foreground">Completed</p>
+                                    <p className="text-2xl font-bold">{formatNumber(stats.completed)}</p>
+                                    <p className="text-xs text-muted-foreground">{t("list.completed")}</p>
                                 </div>
                             </div>
                         </div>
@@ -210,8 +215,8 @@ const Courses = () => {
                                     <Clock className="w-5 h-5 text-accent" />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.totalHours}h</p>
-                                    <p className="text-xs text-muted-foreground">Total Content</p>
+                                    <p className="text-2xl font-bold">{t("hoursShort", { value: formatNumber(stats.totalHours) })}</p>
+                                    <p className="text-xs text-muted-foreground">{t("list.totalContent")}</p>
                                 </div>
                             </div>
                         </div>
@@ -224,21 +229,21 @@ const Courses = () => {
                     >
                         {/* Search */}
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input
-                                placeholder="Search courses..."
+                                placeholder={t("searchPlaceholder")}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10"
+                                className="ps-10"
                             />
                         </div>
 
                         {/* Tabs */}
                         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as FilterTab)}>
                             <TabsList>
-                                <TabsTrigger value="all">All</TabsTrigger>
-                                <TabsTrigger value="in-progress">In Progress</TabsTrigger>
-                                <TabsTrigger value="not-started">New</TabsTrigger>
+                                <TabsTrigger value="all">{t("list.tabs.all")}</TabsTrigger>
+                                <TabsTrigger value="in-progress">{t("list.tabs.inProgress")}</TabsTrigger>
+                                <TabsTrigger value="not-started">{t("list.tabs.new")}</TabsTrigger>
                             </TabsList>
                         </Tabs>
 
@@ -247,34 +252,34 @@ const Courses = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="gap-2">
                                     <Filter className="w-4 h-4" />
-                                    Filters
+                                    {t("list.filters")}
                                     {(selectedCategories.length > 0 || selectedLevels.length > 0) && (
-                                        <span className="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-primary text-primary-foreground">
-                                            {selectedCategories.length + selectedLevels.length}
+                                        <span className="ms-1 px-1.5 py-0.5 text-xs rounded-full bg-primary text-primary-foreground">
+                                            {formatNumber(selectedCategories.length + selectedLevels.length)}
                                         </span>
                                     )}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56">
-                                <DropdownMenuLabel>Categories</DropdownMenuLabel>
-                                {(Object.entries(categoryLabels) as [CourseCategory, string][]).map(([key, label]) => (
+                                <DropdownMenuLabel>{t("list.categories")}</DropdownMenuLabel>
+                                {(Object.keys(categoryLabels) as CourseCategory[]).map((key) => (
                                     <DropdownMenuCheckboxItem
                                         key={key}
                                         checked={selectedCategories.includes(key)}
                                         onCheckedChange={() => toggleCategory(key)}
                                     >
-                                        {label}
+                                        {t(`category.${key}`)}
                                     </DropdownMenuCheckboxItem>
                                 ))}
                                 <DropdownMenuSeparator />
-                                <DropdownMenuLabel>Level</DropdownMenuLabel>
-                                {(Object.entries(levelLabels) as [CourseLevel, string][]).map(([key, label]) => (
+                                <DropdownMenuLabel>{t("list.level")}</DropdownMenuLabel>
+                                {(Object.keys(levelLabels) as CourseLevel[]).map((key) => (
                                     <DropdownMenuCheckboxItem
                                         key={key}
                                         checked={selectedLevels.includes(key)}
                                         onCheckedChange={() => toggleLevel(key)}
                                     >
-                                        {label}
+                                        {t(`level.${key}`)}
                                     </DropdownMenuCheckboxItem>
                                 ))}
                             </DropdownMenuContent>
@@ -286,14 +291,14 @@ const Courses = () => {
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-12">
                                 <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-                                <p className="text-muted-foreground">Loading courses...</p>
+                                <p className="text-muted-foreground">{t("list.loading")}</p>
                             </div>
                         ) : errorMessage ? (
                             <div className="text-center py-16">
                                 <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-3" />
-                                <h3 className="text-lg font-semibold mb-1">Could not load courses</h3>
+                                <h3 className="text-lg font-semibold mb-1">{t("list.loadFailedTitle")}</h3>
                                 <p className="text-muted-foreground mb-4">{errorMessage}</p>
-                                <Button variant="outline" onClick={() => catalogQuery.refetch()}>Try again</Button>
+                                <Button variant="outline" onClick={() => catalogQuery.refetch()}>{t("common:actions.retry")}</Button>
                             </div>
                         ) : filteredCourses.length > 0 ? (
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -311,11 +316,11 @@ const Courses = () => {
                                 <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
                                     <BookOpen className="w-8 h-8 text-muted-foreground" />
                                 </div>
-                                <h3 className="text-lg font-semibold mb-2">No courses found</h3>
+                                <h3 className="text-lg font-semibold mb-2">{t("list.noneFound")}</h3>
                                 <p className="text-muted-foreground mb-4">
                                     {allCourses.length === 0
-                                        ? "There are no published courses yet. Check back soon."
-                                        : "Try adjusting your search or filters"}
+                                        ? t("list.noPublished")
+                                        : t("list.adjustFilters")}
                                 </p>
                                 <Button
                                     variant="outline"
@@ -326,7 +331,7 @@ const Courses = () => {
                                         setSelectedLevels([]);
                                     }}
                                 >
-                                    Clear all filters
+                                    {t("list.clearFilters")}
                                 </Button>
                             </div>
                         )}
