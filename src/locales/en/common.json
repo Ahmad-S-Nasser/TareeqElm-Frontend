@@ -77,5 +77,6 @@
   "deletedUser": "Deleted user",
   "deletedCourse": "Deleted course",
   "deletedDepartment": "Deleted department",
+  "deletedOrganization": "Deleted organization",
   "deletedEntity": "Deleted item"
 }

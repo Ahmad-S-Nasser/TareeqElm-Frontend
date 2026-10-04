@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils";
 import { useFormatters } from "@/lib/format";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Course } from "./types";
+import { PriceTag } from "@/components/billing";
+import { Course, isPaidCourse } from "./types";
 
 interface CourseCardEnhancedProps {
     course: Course;
@@ -19,6 +20,8 @@ export function CourseCardEnhanced({
 }: CourseCardEnhancedProps) {
     const { t } = useTranslation("courses");
     const { formatNumber, formatPercent } = useFormatters();
+    // A free course keeps its pre-monetization look: no price, no badge, nothing extra on the card.
+    const isPaid = isPaidCourse(course.accessModel, course.pricing);
     const getLevelColor = (level: string) => {
         switch (level) {
             case "beginner": return "bg-success/10 text-success border-success/20";
@@ -50,12 +53,15 @@ export function CourseCardEnhanced({
                 ) : (
                     <div className={cn(
                         "w-full h-full",
-                        course.category === "certification" && "gradient-primary",
-                        course.category === "automation" && "gradient-accent",
-                        course.category === "agile" && "gradient-success",
-                        course.category === "testing-techniques" && "bg-gradient-to-br from-amber-500 to-orange-600",
-                        course.category === "tools" && "bg-gradient-to-br from-cyan-500 to-blue-600",
-                        course.category === "soft-skills" && "bg-gradient-to-br from-pink-500 to-rose-600",
+                        course.category === "languages" && "gradient-primary",
+                        course.category === "technology" && "gradient-accent",
+                        course.category === "business" && "gradient-success",
+                        course.category === "science" && "bg-gradient-to-br from-cyan-500 to-blue-600",
+                        course.category === "mathematics" && "bg-gradient-to-br from-indigo-500 to-violet-600",
+                        course.category === "arts-humanities" && "bg-gradient-to-br from-pink-500 to-rose-600",
+                        course.category === "professional-development" && "bg-gradient-to-br from-amber-500 to-orange-600",
+                        course.category === "test-prep" && "bg-gradient-to-br from-teal-500 to-emerald-600",
+                        course.category === "other" && "bg-gradient-to-br from-slate-500 to-slate-600",
                     )} />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
@@ -84,10 +90,22 @@ export function CourseCardEnhanced({
             {/* Content */}
             <div className="p-5">
                 {/* Level & Rating */}
-                <div className="flex items-center justify-between mb-3">
-                    <Badge variant="outline" className={cn("text-xs", getLevelColor(course.level))}>
-                        {t(`level.${course.level}`, { defaultValue: course.level })}
-                    </Badge>
+                <div className="flex items-center justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <Badge variant="outline" className={cn("text-xs", getLevelColor(course.level))}>
+                            {t(`level.${course.level}`, { defaultValue: course.level })}
+                        </Badge>
+                        {isPaid && (
+                            <PriceTag
+                                pricing={course.pricing}
+                                owned={course.owned}
+                                size="sm"
+                                showFree={false}
+                                hideSaleBadge
+                                className="shrink-0"
+                            />
+                        )}
+                    </div>
                     {course.rating > 0 && (
                         <div className="flex items-center gap-1 text-xs">
                             <Star className="w-3.5 h-3.5 fill-warning text-warning" />

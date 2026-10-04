@@ -3,4 +3,3 @@ export { ChapterAccordion } from "./ChapterAccordion";
 export { LessonItem } from "./LessonItem";
 export * from "./types";
 export * from "./courseChapters";
-export { mockCourses } from "./mockCourseData";

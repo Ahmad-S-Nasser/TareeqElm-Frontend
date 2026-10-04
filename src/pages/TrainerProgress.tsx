@@ -8,10 +8,16 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Trophy, BookOpen, Award, TrendingUp, Flame, Loader2, AlertCircle } from "lucide-react";
+import { Clock, Trophy, BookOpen, Award, TrendingUp, Flame, Loader2, AlertCircle, Star, Medal } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useTrainerStats } from "@/hooks/useTrainerStats";
 import { useAchievements } from "@/hooks/useAchievements";
+import { useLeaderboardQuery } from "@/hooks/useLeaderboard";
+import { getApiError } from "@/lib/api";
 import { ResponsiveContainer, XAxis, YAxis, Tooltip, AreaChart, Area, CartesianGrid } from "recharts";
+
+const leaderboardInitials = (name: string) =>
+    name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
 const TrainerProgress = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -24,6 +30,7 @@ const TrainerProgress = () => {
     const { earned, totalXP, loading: achievementsLoading } = useAchievements();
     const loading = statsLoading || achievementsLoading;
     const recentAchievements = earned.slice(0, 4);
+    const { data: board, isLoading: leaderboardLoading, error: leaderboardError } = useLeaderboardQuery({ period: "month", limit: 5 });
 
     return (
         <div className="min-h-screen bg-background">
@@ -184,6 +191,49 @@ const TrainerProgress = () => {
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Leaderboard */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Medal className="w-5 h-5 text-warning" />
+                                {t("progress.leaderboard.title")}
+                            </CardTitle>
+                            <CardDescription>{t("progress.leaderboard.subtitle")}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {leaderboardLoading ? (
+                                <div className="flex justify-center py-6"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+                            ) : leaderboardError ? (
+                                <p className="text-sm text-destructive text-center py-4">{getApiError(leaderboardError, t("progress.leaderboard.loadFailed"))}</p>
+                            ) : !board || board.Entries.length === 0 ? (
+                                <p className="text-sm text-muted-foreground text-center py-4">{t("progress.leaderboard.empty")}</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {board.Entries.map((entry) => (
+                                        <div key={entry.TrainerId} className={cn("flex items-center gap-3 p-2 rounded-lg", entry.TrainerId === board.Me?.TrainerId && "bg-primary/5 ring-1 ring-primary/20")}>
+                                            <span className="w-6 text-center text-xs font-bold text-muted-foreground">{entry.Rank != null ? `#${formatNumber(entry.Rank)}` : "-"}</span>
+                                            <Avatar className="w-7 h-7">
+                                                <AvatarFallback className="bg-primary/10 text-primary text-[10px]">{leaderboardInitials(entry.TrainerName ?? "")}</AvatarFallback>
+                                            </Avatar>
+                                            <span className="flex-1 text-sm font-medium truncate">{entry.TrainerName ?? t("progress.leaderboard.deletedTrainer")}</span>
+                                            <span className="flex items-center gap-1 text-xs text-muted-foreground"><Star className="w-3 h-3 text-warning" />{formatNumber(entry.Points)}</span>
+                                        </div>
+                                    ))}
+                                    {board.Me && board.Me.Rank != null && !board.Entries.some((e) => e.TrainerId === board.Me?.TrainerId) && (
+                                        <div className="flex items-center gap-3 p-2 rounded-lg bg-primary/5 ring-1 ring-primary/20">
+                                            <span className="w-6 text-center text-xs font-bold text-muted-foreground">#{formatNumber(board.Me.Rank)}</span>
+                                            <Avatar className="w-7 h-7">
+                                                <AvatarFallback className="bg-primary/10 text-primary text-[10px]">{leaderboardInitials(board.Me.TrainerName ?? "")}</AvatarFallback>
+                                            </Avatar>
+                                            <span className="flex-1 text-sm font-medium truncate">{t("progress.leaderboard.you")}</span>
+                                            <span className="flex items-center gap-1 text-xs text-muted-foreground"><Star className="w-3 h-3 text-warning" />{formatNumber(board.Me.Points)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
 
                     {/* Course Progress List */}
                     <Card>

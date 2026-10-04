@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { OrganizationSidebar, OrganizationSidebarContent } from "@/components/layout/OrganizationSidebar";
 import { Header } from "@/components/layout/Header";
@@ -16,7 +16,8 @@ import {
     MoreVertical,
     Trash2,
     ChevronRight,
-    Loader2
+    Loader2,
+    Link2
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -31,8 +32,53 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api, { getApiError } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { useFormatters } from "@/lib/format";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useAssignDepartment } from "@/hooks/useDepartments";
 
 interface Department { Id: string; Name: string; Head: string | null; CoursesCount: number; TrainersCount: number; Performance: number; Trend: number }
+/** The slices of GET /Courses and GET /Organization/trainers the assign dialog needs (same query keys as OrganizationCourses/OrganizationTrainers). */
+interface AssignableCourse { Id: string; Title: string; DepartmentId?: string | null }
+interface AssignableTrainer { Id: string; FullName: string; Email: string; DepartmentId: string | null }
+
+interface CheckListItem { id: string; label: string; hint?: string | null; alreadyIn: boolean }
+
+/** A searchable checkbox list; rows already in the department are shown ticked and locked (assigning only adds). */
+const CheckList = ({ id, title, items, selected, onToggle, loading, alreadyLabel, emptyLabel, searchLabel }: {
+    id: string; title: string; items: CheckListItem[]; selected: string[]; onToggle: (id: string) => void;
+    loading: boolean; alreadyLabel: string; emptyLabel: string; searchLabel: string;
+}) => {
+    const [search, setSearch] = useState("");
+    const term = search.trim().toLowerCase();
+    const shown = term ? items.filter((i) => i.label.toLowerCase().includes(term)) : items;
+    return (
+        <div className="space-y-2" data-testid={id}>
+            <Label htmlFor={`${id}-search`}>{title}</Label>
+            <Input id={`${id}-search`} value={search} onChange={(e) => setSearch(e.target.value)} placeholder={searchLabel} />
+            <div className="max-h-48 overflow-y-auto rounded-md border divide-y">
+                {loading ? (
+                    <div className="flex justify-center py-4"><Loader2 className="w-4 h-4 animate-spin text-primary" /></div>
+                ) : shown.length === 0 ? (
+                    <p className="text-xs text-muted-foreground p-3">{emptyLabel}</p>
+                ) : shown.map((item) => (
+                    <label key={item.id} className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-muted/50">
+                        <Checkbox
+                            checked={item.alreadyIn || selected.includes(item.id)}
+                            disabled={item.alreadyIn}
+                            onCheckedChange={() => onToggle(item.id)}
+                            aria-label={item.label}
+                        />
+                        <span className="flex-1 min-w-0 truncate">{item.label}</span>
+                        {item.alreadyIn ? (
+                            <span className="text-xs text-muted-foreground shrink-0">{alreadyLabel}</span>
+                        ) : item.hint ? (
+                            <span className="text-xs text-muted-foreground shrink-0 truncate max-w-[40%]">{item.hint}</span>
+                        ) : null}
+                    </label>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const OrganizationDepartments = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -48,6 +94,59 @@ const OrganizationDepartments = () => {
         queryKey: ["organization-departments"],
         queryFn: async () => (await api.get<Department[]>("/Departments")).data,
     });
+
+    // ---------- bulk assign (PUT /Departments/{id}/assign) ----------
+    const [assignDept, setAssignDept] = useState<Department | null>(null);
+    const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
+    const [selectedTrainerIds, setSelectedTrainerIds] = useState<string[]>([]);
+    const assignMutation = useAssignDepartment();
+
+    // Same keys and requests as OrganizationCourses / OrganizationTrainers, so each page warms the other's cache.
+    const coursesQuery = useQuery({
+        queryKey: ["organization-courses"],
+        queryFn: async () => (await api.get<AssignableCourse[]>("/Courses", { params: { pageSize: 100 } })).data,
+        enabled: !!assignDept,
+    });
+    const trainersQuery = useQuery({
+        queryKey: ["organization-trainers"],
+        queryFn: async () => (await api.get<AssignableTrainer[]>("/Organization/trainers")).data,
+        enabled: !!assignDept,
+    });
+
+    const departmentNames = useMemo(() => new Map(departments.map((d) => [d.Id, d.Name])), [departments]);
+    const otherDepartmentHint = (departmentId: string | null | undefined) =>
+        departmentId ? t("departments.assign.currently", { name: departmentNames.get(departmentId) ?? t("notAssigned") }) : null;
+
+    const courseItems: CheckListItem[] = (coursesQuery.data ?? []).map((c) => ({
+        id: c.Id, label: c.Title, alreadyIn: !!assignDept && c.DepartmentId === assignDept.Id, hint: otherDepartmentHint(c.DepartmentId),
+    }));
+    const trainerItems: CheckListItem[] = (trainersQuery.data ?? []).map((tr) => ({
+        id: tr.Id, label: tr.FullName, alreadyIn: !!assignDept && tr.DepartmentId === assignDept.Id, hint: otherDepartmentHint(tr.DepartmentId),
+    }));
+
+    const toggleIn = (setter: React.Dispatch<React.SetStateAction<string[]>>) => (id: string) =>
+        setter((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+    const openAssign = (dept: Department) => {
+        setSelectedCourseIds([]);
+        setSelectedTrainerIds([]);
+        setAssignDept(dept);
+    };
+
+    const handleAssign = () => {
+        if (!assignDept) return;
+        const name = assignDept.Name;
+        assignMutation.mutate(
+            { departmentId: assignDept.Id, assignment: { UserIds: selectedTrainerIds, CourseIds: selectedCourseIds } },
+            {
+                onSuccess: () => {
+                    toast({ title: t("departments.assign.success", { name }) });
+                    setAssignDept(null);
+                },
+                onError: (err: unknown) => toast({ variant: "destructive", title: t("common:states.error"), description: getApiError(err, t("departments.assign.failed")) }),
+            }
+        );
+    };
 
     const invalidate = () => {
         queryClient.invalidateQueries({ queryKey: ["organization-departments"] });
@@ -145,6 +244,9 @@ const OrganizationDepartments = () => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => openAssign(dept)}>
+                                                        <Link2 className="w-4 h-4 me-2" /> {t("departments.assign.action")}
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem className="text-destructive" onClick={() => { if (window.confirm(t("departments.confirmDelete", { name: dept.Name }))) deleteMutation.mutate(dept.Id); }}>
                                                         <Trash2 className="w-4 h-4 me-2" /> {t("common:actions.delete")}
                                                     </DropdownMenuItem>
@@ -182,6 +284,11 @@ const OrganizationDepartments = () => {
                                             </div>
                                             <Progress value={dept.Performance || 0} className="h-1.5" />
                                         </div>
+
+                                        <Button variant="outline" className="w-full" onClick={() => openAssign(dept)} aria-label={t("departments.assign.actionFor", { name: dept.Name })}>
+                                            <Link2 className="w-4 h-4 me-2" />
+                                            {t("departments.assign.action")}
+                                        </Button>
 
                                         <Button variant="ghost" className="w-full group/btn hover:bg-primary/5 hover:text-primary border border-transparent hover:border-primary/20">
                                             {t("departments.viewDetails")}
@@ -224,6 +331,50 @@ const OrganizationDepartments = () => {
                         <Button onClick={handleAdd} disabled={addMutation.isPending} className="gradient-primary text-white border-0">
                             {addMutation.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
                             {t("dashboard.addDepartment")}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!assignDept} onOpenChange={(open) => !open && setAssignDept(null)}>
+                <DialogContent className="sm:max-w-[560px]">
+                    <DialogHeader>
+                        <DialogTitle>{t("departments.assign.title", { name: assignDept?.Name ?? "" })}</DialogTitle>
+                        <DialogDescription>{t("departments.assign.description")}</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <CheckList
+                            id="assign-courses"
+                            title={t("departments.assign.courses")}
+                            items={courseItems}
+                            selected={selectedCourseIds}
+                            onToggle={toggleIn(setSelectedCourseIds)}
+                            loading={coursesQuery.isLoading}
+                            alreadyLabel={t("departments.assign.alreadyIn")}
+                            emptyLabel={t("departments.assign.noCourses")}
+                            searchLabel={t("departments.assign.searchCourses")}
+                        />
+                        <CheckList
+                            id="assign-trainers"
+                            title={t("departments.assign.trainers")}
+                            items={trainerItems}
+                            selected={selectedTrainerIds}
+                            onToggle={toggleIn(setSelectedTrainerIds)}
+                            loading={trainersQuery.isLoading}
+                            alreadyLabel={t("departments.assign.alreadyIn")}
+                            emptyLabel={t("departments.assign.noTrainers")}
+                            searchLabel={t("departments.assign.searchTrainers")}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setAssignDept(null)}>{t("common:actions.cancel")}</Button>
+                        <Button
+                            onClick={handleAssign}
+                            disabled={assignMutation.isPending || (selectedCourseIds.length === 0 && selectedTrainerIds.length === 0)}
+                            className="gradient-primary text-white border-0"
+                        >
+                            {assignMutation.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
+                            {t("departments.assign.submit", { count: selectedCourseIds.length + selectedTrainerIds.length })}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

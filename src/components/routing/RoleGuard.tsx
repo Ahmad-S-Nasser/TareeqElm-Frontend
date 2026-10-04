@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { isRoleAllowed, roleHome, SIGN_IN_PATH, type AppRole } from "@/lib/roles";
+import { isRoleAllowed, roleHome, SET_PASSWORD_PATH, SIGN_IN_PATH, type AppRole } from "@/lib/roles";
 import { PageLoader } from "./PageLoader";
 
 interface RoleGuardProps {
@@ -28,6 +28,11 @@ export const RoleGuard = ({ roles }: RoleGuardProps) => {
   if (!allowed) {
     // roleHome(null) is the sign-in page, which never redirects back for a role-less user.
     return <Navigate to={roleHome(role)} replace />;
+  }
+
+  // An admin/org-created account must change its generated password before it can reach any dashboard.
+  if (user.MustChangePassword && location.pathname !== SET_PASSWORD_PATH) {
+    return <Navigate to={SET_PASSWORD_PATH} replace />;
   }
 
   return <Outlet />;

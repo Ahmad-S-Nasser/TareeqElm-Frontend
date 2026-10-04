@@ -7,13 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Bell, Lock, Save, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { getApiError } from "@/lib/api";
 import { useProfile, splitName, initials } from "@/hooks/useProfile";
+import { NotificationPreferencesCard } from "@/components/settings/NotificationPreferencesCard";
 
 const TrainerSettings = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -23,8 +23,6 @@ const TrainerSettings = () => {
 
     const [name, setName] = useState({ firstName: "", lastName: "" });
     const [passwords, setPasswords] = useState({ current: "", next: "" });
-    // Local-only preview toggles: there is no server-side notification preference yet.
-    const [notifications, setNotifications] = useState({ assignments: true, reminders: true, announcements: false });
 
     useEffect(() => {
         if (me) {
@@ -133,46 +131,7 @@ const TrainerSettings = () => {
                         </TabsContent>
 
                         <TabsContent value="notifications">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t("settings.notifPrefs")}</CardTitle>
-                                    <CardDescription>{t("settings.notifPrefsDesc")}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-0.5">
-                                                <Label>{t("settings.assignments")}</Label>
-                                                <p className="text-sm text-muted-foreground">{t("settings.assignmentsDesc")}</p>
-                                            </div>
-                                            <Switch
-                                                checked={notifications.assignments}
-                                                onCheckedChange={(c) => setNotifications(p => ({ ...p, assignments: c }))}
-                                            />
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-0.5">
-                                                <Label>{t("settings.reminders")}</Label>
-                                                <p className="text-sm text-muted-foreground">{t("settings.remindersDesc")}</p>
-                                            </div>
-                                            <Switch
-                                                checked={notifications.reminders}
-                                                onCheckedChange={(c) => setNotifications(p => ({ ...p, reminders: c }))}
-                                            />
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-0.5">
-                                                <Label>{t("settings.announcements")}</Label>
-                                                <p className="text-sm text-muted-foreground">{t("settings.announcementsDesc")}</p>
-                                            </div>
-                                            <Switch
-                                                checked={notifications.announcements}
-                                                onCheckedChange={(c) => setNotifications(p => ({ ...p, announcements: c }))}
-                                            />
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <NotificationPreferencesCard />
                         </TabsContent>
 
                         <TabsContent value="security">
@@ -182,12 +141,12 @@ const TrainerSettings = () => {
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <div className="space-y-2">
-                                        <Label>{t("settings.currentPassword")}</Label>
-                                        <Input type="password" autoComplete="current-password" value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} />
+                                        <Label htmlFor="current-password">{t("settings.currentPassword")}</Label>
+                                        <Input id="current-password" type="password" autoComplete="current-password" value={passwords.current} onChange={(e) => setPasswords({ ...passwords, current: e.target.value })} />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>{t("settings.newPassword")}</Label>
-                                        <Input type="password" autoComplete="new-password" value={passwords.next} onChange={(e) => setPasswords({ ...passwords, next: e.target.value })} />
+                                        <Label htmlFor="new-password">{t("settings.newPassword")}</Label>
+                                        <Input id="new-password" type="password" autoComplete="new-password" value={passwords.next} onChange={(e) => setPasswords({ ...passwords, next: e.target.value })} />
                                     </div>
                                 </CardContent>
                                 <CardFooter className="border-t px-6 py-4">

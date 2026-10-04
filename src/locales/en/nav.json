@@ -17,6 +17,9 @@
       "myCourses": "My Courses",
       "flashcards": "Flashcards",
       "quizzes": "Quizzes",
+      "assignments": "Assignments",
+      "myAttendance": "My Attendance",
+      "discussions": "Discussions",
       "mockExams": "Mock Exams",
       "analytics": "Analytics",
       "aiTutor": "AI Tutor",
@@ -24,6 +27,8 @@
       "timeBlocking": "Time Blocking",
       "spacedRepetition": "Spaced Repetition",
       "achievements": "Achievements",
+      "myPurchases": "My Purchases",
+      "myCertificates": "My Certificates",
       "myProfile": "My Profile",
       "notifications": "Notifications",
       "uploadSyllabus": "Upload Syllabus",
@@ -36,14 +41,16 @@
       "myCourses": "My Courses",
       "createCourse": "Create Course",
       "curriculum": "Curriculum",
-      "trainers": "Trainers",
+      "trainers": "Trainees",
       "assignments": "Assignments",
+      "sessions": "Sessions",
       "quizzesExams": "Quizzes & Exams",
       "discussions": "Discussions",
       "announcements": "Announcements",
       "flashcards": "Flashcards",
       "analytics": "Analytics",
       "leaderboard": "Leaderboard",
+      "earnings": "My Earnings",
       "contentTools": "Content Tools",
       "aiAssistant": "AI Assistant",
       "notifications": "Notifications",
@@ -52,16 +59,30 @@
     "organization": {
       "overview": "Overview",
       "departments": "Departments",
+      "academicYears": "Academic Years",
+      "facilities": "Facilities",
       "academicTerms": "Academic Terms",
+      "grades": "Grades",
+      "calendar": "Calendar",
       "sections": "Sections",
       "instructors": "Instructors",
-      "trainers": "Trainers",
+      "trainers": "Trainees",
       "courses": "Courses",
+      "platformCourses": "Platform Course Catalog",
+      "billing": "Billing",
+      "catalogPricing": "Catalog & Pricing",
       "enrollment": "Enrollment",
       "exams": "Exams",
       "announcements": "Announcements",
       "contentLibrary": "Content Library",
       "analytics": "Analytics",
+      "revenue": "Revenue",
+      "orders": "Orders",
+      "invoices": "Invoices",
+      "refundRequests": "Refund Requests",
+      "coupons": "Coupons",
+      "payouts": "Payouts",
+      "pendingMembers": "Pending Members",
       "reports": "Reports",
       "aiInsights": "AI Insights",
       "rolesPermissions": "Roles & Permissions",
@@ -70,9 +91,19 @@
     "admin": {
       "dashboard": "Dashboard",
       "users": "Users",
-      "courses": "Courses",
+      "courses": "Platform Courses",
       "enrollments": "Enrollments",
+      "roles": "Roles and permissions",
       "analytics": "Analytics",
+      "catalogPricing": "Catalog & Pricing",
+      "revenue": "Revenue",
+      "orders": "Orders",
+      "refundRequests": "Refund requests",
+      "coupons": "Coupons",
+      "payouts": "Payouts",
+      "leads": "Leads",
+      "organizations": "Organizations",
+      "audit": "Audit log",
       "settings": "Settings"
     },
     "brand": {
@@ -81,7 +112,7 @@
       "admin": "AdminAI"
     },
     "portal": {
-      "applicant": "Trainer Portal",
+      "applicant": "Trainee Portal",
       "instructor": "Instructor Portal",
       "generic": "Smart Learning"
     },
@@ -101,7 +132,7 @@
       "lesson": "Lessons",
       "flashcard": "Flashcards",
       "instructor": "Instructors",
-      "trainer": "Trainers",
+      "trainer": "Trainees",
       "department": "Departments"
     },
     "items": {
@@ -143,11 +174,11 @@
       },
       "10": {
         "title": "Computer Science",
-        "subtitle": "12 courses • 450 trainers"
+        "subtitle": "12 courses • 450 trainees"
       },
       "11": {
         "title": "UI/UX Design",
-        "subtitle": "8 courses • 280 trainers"
+        "subtitle": "8 courses • 280 trainees"
       }
     }
   },

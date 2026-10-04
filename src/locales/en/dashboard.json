@@ -9,9 +9,9 @@
   "noCourses": "You haven't enrolled in any courses yet",
   "browseCatalog": "Browse the course catalog",
   "stats": {
-    "streak": "Study streak",
+    "streak": "Learning streak",
     "focusScore": "Focus score",
-    "studyHours": "Study hours",
+    "studyHours": "Learning hours",
     "badgesEarned": "Badges earned",
     "total": "Total",
     "days_one": "{{count}} day",
@@ -61,16 +61,16 @@
     "practice": "Practice",
     "attempted_one": "{{count}} question attempted",
     "attempted_other": "{{count}} questions attempted",
-    "suggestion": "AI suggests focusing on \"{{topic}}\" in your next study session"
+    "suggestion": "AI suggests focusing on \"{{topic}}\" in your next learning session"
   },
   "coachWidget": {
-    "title": "AI study coach",
+    "title": "AI learning coach",
     "flashcardsDue_one": "{{count}} flashcard due for review",
     "flashcardsDue_other": "{{count}} flashcards due for review",
     "streak_one": "🔥 {{count}}-day streak! Keep it up!",
     "streak_other": "🔥 {{count}}-day streak! Keep it up!",
     "focusOn": "Focus on: {{topic}}",
-    "startSession": "Start a study session to get personalized insights",
+    "startSession": "Start a learning session to get personalized insights",
     "analyzing": "Analyzing your progress...",
     "open": "Open AI coach"
   },
@@ -78,9 +78,9 @@
     "toggle": "Toggle AI coach",
     "subtitle": "Your learning mentor",
     "fullView": "Full view",
-    "askAnything": "Ask me anything about your studies!",
+    "askAnything": "Ask me anything about your learning!",
     "suggestions": {
-      "study": "What should I study today?",
+      "study": "What should I learn today?",
       "progress": "How's my progress?",
       "motivate": "Motivate me!"
     },
@@ -94,7 +94,7 @@
     "warmingUp": "Please wait, warming up...",
     "speakNow": "Speak now...",
     "listeningEllipsis": "Listening...",
-    "placeholder": "Ask AI anything about your studies...",
+    "placeholder": "Ask AI anything about your learning...",
     "stopVoice": "Stop voice input",
     "startVoice": "Start voice input",
     "send": "Send",
@@ -122,9 +122,9 @@
     "errorTitle": "AI coach error",
     "errorFallback": "Failed to get a response from the AI coach",
     "prompts": {
-      "insights": "Analyze my learning data and give me personalized study insights.",
-      "recommendations": "Based on my study patterns, what should I improve?",
-      "weekly_plan": "Create a personalized weekly study plan for me.",
+      "insights": "Analyze my learning data and give me personalized learning insights.",
+      "recommendations": "Based on my learning patterns, what should I improve?",
+      "weekly_plan": "Create a personalized weekly learning plan for me.",
       "weak_topics": "What are my weakest topics and how should I improve them?",
       "motivation": "Give me a motivational update on my progress."
     },
@@ -136,7 +136,7 @@
       "motivation": "Motivate me"
     },
     "stats": {
-      "studyHours": "Study hours",
+      "studyHours": "Learning hours",
       "streak": "Streak",
       "cardsDue": "Cards due",
       "quizAvg": "Quiz average",
@@ -160,14 +160,14 @@
     "alerts": {
       "reviewHint": "Reviewing now will strengthen your memory retention",
       "reviewNow": "Review now",
-      "streak_one": "🔥 {{count}}-day study streak!",
-      "streak_other": "🔥 {{count}}-day study streak!",
+      "streak_one": "🔥 {{count}}-day learning streak!",
+      "streak_other": "🔥 {{count}}-day learning streak!",
       "streakHint": "Complete one session today to keep it going",
       "weakTopics": "Weak topics: {{topics}}",
       "weakTopicsHint": "Extra review is recommended for better retention",
       "getHelp": "Get help",
-      "fewSessions_one": "Only {{count}} study session this week",
-      "fewSessions_other": "Only {{count}} study sessions this week",
+      "fewSessions_one": "Only {{count}} learning session this week",
+      "fewSessions_other": "Only {{count}} learning sessions this week",
       "fewSessionsHint": "Aim for at least 5 sessions per week",
       "planSession": "Plan a session",
       "noBlocks": "No time blocks planned for today",
@@ -176,17 +176,17 @@
     },
     "askYourCoach": "Ask your coach",
     "suggestions": {
-      "study": "What should I study today?",
+      "study": "What should I learn today?",
       "retention": "Why is my retention rate low?",
-      "plan": "Create a study plan for my exam next week",
+      "plan": "Create a learning plan for my exam next week",
       "focus": "How can I improve my focus score?",
       "cards": "Which flashcards need the most attention?",
       "track": "Am I on track to pass my exam?"
     },
     "chatTitle": "Coach chat",
-    "chatDesc": "Ask anything about your study progress",
+    "chatDesc": "Ask anything about your learning progress",
     "clear": "Clear",
-    "emptyChat": "Start a conversation with your AI study coach.",
+    "emptyChat": "Start a conversation with your AI learning coach.",
     "emptyChatHint": "Use the quick actions or type a question below.",
     "inputPlaceholder": "Ask your AI coach...",
     "listSeparator": ", "
@@ -194,13 +194,13 @@
   "tutor": {
     "errorTitle": "AI tutor error",
     "errorFallback": "Failed to get a response from the AI tutor.",
-    "welcome": "Hi! I am your AI tutor. I can help you understand complex topics, create study plans, or quiz you on your courses. What shall we learn today?",
+    "welcome": "Hi! I am your AI tutor. I can help you understand complex topics, create learning plans, or quiz you on your courses. What shall we learn today?",
     "cleared": "Chat history cleared. How else can I help you today?",
     "micActivating": "Activating microphone...",
     "micActivatingDesc": "Speak when you see \"Listening\"",
     "prompts": {
       "explain": "Explain quantum entanglement",
-      "schedule": "Create a study schedule for my calculus exam",
+      "schedule": "Create a learning schedule for my calculus exam",
       "quiz": "Quiz me on React Hooks",
       "summarize": "Summarize the last lesson"
     },
@@ -208,13 +208,13 @@
     "subtitle": "Your personalized learning companion. Available 24/7.",
     "tabs": {
       "chat": "Chat & explain",
-      "study": "Study plan",
+      "study": "Learning plan",
       "quiz": "Quiz me"
     },
     "conversation": "Conversation",
     "tabDesc": {
       "chat": "Ask anything. I can explain concepts, debug code, or translate text.",
-      "study": "Let's build a personalized study schedule based on your goals.",
+      "study": "Let's build a personalized learning schedule based on your goals.",
       "quiz": "Test your knowledge with adaptive quizzes."
     },
     "clear": "Clear",
@@ -251,19 +251,27 @@
     "title": "My progress",
     "subtitle": "Track your learning journey and achievements",
     "loading": "Loading your progress...",
-    "totalStudyTime": "Total study time",
+    "totalStudyTime": "Total learning time",
     "lessonsCompleted": "Lessons completed",
     "currentStreak": "Current streak",
     "days_one": "{{count}} day",
     "days_other": "{{count}} days",
     "totalPoints": "Total points",
     "weeklyActivity": "Weekly activity",
-    "weeklyActivityDesc": "Your study time over the last 7 days (minutes)",
+    "weeklyActivityDesc": "Your learning time over the last 7 days (minutes)",
     "minutes": "Minutes",
     "recentAchievements": "Recent achievements",
     "recentAchievementsDesc": "Badges you've earned recently",
-    "noBadges": "No badges earned yet. Keep studying to unlock your first one!",
+    "noBadges": "No badges earned yet. Keep learning to unlock your first one!",
     "viewAllAchievements": "View all achievements",
+    "leaderboard": {
+      "title": "Leaderboard",
+      "subtitle": "Top trainees this month, across your enrolled courses",
+      "loadFailed": "Could not load the leaderboard.",
+      "empty": "The leaderboard is empty right now.",
+      "you": "You",
+      "deletedTrainer": "Deleted trainee"
+    },
     "courseDetails": "Course progress details",
     "courseDetailsDesc": "Detailed breakdown of your enrolled courses",
     "notEnrolled": "You are not enrolled in any courses yet.",
@@ -294,54 +302,54 @@
     "categories": {
       "all": "All",
       "streak": "Streaks",
-      "study": "Study",
+      "study": "Learning",
       "mastery": "Mastery",
       "productivity": "Productivity"
     },
     "levels": {
       "beginner": "Beginner",
       "learner": "Learner",
-      "activeTrainer": "Active Trainer",
-      "focusedTrainer": "Focused Trainer",
+      "activeTrainer": "Active Trainee",
+      "focusedTrainer": "Focused Trainee",
       "dedicatedScholar": "Dedicated Scholar",
       "knowledgeSeeker": "Knowledge Seeker",
       "expertLearner": "Expert Learner",
-      "studyMaster": "Study Master"
+      "studyMaster": "Learning Master"
     },
     "items": {
       "streak-3": {
         "title": "Getting Started",
-        "desc": "3-day study streak",
+        "desc": "3-day learning streak",
         "req": "3 days"
       },
       "streak-7": {
         "title": "7-Day Streak",
-        "desc": "Study 7 days in a row",
+        "desc": "Learn 7 days in a row",
         "req": "7 days"
       },
       "streak-14": {
         "title": "Consistency Champion",
-        "desc": "14-day study streak",
+        "desc": "14-day learning streak",
         "req": "14 days"
       },
       "streak-30": {
         "title": "Unstoppable",
-        "desc": "30-day study streak",
+        "desc": "30-day learning streak",
         "req": "30 days"
       },
       "hours-10": {
         "title": "Dedicated Learner",
-        "desc": "Study for 10 hours total",
+        "desc": "Learn for 10 hours total",
         "req": "10 hours"
       },
       "hours-30": {
         "title": "30 Hours Studied",
-        "desc": "Accumulate 30 study hours",
+        "desc": "Accumulate 30 learning hours",
         "req": "30 hours"
       },
       "hours-100": {
         "title": "Century Club",
-        "desc": "100 hours of studying",
+        "desc": "100 hours of learning",
         "req": "100 hours"
       },
       "lessons-10": {
@@ -375,7 +383,7 @@
         "req": "5 deep sessions"
       },
       "multi-course": {
-        "title": "Renaissance Trainer",
+        "title": "Renaissance Trainee",
         "desc": "Enroll in 3+ courses",
         "req": "3 courses"
       },
@@ -391,6 +399,11 @@
       }
     }
   },
+  "announcementsFeed": {
+    "title": "Announcements",
+    "empty": "No announcements right now.",
+    "loadFailed": "Could not load announcements."
+  },
   "notifications": {
     "loadFailed": "Failed to load notifications.",
     "items": {
@@ -402,13 +415,13 @@
         "action": "Review now"
       },
       "goalUnmet": {
-        "title": "Weekly study goal at risk",
-        "message": "Only {{count}} study sessions this week. Try to fit in {{remaining}} more to stay on track.",
+        "title": "Weekly learning goal at risk",
+        "message": "Only {{count}} learning sessions this week. Try to fit in {{remaining}} more to stay on track.",
         "action": "Plan a session"
       },
       "focusDrop": {
         "title": "Focus score dropping",
-        "message": "Your recent study sessions had a low focus score. Try the Pomodoro technique for longer, deeper focus.",
+        "message": "Your recent learning sessions had a low focus score. Try the Pomodoro technique for longer, deeper focus.",
         "action": "Start Pomodoro"
       },
       "streakRisk": {
@@ -419,7 +432,7 @@
       },
       "morningPlan": {
         "title": "Good morning! Plan your day",
-        "message": "Start your day right: create a study schedule to maximize productivity.",
+        "message": "Start your day right: create a learning schedule to maximize productivity.",
         "action": "Plan day"
       },
       "quizDrop": {
@@ -446,7 +459,7 @@
     "loading": "Loading notifications...",
     "emptyAll": "No notifications right now",
     "emptyFiltered": "No notifications in this category",
-    "emptyAllHint": "Smart alerts will appear based on your study activity",
+    "emptyAllHint": "Smart alerts will appear based on your learning activity",
     "emptyFilteredHint": "Try a different filter or check back later",
     "backToDashboard": "Back to dashboard",
     "priority": {
@@ -486,7 +499,7 @@
     "notifPrefsDesc": "Email notifications are coming soon. These switches are a preview and are not saved yet.",
     "assignments": "Assignment deadlines",
     "assignmentsDesc": "Get reminded 24 hours before a due date.",
-    "reminders": "Daily study reminders",
+    "reminders": "Daily learning reminders",
     "remindersDesc": "Notifications to keep your streak alive.",
     "announcements": "New announcements",
     "announcementsDesc": "Updates from your instructors.",

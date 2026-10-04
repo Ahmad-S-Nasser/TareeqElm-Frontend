@@ -145,64 +145,104 @@
     "title": "الإعلانات",
     "subtitle": "انشر التحديثات والتذكيرات لمتدرّبيك",
     "new": "إعلان جديد",
-    "items": {
-      "1": {
-        "title": "صدور جدول الاختبار النصفي",
-        "course": "تعلّم الآلة 101",
-        "content": "سيُعقد الاختبار النصفي في 15 مارس. يُرجى مراجعة الفصول من 1 إلى 5."
-      },
-      "2": {
-        "title": "نشر واجب جديد",
-        "course": "الإحصاء",
-        "content": "تم نشر واجب جديد في تحليل البيانات. موعد التسليم 20 مارس."
-      },
-      "3": {
-        "title": "محاضرة ضيف يوم الجمعة",
-        "course": "استراتيجية الأعمال",
-        "content": "سيحاضرنا ضيف من جوجل حول استراتيجية الذكاء الاصطناعي."
-      },
-      "4": {
-        "title": "تغيير موعد الساعات المكتبية",
-        "course": "تعلّم الآلة 101",
-        "content": "ستُنقل الساعات المكتبية إلى يوم الخميس من 2 إلى 4 مساءً هذا الأسبوع."
-      }
+    "posted": "تم نشر الإعلان",
+    "postFailed": "تعذّر نشر الإعلان.",
+    "empty": "لا توجد إعلانات بعد.",
+    "loadFailed": "تعذّر تحميل الإعلانات.",
+    "pin": "تثبيت",
+    "unpin": "إلغاء التثبيت",
+    "pinFailed": "تعذّر تحديث التثبيت.",
+    "delete": "حذف",
+    "deleted": "تم حذف الإعلان",
+    "deleteFailed": "تعذّر حذف الإعلان.",
+    "confirmDeleteTitle": "حذف هذا الإعلان؟",
+    "confirmDeleteDesc": "سيُحذف “{{title}}” نهائيًا.",
+    "audiences": {
+      "all": "الجميع",
+      "trainers": "كل المتدرّبين",
+      "instructors": "كل المدرّسين",
+      "department": "قسم محدد",
+      "course": "دورة محددة"
+    },
+    "form": {
+      "title": "إعلان جديد",
+      "titleLabel": "العنوان",
+      "titlePlaceholder": "عنوان الإعلان...",
+      "body": "الرسالة",
+      "bodyPlaceholder": "اكتب إعلانك...",
+      "audience": "الجمهور",
+      "course": "الدورة",
+      "coursePlaceholder": "اختر دورة",
+      "required": "أدخل عنوانًا ورسالة.",
+      "courseRequired": "اختر إحدى دوراتك لهذا الإعلان.",
+      "instructorScopeHint": "يمكنك النشر في إحدى دوراتك.",
+      "cancel": "إلغاء",
+      "submit": "نشر الإعلان"
     }
   },
   "assignments": {
     "title": "الواجبات",
     "subtitle": "أنشئ واجبات المتدرّبين وأدرها وصحّحها",
-    "create": "إنشاء واجب",
-    "stats": {
-      "total": "الإجمالي",
-      "pending": "بانتظار المراجعة",
-      "graded": "تم تصحيحها",
-      "overdue": "متأخرة"
+    "new": "إنشاء واجب",
+    "empty": "لا توجد واجبات بعد.",
+    "loadFailed": "تعذّر تحميل الواجبات.",
+    "created": "تم إنشاء الواجب",
+    "createFailed": "تعذّر إنشاء الواجب.",
+    "delete": "حذف",
+    "deleted": "تم حذف الواجب",
+    "deleteFailed": "تعذّر حذف الواجب.",
+    "confirmDeleteTitle": "حذف هذا الواجب؟",
+    "confirmDeleteDesc": "سيتم حذف «{{title}}» وجميع التسليمات المرتبطة به نهائيًا.",
+    "due": "موعد التسليم {{date}}",
+    "maxScore": "{{score}} نقطة",
+    "allowLate": "التسليم المتأخر مسموح",
+    "noLate": "لا يُسمح بالتسليم المتأخر",
+    "submissionsCount": "تم تسليم {{submitted}}/{{enrolled}}",
+    "viewSubmissions": "عرض التسليمات",
+    "close": "إغلاق",
+    "form": {
+      "title": "واجب جديد",
+      "titleLabel": "العنوان",
+      "titlePlaceholder": "عنوان الواجب...",
+      "description": "الوصف",
+      "descriptionPlaceholder": "صِف ما يحتاج المتدرّبون فعله...",
+      "course": "الدورة",
+      "coursePlaceholder": "اختر دورة",
+      "dueAt": "موعد التسليم",
+      "maxScore": "الدرجة القصوى",
+      "allowLate": "السماح بالتسليم المتأخر",
+      "attachments": "المرفقات",
+      "addAttachment": "إضافة ملف",
+      "removeAttachment": "إزالة المرفق",
+      "uploading": "جارٍ الرفع… {{percent}}%",
+      "required": "أدخل عنوانًا ووصفًا.",
+      "courseRequired": "اختر أي دورة من دوراتك هذا الواجب من أجلها.",
+      "dueRequired": "اختر موعد تسليم.",
+      "cancel": "إلغاء",
+      "submit": "إنشاء الواجب"
     },
-    "status": {
-      "active": "نشط",
-      "completed": "مكتمل",
-      "upcoming": "قادم"
-    },
-    "due": "{{course}} • موعد التسليم: {{date}}",
-    "submitted": "تم التسليم",
-    "gradedCount": "تم تصحيح {{count}}",
-    "items": {
-      "1": {
-        "title": "ورقة بحثية: الذكاء الاصطناعي في التعليم",
-        "course": "تعلّم الآلة 101"
+    "submissionsPanel": {
+      "title": "التسليمات",
+      "empty": "لا توجد تسليمات بعد.",
+      "loadFailed": "تعذّر تحميل التسليمات.",
+      "status": {
+        "submitted": "تم التسليم",
+        "late": "متأخر",
+        "graded": "تم التصحيح"
       },
-      "2": {
-        "title": "مشروع تحليل البيانات",
-        "course": "أساسيات الإحصاء"
-      },
-      "3": {
-        "title": "دراسة الحالة النهائية",
-        "course": "استراتيجية الأعمال"
-      },
-      "4": {
-        "title": "تمرين مراجعة الشيفرة",
-        "course": "تعلّم الآلة 101"
-      }
+      "submittedOn": "تم التسليم في {{date}}",
+      "gradedOn": "تم التصحيح في {{date}}",
+      "grade": "التصحيح",
+      "score": "الدرجة",
+      "feedback": "الملاحظات",
+      "feedbackPlaceholder": "ملاحظات اختيارية للمتدرّب...",
+      "submitGrade": "حفظ الدرجة",
+      "graded": "تم حفظ الدرجة",
+      "gradeFailed": "تعذّر حفظ الدرجة.",
+      "files": "الملفات",
+      "noFiles": "لا توجد ملفات مرفقة.",
+      "text": "نص التسليم",
+      "noText": "لم يُرسَل نص."
     }
   },
   "chapters": {
@@ -219,11 +259,21 @@
     "lessonsInline_other": "({{count}} درس)",
     "deleteChapter": "حذف الفصل",
     "editLesson": "تعديل الدرس",
+    "deleteLesson": "حذف الدرس",
     "addLesson": "إضافة درس",
     "addLessonTo": "إضافة درس إلى «{{chapter}}»",
+    "editLessonIn": "تعديل درس في «{{chapter}}»",
+    "updateLesson": "حفظ التغييرات",
     "lessonTitle": "عنوان الدرس",
     "lessonPlaceholder": "مثال: تهيئة بيئة العمل",
     "type": "النوع",
+    "deliveryMode": "نمط التقديم",
+    "deliveryModeOptions": {
+      "preRecorded": "مسجّل مسبقًا",
+      "liveOnline": "مباشر عبر الإنترنت",
+      "offline": "حضوري"
+    },
+    "deliveryModeScheduleHint": "أدِر جلسات هذا الدرس المجدولة من تقويم المؤسسة بعد الحفظ.",
     "videoSource": "مصدر الفيديو",
     "uploading": "جارٍ الرفع...",
     "uploadVideo": "رفع فيديو",
@@ -231,6 +281,7 @@
     "selected": "المحدد: {{url}}",
     "content": "المحتوى / الوصف",
     "contentPlaceholder": "محتوى الدرس أو وصفه...",
+    "contentOrVideoRequired": "أضف محتوى الدرس أو فيديو قبل الحفظ.",
     "empty": "لا توجد فصول بعد. ابدأ بإضافة فصل.",
     "addFirst": "إضافة أول فصل"
   },
@@ -243,10 +294,43 @@
     "uploadFile": "رفع ملف",
     "download": "تنزيل",
     "delete": "حذف",
+    "cancel": "إلغاء",
     "moreActions": "إجراءات إضافية",
+    "empty": "لا توجد ملفات مطابقة لعوامل التصفية.",
+    "loadFailed": "تعذّر تحميل مكتبة المحتوى.",
+    "courseRequired": "اختر دورة قبل الرفع.",
+    "uploadSuccess": "تم رفع الملف",
+    "uploadSuccessDesc": "أُضيف “{{name}}” إلى المكتبة.",
+    "uploadFailedDesc": "تعذّر رفع الملف.",
+    "deleted": "تم حذف الملف",
+    "deleteFailed": "تعذّر حذف الملف",
+    "confirmDeleteTitle": "حذف هذا الملف؟",
+    "confirmDeleteDesc": "سيُحذف “{{name}}” نهائيًا من المكتبة.",
     "units": {
+      "B": "{{value}} بايت",
       "KB": "{{value}} ك.ب",
       "MB": "{{value}} م.ب"
+    },
+    "types": {
+      "pdf": "PDF",
+      "video": "فيديو",
+      "image": "صورة",
+      "presentation": "عرض تقديمي",
+      "document": "مستند"
+    },
+    "filters": {
+      "allTypes": "كل الأنواع",
+      "allCourses": "كل الدورات"
+    },
+    "uploadDialog": {
+      "title": "رفع محتوى",
+      "course": "الدورة",
+      "coursePlaceholder": "اختر دورة",
+      "noCourses": "ليس لديك دورات بعد.",
+      "selectFile": "انقر لاختيار ملف",
+      "allowed": "PDF ومستندات أوفيس والصور والفيديو، حتى 55 م.ب",
+      "progress": "جارٍ الرفع… {{percent}}٪",
+      "submit": "رفع"
     }
   },
   "courses": {
@@ -316,8 +400,14 @@
       "descriptionLabel": "الوصف",
       "descriptionPlaceholder": "ماذا سيتعلّم المتدرّبون؟",
       "category": "التصنيف",
-      "categoryPlaceholder": "مثال: علوم الحاسوب",
-      "level": "المستوى"
+      "categoryPlaceholder": "اختر تصنيفًا",
+      "level": "المستوى",
+      "image": "صورة الغلاف",
+      "uploadImage": "رفع صورة",
+      "changeImage": "تغيير الصورة",
+      "removeImage": "إزالة الصورة",
+      "uploading": "جارٍ الرفع...",
+      "imageHint": "PNG أو JPG أو GIF أو WebP، حتى 5 م.ب."
     },
     "curriculum": {
       "title": "منهج الدورة",
@@ -414,27 +504,53 @@
   "discussions": {
     "title": "النقاشات",
     "subtitle": "تابع نقاشات الدورات وأشرف عليها",
-    "items": {
-      "1": {
-        "title": "كيف أبدأ بالمشروع النهائي؟",
-        "course": "تعلّم الآلة 101"
-      },
-      "2": {
-        "title": "التباس حول خطوات النزول التدرّجي",
-        "course": "تعلّم الآلة 101"
-      },
-      "3": {
-        "title": "مجموعة دراسة للاختبار النصفي؟",
-        "course": "الإحصاء"
-      },
-      "4": {
-        "title": "ترشيح مصادر لموضوع الانحدار",
-        "course": "تعلّم الآلة 101"
-      },
-      "5": {
-        "title": "هل يمكن تمديد موعد الواجب 2؟",
-        "course": "استراتيجية الأعمال"
-      }
+    "new": "نقاش جديد",
+    "empty": "لا توجد نقاشات بعد.",
+    "loadFailed": "تعذّر تحميل النقاشات.",
+    "created": "تم إنشاء الموضوع",
+    "createFailed": "تعذّر إنشاء الموضوع.",
+    "delete": "حذف",
+    "deleted": "تم حذف الموضوع",
+    "deleteFailed": "تعذّر حذف الموضوع.",
+    "confirmDeleteTitle": "حذف هذا الموضوع؟",
+    "confirmDeleteDesc": "سيتم حذف «{{title}}» وجميع الردود المرتبطة به نهائيًا.",
+    "pinned": "مثبّت",
+    "locked": "مقفل",
+    "pin": "تثبيت",
+    "unpin": "إلغاء التثبيت",
+    "lock": "قفل",
+    "unlock": "إلغاء القفل",
+    "stateFailed": "تعذّر تحديث الموضوع.",
+    "close": "إغلاق",
+    "repliesCount_zero": "لا ردود",
+    "repliesCount_one": "رد واحد",
+    "repliesCount_two": "ردّان",
+    "repliesCount_few": "{{count}} ردود",
+    "repliesCount_many": "{{count}} ردًا",
+    "repliesCount_other": "{{count}} رد",
+    "form": {
+      "title": "نقاش جديد",
+      "titleLabel": "العنوان",
+      "titlePlaceholder": "عنوان النقاش...",
+      "body": "الرسالة",
+      "bodyPlaceholder": "ابدأ النقاش...",
+      "course": "الدورة",
+      "coursePlaceholder": "اختر دورة",
+      "required": "أدخل عنوانًا ورسالة.",
+      "courseRequired": "اختر أي دورة من دوراتك هذا النقاش من أجلها.",
+      "cancel": "إلغاء",
+      "submit": "إنشاء الموضوع"
+    },
+    "thread": {
+      "reply": "رد",
+      "replyPlaceholder": "اكتب ردًا...",
+      "send": "إرسال",
+      "replyFailed": "تعذّر إرسال الرد.",
+      "deleteReply": "حذف الرد",
+      "deleteReplyFailed": "تعذّر حذف الرد.",
+      "lockedNotice": "هذا الموضوع مقفل، ولا يمكن إضافة ردود جديدة.",
+      "noReplies": "لا توجد ردود بعد.",
+      "loadFailed": "تعذّر تحميل الموضوع."
     }
   },
   "editor": {
@@ -462,7 +578,9 @@
       "info": "معلومات الدورة",
       "curriculum": "المنهج",
       "trainers": "المتدرّبون",
-      "settings": "الإعدادات"
+      "certificate": "الشهادة",
+      "settings": "الإعدادات",
+      "assistants": "مساعدو التدريس"
     },
     "info": {
       "title": "المعلومات الأساسية",
@@ -475,6 +593,12 @@
       "selectLevel": "اختر المستوى",
       "minApplicants": "الحد الأدنى للمتقدّمين",
       "minApplicantsHint": "الحد الأدنى لعدد المتدرّبين اللازم لبدء الدورة.",
+      "image": "صورة الغلاف",
+      "uploadImage": "رفع صورة",
+      "changeImage": "تغيير الصورة",
+      "removeImage": "إزالة الصورة",
+      "uploading": "جارٍ الرفع...",
+      "imageHint": "PNG أو JPG أو GIF أو WebP، حتى 5 م.ب.",
       "syllabus": "تحليل المنهج",
       "analyzing": "جارٍ تحليل المنهج...",
       "uploadText": "ارفع منهجًا نصيًا (‎.txt أو ‎.md)",
@@ -521,50 +645,61 @@
   "flashcards": {
     "title": "إدارة البطاقات التعليمية",
     "subtitle": "أنشئ مجموعات بطاقات وأسندها لمتدرّبيك",
-    "aiGenerate": "إنشاء بالذكاء الاصطناعي",
     "createDeck": "إنشاء مجموعة",
-    "deckMeta": "{{course}} • {{count}} بطاقة",
-    "trainersUsing": "{{count}} متدرّبًا",
-    "retention": "الاحتفاظ {{value}}",
-    "items": {
-      "1": {
-        "title": "المفاهيم الأساسية في تعلّم الآلة",
-        "course": "تعلّم الآلة 101"
-      },
-      "2": {
-        "title": "الأساليب الإحصائية",
-        "course": "الإحصاء"
-      },
-      "3": {
-        "title": "نماذج الأعمال وأطرها",
-        "course": "استراتيجية الأعمال"
-      },
-      "4": {
-        "title": "مفردات الشبكات العصبية",
-        "course": "تعلّم الآلة 101"
-      }
+    "loadFailed": "تعذّر تحميل مجموعاتك.",
+    "retry": "أعد المحاولة",
+    "empty": "لم تُنشئ أي مجموعة بطاقات بعد.",
+    "form": {
+      "createTitle": "إنشاء مجموعة بطاقات",
+      "title": "العنوان",
+      "titlePlaceholder": "مثال: المفاهيم الأساسية في تعلّم الآلة",
+      "titleRequired": "أدخل عنوانًا.",
+      "description": "الوصف",
+      "descriptionPlaceholder": "ما الذي تغطيه هذه المجموعة...",
+      "course": "الدورة",
+      "coursePlaceholder": "اختر دورة",
+      "courseRequired": "اختر دورة.",
+      "visibility": "الظهور",
+      "visibilityPrivate": "خاصة",
+      "visibilityPublished": "منشورة",
+      "visibilityHint": "المجموعات المنشورة تُشعر المتدربين المسجلين وتظهر في صفحة البطاقات الخاصة بهم.",
+      "cancel": "إلغاء",
+      "submit": "إنشاء المجموعة"
+    },
+    "toast": {
+      "created": "تم إنشاء المجموعة",
+      "createFailed": "تعذّر إنشاء المجموعة."
     }
   },
   "leaderboard": {
     "title": "لوحة صدارة المتدرّبين",
-    "subtitle": "أفضل المتدرّبين أداءً في دوراتك، مرتّبون حسب الدروس المكتملة",
+    "subtitle": "أفضل المتدرّبين أداءً في دوراتك، مرتّبون حسب النقاط",
     "loadFailed": "تعذّر تحميل لوحة الصدارة.",
     "empty": "لا يوجد متدرّبون مسجّلون في دوراتك بعد.",
-    "lessons_zero": "لا دروس",
-    "lessons_one": "درس واحد",
-    "lessons_two": "درسان",
-    "lessons_few": "{{count}} دروس",
-    "lessons_many": "{{count}} درسًا",
-    "lessons_other": "{{count}} درس",
+    "points_zero": "لا نقاط",
+    "points_one": "نقطة واحدة",
+    "points_two": "نقطتان",
+    "points_few": "{{count}} نقاط",
+    "points_many": "{{count}} نقطة",
+    "points_other": "{{count}} نقطة",
     "quizAvg": "متوسط الاختبارات {{value}}",
     "noQuizzes": "لا اختبارات",
     "fullRankings": "الترتيب الكامل",
+    "deletedTrainer": "متدرّب محذوف",
     "completed_zero": "لا دورات مكتملة",
     "completed_one": "دورة مكتملة",
     "completed_two": "دورتان مكتملتان",
     "completed_few": "{{count}} دورات مكتملة",
     "completed_many": "{{count}} دورة مكتملة",
-    "completed_other": "{{count}} دورة مكتملة"
+    "completed_other": "{{count}} دورة مكتملة",
+    "filters": {
+      "allCourses": "كل الدورات"
+    },
+    "periods": {
+      "week": "هذا الأسبوع",
+      "month": "هذا الشهر",
+      "all": "كل الوقت"
+    }
   },
   "notifications": {
     "title": "الإشعارات",
@@ -651,6 +786,12 @@
     "noResults": "لم يجرِ أي متدرّب هذا الاختبار بعد.",
     "passed": "ناجح",
     "failed": "راسب"
+  },
+  "sessions": {
+    "title": "جلساتي",
+    "subtitle": "الجلسات المجدولة للدروس المباشرة عبر الإنترنت والحضورية التي تُدرّسها.",
+    "empty": "لا توجد جلسات في هذه الفترة.",
+    "manage": "إدارة"
   },
   "settings": {
     "title": "الإعدادات",
@@ -828,6 +969,107 @@
         "lastActive": "آخر نشاط"
       },
       "never": "لم يكن نشطًا"
+    }
+  },
+  "courseMeta": {
+    "tags": {
+      "label": "الوسوم",
+      "placeholder": "اكتب وسمًا ثم اضغط Enter",
+      "hint": "حتى {{max}} وسوم، بحدّ أقصى {{length}} حرفًا لكل وسم. اضغط Enter لإضافة وسم.",
+      "remove": "إزالة الوسم {{tag}}"
+    },
+    "outcomes": {
+      "label": "ما سيتعلّمه المتدرّبون",
+      "hint": "حتى {{max}} نتيجة تعلّم قصيرة، بالترتيب الذي ستظهر به في صفحة الدورة.",
+      "placeholder": "مثال: إنشاء جدول محوري من بيانات خام",
+      "add": "إضافة نتيجة تعلّم",
+      "remove": "إزالة النتيجة {{number}}",
+      "itemLabel": "النتيجة {{number}}"
+    },
+    "prerequisites": {
+      "title": "المتطلبات المسبقة",
+      "help": "يجب على المتدرّبين إكمال هذه الدورات أولًا، ولن يتمكّنوا من التسجيل قبل ذلك."
+    },
+    "related": {
+      "title": "دورات ذات صلة",
+      "help": "دورات اختيارية تنصح بها إلى جانب هذه الدورة، ولا تمنع التسجيل أبدًا."
+    },
+    "picker": {
+      "search": "ابحث في الدورات المنشورة...",
+      "empty": "لا توجد دورات منشورة مطابقة.",
+      "none": "لم يُحدَّد شيء.",
+      "loading": "جارٍ تحميل الدورات...",
+      "add": "إضافة {{title}}",
+      "remove": "إزالة {{title}}",
+      "unknownCourse": "دورة غير متاحة"
+    },
+    "saveFailed": "تعذّر حفظ الدورة",
+    "department": {
+      "label": "القسم",
+      "none": "بدون قسم",
+      "help": "اختياري. يُدرج الدورة ضمن أحد أقسام مؤسستك لأغراض التقارير وتصفية الكتالوج.",
+      "unknown": "قسم غير معروف"
+    }
+  },
+  "assistants": {
+    "title": "مساعدو التدريس",
+    "description": "اسمح لمدرّسين آخرين في مؤسستك بالمساعدة في إدارة هذه الدورة.",
+    "help": "تُمنح كل صلاحية على حدة. لا يعدّل المساعدون الدورة أو واجباتها أو اختباراتها أبدًا.",
+    "add": "إضافة مساعد",
+    "added": "تمت إضافة مساعد التدريس",
+    "addFailed": "تعذّرت إضافة مساعد التدريس",
+    "updateFailed": "تعذّر تحديث مساعد التدريس",
+    "removed": "تمت إزالة مساعد التدريس",
+    "removeFailed": "تعذّرت إزالة مساعد التدريس",
+    "remove": "إزالة {{name}}",
+    "loadFailed": "تعذّر تحميل مساعدي التدريس.",
+    "empty": "لا يوجد مساعدو تدريس بعد.",
+    "unknownUser": "مستخدم غير معروف",
+    "columns": {
+      "assistant": "المساعد",
+      "actions": "الإجراءات"
+    },
+    "capabilities": {
+      "grade": {
+        "label": "يمكنه التصحيح",
+        "hint": "مراجعة التسليمات وتصحيحها وقراءة نتائج الاختبارات.",
+        "toggle": "يمكنه التصحيح: {{name}}"
+      },
+      "attendance": {
+        "label": "يمكنه إدارة الحضور",
+        "hint": "عرض قائمة الحضور وتسجيله في الجلسات المجدولة.",
+        "toggle": "يمكنه إدارة الحضور: {{name}}"
+      },
+      "message": {
+        "label": "يمكنه المراسلة",
+        "hint": "نشر إعلانات الدورة وبدء النقاشات وتثبيتها وقفلها.",
+        "toggle": "يمكنه المراسلة: {{name}}"
+      }
+    },
+    "dialog": {
+      "title": "إضافة مساعد تدريس",
+      "description": "اختر مدرّسًا من مؤسستك وحدّد ما يمكنه المساعدة فيه.",
+      "searchLabel": "المدرّس",
+      "searchPlaceholder": "ابحث بالاسم أو البريد الإلكتروني",
+      "loading": "جارٍ تحميل المدرّسين...",
+      "loadFailed": "تعذّر تحميل المدرّسين.",
+      "empty": "لا يوجد مدرّسون آخرون متاحون.",
+      "choose": "اختيار {{name}}",
+      "selected": "المختار: {{name}}",
+      "cancel": "إلغاء",
+      "confirm": "إضافة المساعد"
+    },
+    "removeDialog": {
+      "title": "إزالة مساعد التدريس؟",
+      "description": "سيفقد {{name}} فورًا جميع صلاحياته في هذه الدورة.",
+      "cancel": "إلغاء",
+      "confirm": "إزالة"
+    },
+    "errors": {
+      "not_instructor": "اختر حساب مدرّس نشطًا من مؤسسة هذه الدورة.",
+      "is_course_instructor": "لا يمكن أن يكون مدرّس الدورة نفسه مساعد تدريس فيها.",
+      "already_assigned": "هذا المدرّس مساعد تدريس في هذه الدورة بالفعل.",
+      "not_found": "مساعد التدريس هذا لم يعد موجودًا."
     }
   }
 }

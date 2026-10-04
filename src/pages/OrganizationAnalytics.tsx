@@ -10,6 +10,9 @@ import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import api, { getApiError } from "@/lib/api";
 import { useFormatters } from "@/lib/format";
+import { Can } from "@/components/routing/Can";
+import { FinancialAnalyticsPanel } from "@/components/billing/FinancialAnalyticsPanel";
+import { PERMISSIONS } from "@/lib/permissions";
 
 interface DeptSummary { Id: string; Name: string; Head: string | null; CoursesCount: number; TrainersCount: number; Performance: number; Trend: number }
 interface OrganizationStats {
@@ -184,7 +187,9 @@ const OrganizationAnalytics = () => {
                         </TabsContent>
 
                         <TabsContent value="financial" className="space-y-6">
-                            <NotAvailable text={t("analytics.financialNotAvailable")} />
+                            <Can permission={PERMISSIONS.revenueView} fallback={<NotAvailable text={t("analytics.financialNoAccess")} />}>
+                                <FinancialAnalyticsPanel />
+                            </Can>
                         </TabsContent>
                     </Tabs>
                     )}

@@ -5,11 +5,13 @@ import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/A
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
-import { CourseCardEnhanced, categoryLabels, levelLabels, CourseCategory, CourseLevel, Course } from "@/components/courses";
+import { CourseCardEnhanced, categoryLabels, levelLabels, toCourseCategory, isPaidCourse, CourseCategory, CourseLevel, Course } from "@/components/courses";
 import { useFormatters } from "@/lib/format";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCourseDepartmentOptions, ALL_DEPARTMENTS } from "@/hooks/useDepartments";
 import api, { getApiError } from "@/lib/api";
 import { CourseSummary, useEnrollmentsQuery } from "@/hooks/useTrainerApi";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,11 +30,16 @@ import {
     DropdownMenuContent,
     DropdownMenuCheckboxItem,
     DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 type FilterTab = "all" | "in-progress" | "completed" | "not-started";
+/** Catalog price filter. `owned` means "I hold an entitlement", which only a paid course can ever be. */
+const PRICE_FILTERS = ["all", "free", "paid", "owned"] as const;
+type PriceFilter = (typeof PRICE_FILTERS)[number];
 
 const Courses = () => {
     const navigate = useNavigate();
@@ -43,12 +50,20 @@ const Courses = () => {
     const [activeTab, setActiveTab] = useState<FilterTab>("all");
     const [selectedCategories, setSelectedCategories] = useState<CourseCategory[]>([]);
     const [selectedLevels, setSelectedLevels] = useState<CourseLevel[]>([]);
+    const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
+    const [departmentFilter, setDepartmentFilter] = useState(ALL_DEPARTMENTS);
+    const { data: departments = [] } = useCourseDepartmentOptions();
 
     const { user } = useAuth();
 
+    // The department filter is applied by the server (GET /Courses?departmentId=); the unfiltered catalog keeps the
+    // shared ["courses-catalog"] cache entry that CourseEditor's pickers also read.
+    const departmentId = departmentFilter === ALL_DEPARTMENTS ? null : departmentFilter;
     const catalogQuery = useQuery({
-        queryKey: ["courses-catalog"],
-        queryFn: async () => (await api.get<CourseSummary[]>("/Courses", { params: { status: "Published" } })).data,
+        queryKey: departmentId ? ["courses-catalog", { departmentId }] : ["courses-catalog"],
+        queryFn: async () => (await api.get<CourseSummary[]>("/Courses", {
+            params: departmentId ? { status: "Published", departmentId } : { status: "Published" },
+        })).data,
     });
     const enrollmentsQuery = useEnrollmentsQuery();
 
@@ -70,14 +85,19 @@ const Courses = () => {
             duration: "",
             durationHours: c.DurationHours ?? 0,
             lessons: c.LessonsCount,
-            category: (c.Category?.toLowerCase() ?? "certification") as CourseCategory,
+            category: toCourseCategory(c.Category),
             level: (c.Level?.toLowerCase() ?? "beginner") as CourseLevel,
             instructor: c.InstructorName ?? "",
             rating: 0,
             trainersEnrolled: c.EnrolledCount,
-            tags: [],
+            tags: c.Tags ?? [],
             image: c.ImageUrl ? (c.ImageUrl.startsWith("/") ? `${apiOrigin}${c.ImageUrl}` : c.ImageUrl) : undefined,
             isFeatured: c.IsFeatured,
+            // Monetization fields, carried through untouched: the card decides what (if anything) to show.
+            accessModel: c.AccessModel ?? null,
+            pricing: c.Pricing ?? null,
+            owned: c.Owned ?? false,
+            hasChapterPricing: c.HasChapterPricing ?? false,
         }));
     }, [catalogQuery.data, enrollmentsQuery.data]);
 
@@ -106,9 +126,17 @@ const Courses = () => {
                 selectedLevels.length === 0 ||
                 selectedLevels.includes(course.level);
 
-            return matchesSearch && matchesTab && matchesCategory && matchesLevel;
+            // Price filter
+            const paid = isPaidCourse(course.accessModel, course.pricing);
+            const matchesPrice =
+                priceFilter === "all" ||
+                (priceFilter === "free" && !paid) ||
+                (priceFilter === "paid" && paid) ||
+                (priceFilter === "owned" && !!course.owned);
+
+            return matchesSearch && matchesTab && matchesCategory && matchesLevel && matchesPrice;
         });
-    }, [allCourses, searchQuery, activeTab, selectedCategories, selectedLevels]);
+    }, [allCourses, searchQuery, activeTab, selectedCategories, selectedLevels, priceFilter]);
 
     const toggleCategory = (category: CourseCategory) => {
         setSelectedCategories(prev =>
@@ -247,15 +275,28 @@ const Courses = () => {
                             </TabsList>
                         </Tabs>
 
+                        {/* Department (only when the organization has any) */}
+                        {departments.length > 0 && (
+                            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                                <SelectTrigger className="w-full md:w-48" aria-label={t("list.department")}>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={ALL_DEPARTMENTS}>{t("list.allDepartments")}</SelectItem>
+                                    {departments.map((d) => <SelectItem key={d.Id} value={d.Id}>{d.Name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )}
+
                         {/* Filter Dropdown */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="gap-2">
                                     <Filter className="w-4 h-4" />
                                     {t("list.filters")}
-                                    {(selectedCategories.length > 0 || selectedLevels.length > 0) && (
+                                    {(selectedCategories.length > 0 || selectedLevels.length > 0 || priceFilter !== "all") && (
                                         <span className="ms-1 px-1.5 py-0.5 text-xs rounded-full bg-primary text-primary-foreground">
-                                            {formatNumber(selectedCategories.length + selectedLevels.length)}
+                                            {formatNumber(selectedCategories.length + selectedLevels.length + (priceFilter === "all" ? 0 : 1))}
                                         </span>
                                     )}
                                 </Button>
@@ -282,6 +323,15 @@ const Courses = () => {
                                         {t(`level.${key}`)}
                                     </DropdownMenuCheckboxItem>
                                 ))}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel>{t("list.price")}</DropdownMenuLabel>
+                                <DropdownMenuRadioGroup value={priceFilter} onValueChange={(v) => setPriceFilter(v as PriceFilter)}>
+                                    {PRICE_FILTERS.map((key) => (
+                                        <DropdownMenuRadioItem key={key} value={key}>
+                                            {t(`list.priceFilter.${key}`)}
+                                        </DropdownMenuRadioItem>
+                                    ))}
+                                </DropdownMenuRadioGroup>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </section>
@@ -329,6 +379,8 @@ const Courses = () => {
                                         setActiveTab("all");
                                         setSelectedCategories([]);
                                         setSelectedLevels([]);
+                                        setPriceFilter("all");
+                                        setDepartmentFilter(ALL_DEPARTMENTS);
                                     }}
                                 >
                                     {t("list.clearFilters")}

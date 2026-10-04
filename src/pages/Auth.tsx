@@ -3,15 +3,20 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrganizationDirectoryQuery } from "@/hooks/useOrganizationDirectory";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap, Loader2, Eye, EyeOff } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { getAuthModeFromRoute, getReturnPath, type AuthMode } from "@/lib/authRoute";
+import logo from "@/assets/logo.png";
+
+type JoinMode = "code" | "org";
 
 const PASSWORD_MIN_LENGTH = 8;
 
@@ -30,11 +35,16 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string; join?: string }>({});
+  const [joinMode, setJoinMode] = useState<JoinMode>("code");
+  const [joinCode, setJoinCode] = useState("");
+  const [requestedOrgId, setRequestedOrgId] = useState("");
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
 
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { data: organizations = [] } = useOrganizationDirectoryQuery();
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
@@ -57,6 +67,11 @@ const Auth = () => {
 
     if (mode === "signup" && !fullName.trim()) {
       newErrors.fullName = t("auth:validation.fullNameRequired");
+    }
+
+    if (mode === "signup") {
+      if (joinMode === "code" && !joinCode.trim()) newErrors.join = t("auth:signUp.joinCode.codeRequired");
+      if (joinMode === "org" && !requestedOrgId) newErrors.join = t("auth:signUp.joinCode.orgRequired");
     }
 
     setErrors(newErrors);
@@ -90,7 +105,11 @@ const Auth = () => {
         // "/" resolves to the user's own dashboard; RoleGuard bounces disallowed targets there too.
         navigate(getReturnPath(location.state) ?? "/", { replace: true });
       } else {
-        const { error } = await signUp(email, password, fullName);
+        const { error, pending, message } = await signUp(
+          email, password, fullName,
+          joinMode === "code" ? joinCode.trim() : undefined,
+          joinMode === "org" ? requestedOrgId : undefined
+        );
         if (error) {
           toast({
             variant: "destructive",
@@ -99,6 +118,10 @@ const Auth = () => {
               ? t("auth:signUp.registrationFailed")
               : error.message,
           });
+          return;
+        }
+        if (pending) {
+          setPendingMessage(message ?? t("auth:signUp.successDescription"));
           return;
         }
         toast({
@@ -118,8 +141,8 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Logo */}
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-primary shadow-glow-primary mb-4">
-            <GraduationCap className="w-8 h-8 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4">
+            <img src={logo} alt="" className="w-16 h-16 object-contain" />
           </div>
           <h1 className="text-2xl font-bold">{t("common:appName")}</h1>
           <p className="text-muted-foreground">{t("common:tagline")}</p>
@@ -135,6 +158,21 @@ const Auth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {pendingMessage ? (
+              <div className="space-y-4 text-center py-4">
+                <CheckCircle2 className="w-12 h-12 text-primary mx-auto" />
+                <p className="font-semibold">{t("auth:signUp.pendingTitle")}</p>
+                <p className="text-sm text-muted-foreground">{pendingMessage}</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => { setPendingMessage(null); setMode("signin"); setPassword(""); }}
+                >
+                  {t("auth:signUp.pendingBackToSignIn")}
+                </Button>
+              </div>
+            ) : (
+            <>
             <form onSubmit={handleSubmit} className="space-y-4">
 
               {/* ── Test Accounts (sign-in only, development builds only) ── */}
@@ -193,6 +231,60 @@ const Auth = () => {
                     {errors.fullName && (
                       <p className="text-xs text-destructive">{errors.fullName}</p>
                     )}
+                  </div>
+
+                  {/* Join an organization: by code (immediate access) or by request (needs that org's approval). */}
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { setJoinMode("code"); setErrors((e) => ({ ...e, join: undefined })); }}
+                        className={cn(
+                          "px-3 py-2 rounded-lg border text-sm font-medium transition-colors",
+                          joinMode === "code" ? "border-primary bg-primary/10 text-primary" : "border-border/50 text-muted-foreground"
+                        )}
+                      >
+                        {t("auth:signUp.joinCode.toggleCode")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setJoinMode("org"); setErrors((e) => ({ ...e, join: undefined })); }}
+                        className={cn(
+                          "px-3 py-2 rounded-lg border text-sm font-medium transition-colors",
+                          joinMode === "org" ? "border-primary bg-primary/10 text-primary" : "border-border/50 text-muted-foreground"
+                        )}
+                      >
+                        {t("auth:signUp.joinCode.toggleOrg")}
+                      </button>
+                    </div>
+
+                    {joinMode === "code" ? (
+                      <div className="space-y-1">
+                        <Label htmlFor="joinCode">{t("auth:signUp.joinCode.codeLabel")}</Label>
+                        <Input
+                          id="joinCode"
+                          type="text"
+                          placeholder={t("auth:signUp.joinCode.codePlaceholder")}
+                          value={joinCode}
+                          onChange={(e) => setJoinCode(e.target.value)}
+                          className={errors.join ? "border-destructive" : ""}
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <Label htmlFor="requestedOrg">{t("auth:signUp.joinCode.orgLabel")}</Label>
+                        <Select value={requestedOrgId} onValueChange={setRequestedOrgId}>
+                          <SelectTrigger id="requestedOrg" className={errors.join ? "border-destructive" : ""}>
+                            <SelectValue placeholder={t("auth:signUp.joinCode.orgPlaceholder")} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {organizations.map((o) => <SelectItem key={o.Id} value={o.Id}>{o.Name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">{t("auth:signUp.joinCode.orgHint")}</p>
+                      </div>
+                    )}
+                    {errors.join && <p className="text-xs text-destructive">{errors.join}</p>}
                   </div>
                 </>
               )}
@@ -273,6 +365,8 @@ const Auth = () => {
                 </button>
               </p>
             </div>
+            </>
+            )}
           </CardContent>
         </Card>
       </div>

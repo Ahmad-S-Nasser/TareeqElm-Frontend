@@ -71,6 +71,28 @@ describe("useCourses.enrollInCourse", () => {
     );
   });
 
+  it("shows a specific prerequisites message for 403 enrollment.prerequisites_not_met", async () => {
+    mock.onPost("/Enrollments").reply(403, {
+      code: "enrollment.prerequisites_not_met",
+      title: "You must complete the prerequisite course(s) before enrolling.",
+      status: 403,
+    });
+    const { result } = await setup();
+
+    let out: { error: Error | null } | undefined;
+    await act(async () => {
+      out = await result.current.enrollInCourse("course-1");
+    });
+
+    expect(out?.error).toBeTruthy();
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({
+      title: "Prerequisites not completed",
+      description: "You must complete the prerequisite course(s) before enrolling.",
+      variant: "destructive",
+    }));
+    expect(toast).not.toHaveBeenCalledWith(expect.objectContaining({ title: "Enrollment Failed" }));
+  });
+
   it("refuses to call the API when signed out", async () => {
     const { result } = await setup(false);
     let out: { error: Error | null } | undefined;

@@ -1,0 +1,107 @@
+{
+  "notification": {
+    "announcement": {
+      "title": "New announcement: {{announcementTitle}}",
+      "body": "{{authorName}} posted “{{announcementTitle}}”."
+    },
+    "flashcards_due": {
+      "title": "{{count}} flashcards due",
+      "body": "You have flashcards ready for review."
+    },
+    "streak_risk": {
+      "title": "Your {{streak}}-day streak is at risk",
+      "body": "Learn today to keep your streak alive."
+    },
+    "course_completed": {
+      "title": "Course completed",
+      "body": "You completed {{courseTitle}}. Great work!"
+    },
+    "new_trainer": {
+      "title": "New trainee enrolled",
+      "body": "{{trainerName}} enrolled in {{courseTitle}}."
+    },
+    "trainer_completed": {
+      "title": "Trainee completed a course",
+      "body": "{{trainerName}} completed {{courseTitle}}."
+    },
+    "at_risk": {
+      "title": "Trainee at risk",
+      "body": "{{trainerName}} has been inactive in {{courseTitle}} for {{days}} days."
+    },
+    "assignment_created": {
+      "title": "New assignment: {{assignmentTitle}}",
+      "body": "{{assignmentTitle}} was posted in {{courseTitle}}, due {{dueAt}}."
+    },
+    "assignment_due_soon": {
+      "title": "Assignment due soon",
+      "body": "{{assignmentTitle}} in {{courseTitle}} is due soon."
+    },
+    "submission_received": {
+      "title": "New submission",
+      "body": "{{trainerName}} submitted {{assignmentTitle}} in {{courseTitle}}."
+    },
+    "assignment_graded": {
+      "title": "Assignment graded",
+      "body": "{{assignmentTitle}} in {{courseTitle}} was graded: {{score}}/{{maxScore}}."
+    },
+    "discussion_reply": {
+      "title": "New reply in {{threadTitle}}",
+      "body": "{{replierName}} replied in {{threadTitle}} ({{courseTitle}})."
+    },
+    "deck_published": {
+      "title": "New flashcard deck: {{deckTitle}}",
+      "body": "{{instructorName}} published {{deckTitle}} for {{courseTitle}}."
+    },
+    "enrollment_status": {
+      "title": "Enrollment status updated",
+      "body": "Your enrollment status for {{courseTitle}} was updated."
+    }
+  },
+  "types": {
+    "announcement": "Announcements",
+    "flashcards_due": "Flashcard reminders",
+    "streak_risk": "Streak risk alerts",
+    "course_completed": "Course completions",
+    "new_trainer": "New trainee enrollments",
+    "trainer_completed": "Trainee course completions",
+    "at_risk": "At-risk trainee alerts",
+    "assignment_created": "New assignments",
+    "assignment_due_soon": "Assignment due-soon reminders",
+    "submission_received": "New submissions",
+    "assignment_graded": "Graded assignments",
+    "discussion_reply": "Discussion replies",
+    "deck_published": "New flashcard decks",
+    "enrollment_status": "Enrollment status changes"
+  },
+  "panel": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "empty": "You're all caught up.",
+    "loadFailed": "Could not load notifications.",
+    "viewAll": "View all notifications"
+  },
+  "page": {
+    "title": "Notifications",
+    "subtitle": "Stay on top of what needs your attention.",
+    "markAllRead": "Mark all as read",
+    "markRead": "Mark as read",
+    "delete": "Delete",
+    "empty": "No notifications yet.",
+    "emptyHint": "You'll see updates here as they happen.",
+    "loadFailed": "Could not load your notifications.",
+    "loading": "Loading notifications...",
+    "unreadTab": "Unread",
+    "allTab": "All",
+    "deleteFailed": "Could not delete the notification.",
+    "markReadFailed": "Could not mark the notification as read.",
+    "markAllReadFailed": "Could not mark all notifications as read.",
+    "unreadCount": "{{count}} unread"
+  },
+  "settings": {
+    "title": "Notification preferences",
+    "description": "Choose which notifications you want to receive.",
+    "saveFailed": "Could not save your preferences.",
+    "saved": "Preferences saved",
+    "loadFailed": "Could not load your preferences."
+  }
+}

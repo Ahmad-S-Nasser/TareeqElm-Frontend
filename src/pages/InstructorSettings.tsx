@@ -8,12 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User, Bell, Lock, Save, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getApiError } from "@/lib/api";
 import { useProfile, splitName, initials } from "@/hooks/useProfile";
+import { NotificationPreferencesCard } from "@/components/settings/NotificationPreferencesCard";
 
 const InstructorSettings = () => {
     const { t } = useTranslation("instructor");
@@ -23,8 +23,6 @@ const InstructorSettings = () => {
 
     const [name, setName] = useState({ firstName: "", lastName: "" });
     const [passwords, setPasswords] = useState({ current: "", next: "", confirm: "" });
-    // Local-only preview toggles: there is no server-side notification preference yet.
-    const [emailNotifications, setEmailNotifications] = useState({ enrollments: true, completions: true, questions: false });
 
     useEffect(() => {
         if (me) {
@@ -137,47 +135,7 @@ const InstructorSettings = () => {
 
                         {/* Notification Settings */}
                         <TabsContent value="notifications">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t("settings.notifications.title")}</CardTitle>
-                                    <CardDescription>{t("settings.notifications.description")}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <div className="space-y-4">
-                                        <h3 className="text-sm font-medium">{t("settings.notifications.emailHeading")}</h3>
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-0.5">
-                                                <Label>{t("settings.notifications.enrollments")}</Label>
-                                                <p className="text-sm text-muted-foreground">{t("settings.notifications.enrollmentsDesc")}</p>
-                                            </div>
-                                            <Switch
-                                                checked={emailNotifications.enrollments}
-                                                onCheckedChange={(c) => setEmailNotifications(p => ({ ...p, enrollments: c }))}
-                                            />
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-0.5">
-                                                <Label>{t("settings.notifications.completions")}</Label>
-                                                <p className="text-sm text-muted-foreground">{t("settings.notifications.completionsDesc")}</p>
-                                            </div>
-                                            <Switch
-                                                checked={emailNotifications.completions}
-                                                onCheckedChange={(c) => setEmailNotifications(p => ({ ...p, completions: c }))}
-                                            />
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="space-y-0.5">
-                                                <Label>{t("settings.notifications.questions")}</Label>
-                                                <p className="text-sm text-muted-foreground">{t("settings.notifications.questionsDesc")}</p>
-                                            </div>
-                                            <Switch
-                                                checked={emailNotifications.questions}
-                                                onCheckedChange={(c) => setEmailNotifications(p => ({ ...p, questions: c }))}
-                                            />
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <NotificationPreferencesCard />
                         </TabsContent>
 
                         {/* Security Settings */}

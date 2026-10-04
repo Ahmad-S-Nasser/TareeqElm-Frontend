@@ -15,10 +15,16 @@ import { useCourses } from "@/hooks/useCourses";
 import { useCourseEditor, Chapter } from "@/hooks/useCourseEditor";
 import { useNavigate } from "react-router-dom";
 import api, { getApiError } from "@/lib/api";
+import { categoryLabels, type CourseCategory } from "@/components/courses";
+import { TagsInput, OutcomesInput } from "@/components/instructor/CourseMetadataFields";
+import { cleanTags, cleanOutcomes } from "@/components/instructor/courseMetadata";
+import { useCourseDepartmentOptions, NO_DEPARTMENT } from "@/hooks/useDepartments";
 import {
   BookOpen, Sparkles, Upload, FileQuestion, CheckCircle, ArrowRight, ArrowLeft, Plus, Trash2, Loader2, GripVertical,
-  Video, FileText, HelpCircle
+  Video, FileText, HelpCircle, X
 } from "lucide-react";
+
+const COURSE_CATEGORIES = Object.keys(categoryLabels) as CourseCategory[];
 
 const STEPS = [
   { key: "info", icon: BookOpen },
@@ -37,17 +43,29 @@ interface CourseOutlineResponse {
 }
 
 const CreateCourse = () => {
-  const { t } = useTranslation("instructor");
+  const { t } = useTranslation(["instructor", "courses"]);
   const { formatNumber } = useFormatters();
   const [step, setStep] = useState(0);
-  const [courseInfo, setCourseInfo] = useState({ title: "", description: "", category: "", level: "beginner" });
+  const [courseInfo, setCourseInfo] = useState({ title: "", description: "", category: "", level: "beginner", imageUrl: "" });
+  const [tags, setTags] = useState<string[]>([]);
+  const [outcomes, setOutcomes] = useState<string[]>([]);
+  const [departmentId, setDepartmentId] = useState(NO_DEPARTMENT);
+  const { data: departments = [] } = useCourseDepartmentOptions();
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [aiLoading, setAiLoading] = useState(false);
   const [createdCourseId, setCreatedCourseId] = useState<string | null>(null);
   const { toast } = useToast();
   const { createCourse, publishCourse } = useCourses();
-  const { saveCurriculum } = useCourseEditor();
+  const { saveCurriculum, uploadMedia, uploading } = useCourseEditor();
   const navigate = useNavigate();
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const url = await uploadMedia(file, "courses");
+    if (url) setCourseInfo((prev) => ({ ...prev, imageUrl: url }));
+  };
 
   const generateOutline = async () => {
     if (!courseInfo.title) { toast({ title: t("createCourse.titleRequired"), variant: "destructive" }); return; }
@@ -83,6 +101,10 @@ const CreateCourse = () => {
         Description: courseInfo.description,
         Category: courseInfo.category,
         Level: courseInfo.level,
+        ImageUrl: courseInfo.imageUrl || null,
+        Tags: cleanTags(tags),
+        Outcomes: cleanOutcomes(outcomes),
+        DepartmentId: departmentId === NO_DEPARTMENT ? undefined : departmentId,
       });
       if (error || !data) return;
       setCreatedCourseId(data.Id);
@@ -162,10 +184,55 @@ const CreateCourse = () => {
               <label className="text-sm font-medium mb-1 block">{t("createCourse.info.descriptionLabel")}</label>
               <Textarea value={courseInfo.description} onChange={(e) => setCourseInfo({ ...courseInfo, description: e.target.value })} placeholder={t("createCourse.info.descriptionPlaceholder")} rows={4} />
             </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">{t("createCourse.info.image")}</label>
+              <div className="flex items-center gap-4">
+                {courseInfo.imageUrl ? (
+                  <div className="relative w-32 h-20 rounded-lg overflow-hidden border border-border shrink-0">
+                    <img src={courseInfo.imageUrl} alt={courseInfo.title || t("createCourse.info.image")} className="w-full h-full object-cover" />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-1 end-1 h-5 w-5"
+                      aria-label={t("createCourse.info.removeImage")}
+                      onClick={() => setCourseInfo((prev) => ({ ...prev, imageUrl: "" }))}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="w-32 h-20 rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground shrink-0">
+                    <BookOpen className="w-6 h-6" />
+                  </div>
+                )}
+                <div>
+                  <Button type="button" variant="outline" size="sm" className="relative" disabled={uploading}>
+                    {uploading ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Upload className="w-4 h-4 me-2" />}
+                    {uploading ? t("createCourse.info.uploading") : courseInfo.imageUrl ? t("createCourse.info.changeImage") : t("createCourse.info.uploadImage")}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                    />
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-1">{t("createCourse.info.imageHint")}</p>
+                </div>
+              </div>
+            </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">{t("createCourse.info.category")}</label>
-                <Input value={courseInfo.category} onChange={(e) => setCourseInfo({ ...courseInfo, category: e.target.value })} placeholder={t("createCourse.info.categoryPlaceholder")} />
+                <label htmlFor="course-category" className="text-sm font-medium mb-1 block">{t("createCourse.info.category")}</label>
+                <Select value={courseInfo.category} onValueChange={(v) => setCourseInfo({ ...courseInfo, category: v })}>
+                  <SelectTrigger id="course-category"><SelectValue placeholder={t("createCourse.info.categoryPlaceholder")} /></SelectTrigger>
+                  <SelectContent>
+                    {COURSE_CATEGORIES.map((key) => (
+                      <SelectItem key={key} value={key}>{t(`courses:category.${key}`)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <label className="text-sm font-medium mb-1 block">{t("createCourse.info.level")}</label>
@@ -179,6 +246,19 @@ const CreateCourse = () => {
                 </Select>
               </div>
             </div>
+            <div>
+              <label htmlFor="course-department" className="text-sm font-medium mb-1 block">{t("courseMeta.department.label")}</label>
+              <Select value={departmentId} onValueChange={setDepartmentId}>
+                <SelectTrigger id="course-department"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_DEPARTMENT}>{t("courseMeta.department.none")}</SelectItem>
+                  {departments.map((d) => <SelectItem key={d.Id} value={d.Id}>{d.Name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">{t("courseMeta.department.help")}</p>
+            </div>
+            <TagsInput id="course-tags" value={tags} onChange={setTags} />
+            <OutcomesInput value={outcomes} onChange={setOutcomes} />
           </CardContent>
         </Card>
       )}

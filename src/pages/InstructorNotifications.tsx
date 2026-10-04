@@ -1,51 +1,41 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useFormatters } from "@/lib/format";
+import { getApiError } from "@/lib/api";
 import { InstructorSidebar, InstructorSidebarContent } from "@/components/layout/InstructorSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, Check, UserPlus, MessageSquare, BookOpen, AlertCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-
-interface Notification {
-    id: number;
-    type: "enrollment" | "message" | "system" | "course";
-    minutesAgo: number;
-    read: boolean;
-    params?: Record<string, string>;
-}
+import { Bell, Check, Trash2, AlertCircle, Loader2 } from "lucide-react";
+import {
+  useNotificationsQuery,
+  useMarkNotificationRead,
+  useMarkAllNotificationsRead,
+  useDeleteNotification,
+  useNotificationText,
+  type NotificationItem,
+} from "@/hooks/useNotifications";
 
 const InstructorNotifications = () => {
-    const { t } = useTranslation("instructor");
+    const { t } = useTranslation(["notifications", "instructor"]);
     const { formatRelativeTime } = useFormatters();
-    const [now] = useState(() => Date.now());
+    const localize = useNotificationText();
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [notifications, setNotifications] = useState<Notification[]>([
-        { id: 1, type: "enrollment", minutesAgo: 25, read: false, params: { name: "Jane Smith", course: "Advanced React Patterns" } },
-        { id: 2, type: "message", minutesAgo: 60, read: false, params: { name: "Mike Johnson", module: "Module 3: Hooks" } },
-        { id: 3, type: "system", minutesAgo: 300, read: true },
-        { id: 4, type: "course", minutesAgo: 1440, read: true, params: { course: "Intro to Python" } },
-        { id: 5, type: "enrollment", minutesAgo: 2880, read: true },
-    ]);
+    const [filter, setFilter] = useState<"all" | "unread">("all");
+    const navigate = useNavigate();
 
-    const markAllRead = () => {
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    };
+    const { data: items = [], isLoading, isError, error } = useNotificationsQuery(filter === "unread" ? true : undefined);
+    const markRead = useMarkNotificationRead();
+    const markAllRead = useMarkAllNotificationsRead();
+    const deleteNotification = useDeleteNotification();
+    const unreadCount = items.filter((n) => !n.Read).length;
 
-    const markRead = (id: number) => {
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    };
-
-    const getIcon = (type: string) => {
-        switch (type) {
-            case "enrollment": return <UserPlus className="w-5 h-5 text-blue-500" />;
-            case "message": return <MessageSquare className="w-5 h-5 text-green-500" />;
-            case "course": return <BookOpen className="w-5 h-5 text-purple-500" />;
-            default: return <AlertCircle className="w-5 h-5 text-yellow-500" />;
-        }
+    const handleOpen = (n: NotificationItem) => {
+        if (!n.Read) markRead.mutate(n.Id);
+        if (n.LinkUrl) navigate(n.LinkUrl);
     };
 
     return (
@@ -65,59 +55,86 @@ const InstructorNotifications = () => {
                 <div className="max-w-4xl mx-auto space-y-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-3xl font-bold">{t("notifications.title")}</h1>
+                            <h1 className="text-3xl font-bold">{t("instructor:notifications.title")}</h1>
                             <p className="text-muted-foreground mt-1">
-                                {t("notifications.subtitle")}
+                                {t("instructor:notifications.subtitle")}
                             </p>
                         </div>
-                        <Button variant="outline" onClick={markAllRead}>
-                            <Check className="w-4 h-4 me-2" /> {t("notifications.markAllRead")}
+                        {unreadCount > 0 && (
+                            <Button variant="outline" onClick={() => markAllRead.mutate()} disabled={markAllRead.isPending}>
+                                <Check className="w-4 h-4 me-2" /> {t("notifications:page.markAllRead")}
+                            </Button>
+                        )}
+                    </div>
+
+                    <div className="flex gap-2">
+                        <Button variant={filter === "all" ? "default" : "outline"} size="sm" onClick={() => setFilter("all")}>
+                            {t("notifications:page.allTab")}
+                        </Button>
+                        <Button variant={filter === "unread" ? "default" : "outline"} size="sm" onClick={() => setFilter("unread")}>
+                            {t("notifications:page.unreadTab")}
                         </Button>
                     </div>
 
                     <Card>
                         <CardContent className="p-0">
-                            <ScrollArea className="h-[600px]">
-                                <div className="divide-y">
-                                    {notifications.length === 0 ? (
-                                        <div className="p-8 text-center text-muted-foreground">
-                                            {t("notifications.empty")}
-                                        </div>
-                                    ) : (
-                                        notifications.map((notification) => (
-                                            <div
-                                                key={notification.id}
-                                                className={cn(
-                                                    "flex items-start gap-4 p-4 hover:bg-muted/50 transition-colors",
-                                                    !notification.read && "bg-muted/20"
-                                                )}
-                                                onClick={() => markRead(notification.id)}
-                                            >
-                                                <div className={cn(
-                                                    "w-10 h-10 rounded-full bg-background border flex items-center justify-center shrink-0",
-                                                    !notification.read && "border-primary/50 shadow-sm"
-                                                )}>
-                                                    {getIcon(notification.type)}
-                                                </div>
-                                                <div className="flex-1 space-y-1">
-                                                    <div className="flex items-center justify-between">
-                                                        <p className={cn("text-sm font-medium", !notification.read && "font-bold")}>
-                                                            {t(`notifications.items.${notification.id}.title`)}
-                                                        </p>
-                                                        <span className="text-xs text-muted-foreground">{formatRelativeTime(now - notification.minutesAgo * 60000)}</span>
-                                                    </div>
-                                                    <p className="text-sm text-muted-foreground line-clamp-2">
-                                                        {t(`notifications.items.${notification.id}.message`, notification.params)}
-                                                    </p>
-                                                </div>
-                                                {!notification.read && (
-                                                    <span className="w-2 h-2 rounded-full bg-primary mt-2" />
-                                                )}
-                                            </div>
-                                        ))
-                                    )}
+                            {isLoading ? (
+                                <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
+                            ) : isError ? (
+                                <div className="p-12 text-center">
+                                    <AlertCircle className="w-10 h-10 mx-auto mb-3 text-destructive" />
+                                    <p className="text-destructive">{getApiError(error, t("notifications:page.loadFailed"))}</p>
                                 </div>
-                            </ScrollArea>
+                            ) : items.length === 0 ? (
+                                <div className="p-12 text-center text-muted-foreground">
+                                    <Bell className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                                    {t("notifications:page.empty")}
+                                </div>
+                            ) : (
+                                <ScrollArea className="h-[600px]">
+                                    <div className="divide-y">
+                                        {items.map((n) => {
+                                            const { title, body } = localize(n);
+                                            return (
+                                                <div
+                                                    key={n.Id}
+                                                    className={cn(
+                                                        "flex items-start gap-4 p-4 hover:bg-muted/50 transition-colors cursor-pointer",
+                                                        !n.Read && "bg-muted/20"
+                                                    )}
+                                                    onClick={() => handleOpen(n)}
+                                                >
+                                                    <div className={cn(
+                                                        "w-10 h-10 rounded-full bg-background border flex items-center justify-center shrink-0",
+                                                        !n.Read && "border-primary/50 shadow-sm"
+                                                    )}>
+                                                        <Bell className={cn("w-5 h-5", !n.Read ? "text-primary" : "text-muted-foreground")} />
+                                                    </div>
+                                                    <div className="flex-1 space-y-1 min-w-0">
+                                                        <div className="flex items-center justify-between gap-2">
+                                                            <p className={cn("text-sm font-medium", !n.Read && "font-bold")}>{title}</p>
+                                                            <span className="text-xs text-muted-foreground shrink-0">{formatRelativeTime(n.CreatedAt)}</span>
+                                                        </div>
+                                                        <p className="text-sm text-muted-foreground line-clamp-2">{body}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 shrink-0">
+                                                        {!n.Read && <span className="w-2 h-2 rounded-full bg-primary mt-2" />}
+                                                        <Button
+                                                            size="icon"
+                                                            variant="ghost"
+                                                            className="h-7 w-7 text-destructive"
+                                                            aria-label={t("notifications:page.delete")}
+                                                            onClick={(e) => { e.stopPropagation(); deleteNotification.mutate(n.Id); }}
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </ScrollArea>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

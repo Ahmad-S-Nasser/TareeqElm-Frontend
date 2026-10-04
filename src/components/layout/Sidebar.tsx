@@ -9,12 +9,12 @@ import {
   Settings,
   ChevronLeft,
   Sparkles,
-  GraduationCap,
   Upload
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/logo.png";
 
 interface NavItem {
   icon: React.ElementType;
@@ -57,12 +57,12 @@ export const Sidebar = ({ onCollapse }: SidebarProps) => {
     )}>
       {/* Logo */}
       <div className="p-4 flex items-center gap-3 border-b border-border/50">
-        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0 shadow-glow-primary">
-          <GraduationCap className="w-5 h-5 text-primary-foreground" />
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
+          <img src={logo} alt="" className="w-10 h-10 object-contain" />
         </div>
         {!collapsed && (
           <div className="animate-fade-in">
-            <h1 className="font-bold text-lg">{t("sidebar.brand.applicant")}</h1>
+            <h1 className="font-extrabold text-lg text-black">{t("sidebar.brand.applicant")}</h1>
             <p className="text-xs text-muted-foreground">{t("sidebar.portal.generic")}</p>
           </div>
         )}

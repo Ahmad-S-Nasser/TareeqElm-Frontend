@@ -8,6 +8,7 @@ const tr = (key: string, options?: Record<string, unknown>): string => i18n.t(`i
 export type LessonType = 'Reading' | 'Video' | 'Quiz' | 'Assignment' | 'Interactive';
 // Older UI code (ChapterList) still creates lowercase values; they are normalised to LessonType when saving.
 export type LegacyLessonType = 'video' | 'text' | 'quiz';
+export type LessonDeliveryMode = 'PreRecorded' | 'LiveOnline' | 'Offline';
 
 export interface Chapter {
     Id: string;
@@ -21,6 +22,7 @@ export interface Lesson {
     Id: string;
     Title: string;
     LessonType: LessonType | LegacyLessonType;
+    DeliveryMode?: LessonDeliveryMode;
     Content?: string | null;
     VideoUrl?: string | null;
     DurationMinutes?: number | null;
@@ -51,6 +53,13 @@ export const normalizeLessonType = (type: string | undefined | null): LessonType
     const found = CANONICAL_TYPES.find((t) => t.toLowerCase() === (type ?? '').toLowerCase());
     if (found) return found;
     return 'Reading'; // 'text' and anything unknown
+};
+
+const CANONICAL_DELIVERY_MODES: LessonDeliveryMode[] = ['PreRecorded', 'LiveOnline', 'Offline'];
+
+export const normalizeDeliveryMode = (mode: string | undefined | null): LessonDeliveryMode => {
+    const found = CANONICAL_DELIVERY_MODES.find((m) => m.toLowerCase() === (mode ?? '').toLowerCase());
+    return found ?? 'PreRecorded';
 };
 
 /** Translated label for a lesson type (accepts API values and legacy lowercase ones). */
@@ -173,6 +182,7 @@ export const useCourseEditor = (_courseId?: string) => {
                     ...(knownIds.current.has(lesson.Id) ? { Id: lesson.Id } : {}),
                     Title: lesson.Title,
                     LessonType: normalizeLessonType(lesson.LessonType),
+                    DeliveryMode: normalizeDeliveryMode(lesson.DeliveryMode),
                     Content: lesson.Content || undefined,
                     VideoUrl: lesson.VideoUrl || undefined,
                     DurationMinutes: lesson.DurationMinutes ?? undefined,

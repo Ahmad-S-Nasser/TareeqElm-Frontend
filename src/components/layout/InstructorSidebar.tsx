@@ -5,14 +5,11 @@ import {
   BookOpen,
   Users,
   BarChart3,
-  Settings,
   ChevronLeft,
   Sparkles,
-  GraduationCap,
-  LogOut,
+  CalendarClock,
   Upload,
   FileEdit,
-  Bell,
   ListTree,
   ClipboardList,
   FileQuestion,
@@ -20,18 +17,23 @@ import {
   Megaphone,
   Layers,
   Trophy,
+  Wallet,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PERMISSIONS } from "@/lib/permissions";
+import logo from "@/assets/logo.png";
 
 interface NavItem {
   icon: React.ElementType;
   labelKey: string;
   href: string;
   badge?: string;
+  /** The item is hidden unless the signed-in user holds it (routes still use the base role). */
+  permission?: string;
 }
 
 const navItems: NavItem[] = [
@@ -41,12 +43,16 @@ const navItems: NavItem[] = [
   { icon: ListTree, labelKey: "curriculum", href: "/instructor/curriculum" },
   { icon: Users, labelKey: "trainers", href: "/instructor/trainers" },
   { icon: ClipboardList, labelKey: "assignments", href: "/instructor/assignments" },
+  { icon: CalendarClock, labelKey: "sessions", href: "/instructor/sessions", permission: PERMISSIONS.sessionsManage },
   { icon: FileQuestion, labelKey: "quizzesExams", href: "/instructor/quizzes" },
   { icon: MessageSquare, labelKey: "discussions", href: "/instructor/discussions" },
   { icon: Megaphone, labelKey: "announcements", href: "/instructor/announcements" },
   { icon: Layers, labelKey: "flashcards", href: "/instructor/flashcards" },
   { icon: BarChart3, labelKey: "analytics", href: "/instructor/analytics" },
   { icon: Trophy, labelKey: "leaderboard", href: "/instructor/leaderboard" },
+  // Read-only revenue. There is no pricing control here or anywhere else on an instructor surface: pricing authority
+  // belongs to Organization/Admin (`pricing.manage`), the instructor only ever sees what they earned.
+  { icon: Wallet, labelKey: "earnings", href: "/instructor/earnings", permission: PERMISSIONS.earningsSelf },
   { icon: FileEdit, labelKey: "contentTools", href: "/instructor/content" },
   { icon: Sparkles, labelKey: "aiAssistant", href: "/instructor/ai-tools" },
 ];
@@ -61,12 +67,7 @@ export const InstructorSidebarContent = ({ collapsed, onItemClick, className }: 
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation("nav");
-  const { signOut } = useAuth();
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/auth");
-  };
+  const { can } = usePermissions();
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -77,12 +78,12 @@ export const InstructorSidebarContent = ({ collapsed, onItemClick, className }: 
     <div className={cn("flex flex-col h-full bg-card", className)}>
       {/* Logo */}
       <div className="p-4 flex items-center gap-3 border-b border-border/50">
-        <div className="w-10 h-10 rounded-xl gradient-accent flex items-center justify-center flex-shrink-0 shadow-glow-accent">
-          <GraduationCap className="w-5 h-5 text-white" />
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
+          <img src={logo} alt="" className="w-10 h-10 object-contain" />
         </div>
         {!collapsed && (
           <div className="animate-fade-in text-start">
-            <h1 className="font-bold text-lg">{t("sidebar.brand.applicant")}</h1>
+            <h1 className="font-extrabold text-lg text-black">{t("sidebar.brand.applicant")}</h1>
             <p className="text-xs text-muted-foreground">{t("sidebar.portal.instructor")}</p>
           </div>
         )}
@@ -90,7 +91,7 @@ export const InstructorSidebarContent = ({ collapsed, onItemClick, className }: 
 
       {/* Navigation */}
       <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
+        {navItems.filter((item) => !item.permission || can(item.permission)).map((item) => {
           const isActive = location.pathname === item.href;
           return (
             <button
@@ -129,40 +130,6 @@ export const InstructorSidebarContent = ({ collapsed, onItemClick, className }: 
 
       {/* Footer */}
       <div className="p-3 border-t border-border/50 space-y-1">
-        <button
-          onClick={() => handleNavigate("/instructor/notifications")}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-muted text-muted-foreground hover:text-foreground"
-        >
-          <Bell className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && (
-            <span className="flex-1 text-start text-sm font-medium animate-fade-in">
-              {t("sidebar.instructor.notifications")}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => handleNavigate("/instructor/settings")}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-muted text-muted-foreground hover:text-foreground"
-        >
-          <Settings className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && (
-            <span className="flex-1 text-start text-sm font-medium animate-fade-in">
-              {t("sidebar.instructor.settings")}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={handleSignOut}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-        >
-          <LogOut className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && (
-            <span className="flex-1 text-start text-sm font-medium animate-fade-in">
-              {t("sidebar.signOut")}
-            </span>
-          )}
-        </button>
         {!collapsed && <LanguageSwitcher className="mt-2 lg:hidden" />}
       </div>
     </div>

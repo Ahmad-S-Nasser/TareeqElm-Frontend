@@ -21,7 +21,7 @@ const session: StudySessionContextType = {
   resumeSession: vi.fn(),
 };
 
-const course = (unlocked: boolean) => ({
+const course = (unlocked: boolean, deliveryMode?: string) => ({
   Id: "c1",
   Title: "Intro Course",
   ContentUnlocked: unlocked,
@@ -38,10 +38,27 @@ const course = (unlocked: boolean) => ({
           VideoUrl: null,
           OrderIndex: 0,
           DurationMinutes: 5,
+          DeliveryMode: deliveryMode,
         },
       ],
     },
   ],
+});
+
+const liveSession = (overrides: Record<string, unknown> = {}) => ({
+  Id: "s1",
+  CourseId: "c1",
+  LessonId: "l1",
+  StartsAt: "2026-10-01T10:00:00Z",
+  DurationMinutes: 60,
+  TimeZone: "UTC",
+  DeliveryMode: "LiveOnline",
+  Status: "Scheduled",
+  InstructorName: "Instructor One",
+  RoomName: null,
+  LocationNote: null,
+  AttendanceStatus: null,
+  ...overrides,
 });
 
 let mock: MockAdapter;
@@ -128,5 +145,46 @@ describe("LessonPlayer", () => {
 
     await waitFor(() => expect(mock.history.post).toHaveLength(1));
     expect(JSON.parse(mock.history.post[0].data)).toEqual({ CourseId: "c1" });
+  });
+
+  it("a LiveOnline lesson shows the scheduled session and a Join button instead of the video player", async () => {
+    mock.onGet("/Courses/c1").reply(200, course(true, "LiveOnline"));
+    mock.onGet("/courses/c1/lessons/l1/sessions").reply(200, [liveSession()]);
+    renderPlayer();
+
+    expect(await screen.findByText("Instructor One")).toBeInTheDocument();
+    expect(screen.getByText("Upcoming")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /join/i })).toBeInTheDocument();
+    expect(screen.queryByText("This lesson has no video. Read the material alongside.")).not.toBeInTheDocument();
+  });
+
+  it("a LiveOnline lesson with no scheduled session shows a not-yet-scheduled message", async () => {
+    mock.onGet("/Courses/c1").reply(200, course(true, "LiveOnline"));
+    mock.onGet("/courses/c1/lessons/l1/sessions").reply(200, []);
+    renderPlayer();
+
+    expect(await screen.findByText(/hasn't scheduled this session yet/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /join/i })).not.toBeInTheDocument();
+  });
+
+  it("an Offline lesson shows the room instead of a Join button", async () => {
+    mock.onGet("/Courses/c1").reply(200, course(true, "Offline"));
+    mock.onGet("/courses/c1/lessons/l1/sessions").reply(200, [
+      liveSession({ DeliveryMode: "Offline", RoomName: "Building A / Room 3", LocationNote: "2nd floor" }),
+    ]);
+    renderPlayer();
+
+    expect(await screen.findByText(/Building A \/ Room 3/)).toBeInTheDocument();
+    expect(screen.getByText(/2nd floor/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /join/i })).not.toBeInTheDocument();
+  });
+
+  it("hides the Join button once attendance is already recorded, showing the status badge instead", async () => {
+    mock.onGet("/Courses/c1").reply(200, course(true, "LiveOnline"));
+    mock.onGet("/courses/c1/lessons/l1/sessions").reply(200, [liveSession({ AttendanceStatus: "Present" })]);
+    renderPlayer();
+
+    expect(await screen.findByText("Present")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /join/i })).not.toBeInTheDocument();
   });
 });

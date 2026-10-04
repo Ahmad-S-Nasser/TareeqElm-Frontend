@@ -14,6 +14,7 @@ export const makeUser = (overrides: Partial<AuthUser> = {}): AuthUser => ({
   Email: "test@tareeqelm.com",
   Role: "Trainer",
   AvatarUrl: null,
+  Permissions: [],
   ...overrides,
 });
 

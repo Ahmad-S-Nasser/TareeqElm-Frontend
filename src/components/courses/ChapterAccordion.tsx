@@ -1,4 +1,4 @@
-import { useState } from "react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { useFormatters } from "@/lib/format";
@@ -18,13 +18,19 @@ interface ChapterAccordionProps {
     isOpen?: boolean;
     onToggle?: () => void;
     onLessonClick?: (lessonId: string) => void;
+    /**
+     * Optional strip rendered under the header, outside the toggle button (a button may not contain a link).
+     * `CourseDetail` uses it for the per-chapter price and "Buy chapter" link on a paid course.
+     */
+    action?: ReactNode;
 }
 
 export function ChapterAccordion({
     chapter,
     isOpen = false,
     onToggle,
-    onLessonClick
+    onLessonClick,
+    action
 }: ChapterAccordionProps) {
     const { t } = useTranslation("courses");
     const { formatNumber } = useFormatters();
@@ -107,6 +113,13 @@ export function ChapterAccordion({
                     isOpen && "rotate-180"
                 )} />
             </button>
+
+            {/* Per-chapter action (price / buy link / preview badge) */}
+            {action && (
+                <div className="flex flex-wrap items-center justify-end gap-3 px-5 pb-4 -mt-1">
+                    {action}
+                </div>
+            )}
 
             {/* Lessons List */}
             {isOpen && !chapter.IsLocked && (

@@ -1,19 +1,19 @@
 {
   "applicant": {
-    "name": "Trainer",
-    "plural": "Trainers",
+    "name": "Trainee",
+    "plural": "Trainees",
     "description": "Learn from courses, track your progress and practise with quizzes.",
-    "count_zero": "No trainers",
-    "count_one": "{{count}} trainer",
-    "count_two": "{{count}} trainers",
-    "count_few": "{{count}} trainers",
-    "count_many": "{{count}} trainers",
-    "count_other": "{{count}} trainers"
+    "count_zero": "No trainees",
+    "count_one": "{{count}} trainee",
+    "count_two": "{{count}} trainees",
+    "count_few": "{{count}} trainees",
+    "count_many": "{{count}} trainees",
+    "count_other": "{{count}} trainees"
   },
   "instructor": {
     "name": "Instructor",
     "plural": "Instructors",
-    "description": "Create and teach courses, and follow your trainers' progress.",
+    "description": "Create and teach courses, and follow your trainees' progress.",
     "count_zero": "No instructors",
     "count_one": "{{count}} instructor",
     "count_two": "{{count}} instructors",

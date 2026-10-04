@@ -38,6 +38,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCourseDepartmentOptions, ALL_DEPARTMENTS } from "@/hooks/useDepartments";
 
 interface Course {
     Id: string;
@@ -70,10 +72,16 @@ const OrganizationCourses = () => {
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [syllabusCourse, setSyllabusCourse] = useState<Course | null>(null);
+    const [departmentFilter, setDepartmentFilter] = useState(ALL_DEPARTMENTS);
+    const { data: departments = [] } = useCourseDepartmentOptions();
 
+    // The department filter is applied by the server (GET /Courses?departmentId=).
+    const departmentId = departmentFilter === ALL_DEPARTMENTS ? null : departmentFilter;
     const { data: courses = [], isLoading, isError, error } = useQuery({
-        queryKey: ["organization-courses"],
-        queryFn: async () => (await api.get<Course[]>("/Courses", { params: { pageSize: 100 } })).data,
+        queryKey: departmentId ? ["organization-courses", { departmentId }] : ["organization-courses"],
+        queryFn: async () => (await api.get<Course[]>("/Courses", {
+            params: departmentId ? { pageSize: 100, departmentId } : { pageSize: 100 },
+        })).data,
     });
 
     const { data: curriculum = [], isLoading: curriculumLoading } = useQuery({
@@ -125,6 +133,17 @@ const OrganizationCourses = () => {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
+                        {departments.length > 0 && (
+                            <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                                <SelectTrigger className="w-full sm:w-48" aria-label={t("courses.filterDepartment")}>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={ALL_DEPARTMENTS}>{t("courses.allDepartments")}</SelectItem>
+                                    {departments.map((d) => <SelectItem key={d.Id} value={d.Id}>{d.Name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )}
                         <Button variant="outline">
                             {t("courses.filter")}
                         </Button>

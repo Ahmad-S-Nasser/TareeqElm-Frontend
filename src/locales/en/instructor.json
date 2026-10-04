@@ -12,7 +12,7 @@
       "title": "Assistant Chat",
       "description": "Ask questions about course structure, engagement, or technical topics.",
       "welcome": "Hello! I am your AI teaching assistant. How can I help you improve your courses today?",
-      "reply": "I can certainly help you with \"{{message}}\". As an AI, I can assist with curriculum design, trainer engagement strategies, or technical explanations. What specific aspect would you like advice on?",
+      "reply": "I can certainly help you with \"{{message}}\". As an AI, I can assist with curriculum design, trainee engagement strategies, or technical explanations. What specific aspect would you like advice on?",
       "placeholder": "Type your message...",
       "send": "Send message"
     },
@@ -30,10 +30,10 @@
         "expert": "Expert"
       },
       "assignTo": "Assign To",
-      "allTrainers": "All Trainers",
-      "selectTrainers": "Select Trainers",
-      "selectToAssign": "Select trainers to assign",
-      "noTrainers": "No trainers found",
+      "allTrainers": "All Trainees",
+      "selectTrainers": "Select Trainees",
+      "selectToAssign": "Select trainees to assign",
+      "noTrainers": "No trainees found",
       "attachment": "Attachment (Optional)",
       "attached": "Attached: {{name}}",
       "generating": "Generating...",
@@ -41,9 +41,9 @@
       "result": "Result",
       "copy": "Copy",
       "placeholderResult": "Generated content will appear here",
-      "audienceAll": "All Trainers",
-      "audienceSelected_one": "{{count}} Selected Trainer",
-      "audienceSelected_other": "{{count}} Selected Trainers",
+      "audienceAll": "All Trainees",
+      "audienceSelected_one": "{{count}} Selected Trainee",
+      "audienceSelected_other": "{{count}} Selected Trainees",
       "none": "None",
       "q1": "What is the primary function of {{topic}}?",
       "q2": "Which of the following best describes {{topic}}?",
@@ -78,23 +78,23 @@
       "plan": "# Lesson Plan: {{topic}}\n**Context**: {{context}}\n\n## Learning Objectives\n1. Understand the core concepts of {{topic}}.\n2. Apply {{topic}} in real-world scenarios.\n\n## Introduction (5 mins)\n- Hook: Start with an interesting fact about {{topic}}.\n- Definition: Define key terms.\n\n## Main Content (20 mins)\n- Concept A: Detailed explanation.\n- Concept B: Common pitfalls.\n- Activity: Group discussion.\n\n## Conclusion (5 mins)\n- Recap key points.\n- Q&A session."
     },
     "insights": {
-      "title": "Trainer Performance Analysis",
-      "description": "AI-driven insights based on real trainer data.",
+      "title": "Trainee Performance Analysis",
+      "description": "AI-driven insights based on real trainee data.",
       "avgProgress": "Avg. Progress",
       "classAverage": "Class Average",
-      "atRisk": "At Risk Trainers",
+      "atRisk": "At Risk Trainees",
       "below50": "Below 50% Progress",
       "focusArea": "Focus Area",
       "lowestTopic": "Lowest performing topic",
       "mockTopic": "State Management",
       "recommendation": "AI Recommendation",
-      "behind_one": "There is {{count}} trainer falling behind. Consider scheduling a review session for \"{{topic}}\" or assigning extra practice quizzes.",
-      "behind_other": "There are {{count}} trainers falling behind. Consider scheduling a review session for \"{{topic}}\" or assigning extra practice quizzes.",
+      "behind_one": "There is {{count}} trainee falling behind. Consider scheduling a review session for \"{{topic}}\" or assigning extra practice quizzes.",
+      "behind_other": "There are {{count}} trainees falling behind. Consider scheduling a review session for \"{{topic}}\" or assigning extra practice quizzes.",
       "performingWell": "The class is performing well! You might challenge them with advanced projects or peer-review sessions.",
       "generateReview": "Generate Review Material for {{topic}}",
-      "analysis": "Trainer Analysis",
+      "analysis": "Trainee Analysis",
       "columns": {
-        "trainer": "Trainer",
+        "trainer": "Trainee",
         "courses": "Enrolled Courses",
         "progress": "Overall Grade/Progress",
         "status": "Status"
@@ -105,11 +105,11 @@
   },
   "analytics": {
     "title": "Analytics Dashboard",
-    "subtitle": "Track your performance and trainer engagement.",
+    "subtitle": "Track your performance and trainee engagement.",
     "loadFailed": "Failed to load analytics.",
     "avgQuiz": "Average Quiz Score",
     "avgQuizHint": "Across all your quizzes",
-    "activeTrainers": "Active Trainers",
+    "activeTrainers": "Active Trainees",
     "activeTrainersHint": "Enrolled in your courses",
     "completion": "Course Completion",
     "completionHint": "Of enrollments completed",
@@ -119,78 +119,118 @@
     "lessonCompletions": "Lesson Completions",
     "completionsPerWeek": "Completions per week",
     "completions": "Completions",
-    "trainerActivity": "Trainer Activity",
-    "activePerWeek": "Active trainers per week",
-    "trainers": "Trainers",
+    "trainerActivity": "Trainee Activity",
+    "activePerWeek": "Active trainees per week",
+    "trainers": "Trainees",
     "noActivity": "No activity yet.",
     "recent": "Recent Activity",
-    "recentDesc": "Latest trainer activity across your courses",
-    "noRecent": "No trainer activity yet.",
+    "recentDesc": "Latest trainee activity across your courses",
+    "noRecent": "No trainee activity yet.",
     "activeIn": "Active in \"{{course}}\"",
     "personProgress": "{{name}} - {{progress}} complete"
   },
   "announcements": {
     "title": "Announcements",
-    "subtitle": "Post updates and reminders to your trainers",
+    "subtitle": "Post updates and reminders to your trainees",
     "new": "New Announcement",
-    "items": {
-      "1": {
-        "title": "Midterm Exam Schedule Released",
-        "course": "ML 101",
-        "content": "The midterm exam will be held on March 15th. Please review chapters 1-5."
-      },
-      "2": {
-        "title": "New Assignment Posted",
-        "course": "Statistics",
-        "content": "A new data analysis assignment has been posted. Due by March 20th."
-      },
-      "3": {
-        "title": "Guest Lecture This Friday",
-        "course": "Business Strategy",
-        "content": "We'll have a guest speaker from Google discussing AI strategy."
-      },
-      "4": {
-        "title": "Office Hours Change",
-        "course": "ML 101",
-        "content": "Office hours will be moved to Thursday 2-4 PM this week."
-      }
+    "posted": "Announcement posted",
+    "postFailed": "Could not post the announcement.",
+    "empty": "No announcements yet.",
+    "loadFailed": "Could not load announcements.",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "pinFailed": "Could not update the pin.",
+    "delete": "Delete",
+    "deleted": "Announcement deleted",
+    "deleteFailed": "Could not delete the announcement.",
+    "confirmDeleteTitle": "Delete this announcement?",
+    "confirmDeleteDesc": "“{{title}}” will be permanently removed.",
+    "audiences": {
+      "all": "Everyone",
+      "trainers": "All trainees",
+      "instructors": "All instructors",
+      "department": "A department",
+      "course": "A course"
+    },
+    "form": {
+      "title": "New announcement",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Announcement title...",
+      "body": "Message",
+      "bodyPlaceholder": "Write your announcement...",
+      "audience": "Audience",
+      "course": "Course",
+      "coursePlaceholder": "Select a course",
+      "required": "Enter a title and a message.",
+      "courseRequired": "Choose which of your courses this is for.",
+      "instructorScopeHint": "You can post to one of your own courses.",
+      "cancel": "Cancel",
+      "submit": "Post announcement"
     }
   },
   "assignments": {
     "title": "Assignments",
-    "subtitle": "Create, manage, and grade trainer assignments",
-    "create": "Create Assignment",
-    "stats": {
-      "total": "Total",
-      "pending": "Pending Review",
-      "graded": "Graded",
-      "overdue": "Overdue"
+    "subtitle": "Create, manage, and grade trainee assignments",
+    "new": "Create Assignment",
+    "empty": "No assignments yet.",
+    "loadFailed": "Could not load assignments.",
+    "created": "Assignment created",
+    "createFailed": "Could not create the assignment.",
+    "delete": "Delete",
+    "deleted": "Assignment deleted",
+    "deleteFailed": "Could not delete the assignment.",
+    "confirmDeleteTitle": "Delete this assignment?",
+    "confirmDeleteDesc": "“{{title}}” and its submissions will be permanently removed.",
+    "due": "Due {{date}}",
+    "maxScore": "{{score}} pts",
+    "allowLate": "Late submissions allowed",
+    "noLate": "No late submissions",
+    "submissionsCount": "{{submitted}}/{{enrolled}} submitted",
+    "viewSubmissions": "View submissions",
+    "close": "Close",
+    "form": {
+      "title": "New assignment",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Assignment title...",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe what trainees need to do...",
+      "course": "Course",
+      "coursePlaceholder": "Select a course",
+      "dueAt": "Due date",
+      "maxScore": "Max score",
+      "allowLate": "Allow late submissions",
+      "attachments": "Attachments",
+      "addAttachment": "Add file",
+      "removeAttachment": "Remove attachment",
+      "uploading": "Uploading… {{percent}}%",
+      "required": "Enter a title and a description.",
+      "courseRequired": "Choose which of your courses this is for.",
+      "dueRequired": "Choose a due date.",
+      "cancel": "Cancel",
+      "submit": "Create assignment"
     },
-    "status": {
-      "active": "Active",
-      "completed": "Completed",
-      "upcoming": "Upcoming"
-    },
-    "due": "{{course}} • Due: {{date}}",
-    "submitted": "Submitted",
-    "gradedCount": "{{count}} graded",
-    "items": {
-      "1": {
-        "title": "Research Paper: AI in Education",
-        "course": "Machine Learning 101"
+    "submissionsPanel": {
+      "title": "Submissions",
+      "empty": "No submissions yet.",
+      "loadFailed": "Could not load submissions.",
+      "status": {
+        "submitted": "Submitted",
+        "late": "Late",
+        "graded": "Graded"
       },
-      "2": {
-        "title": "Data Analysis Project",
-        "course": "Statistics Fundamentals"
-      },
-      "3": {
-        "title": "Final Case Study",
-        "course": "Business Strategy"
-      },
-      "4": {
-        "title": "Code Review Exercise",
-        "course": "Machine Learning 101"
-      }
+      "submittedOn": "Submitted {{date}}",
+      "gradedOn": "Graded {{date}}",
+      "grade": "Grade",
+      "score": "Score",
+      "feedback": "Feedback",
+      "feedbackPlaceholder": "Optional feedback for the trainee...",
+      "submitGrade": "Save grade",
+      "graded": "Grade saved",
+      "gradeFailed": "Could not save the grade.",
+      "files": "Files",
+      "noFiles": "No files attached.",
+      "text": "Submission text",
+      "noText": "No text submitted."
     }
   },
   "chapters": {
@@ -203,11 +243,21 @@
     "lessonsInline_other": "({{count}} lessons)",
     "deleteChapter": "Delete chapter",
     "editLesson": "Edit lesson",
+    "deleteLesson": "Delete lesson",
     "addLesson": "Add Lesson",
     "addLessonTo": "Add Lesson to \"{{chapter}}\"",
+    "editLessonIn": "Edit Lesson in \"{{chapter}}\"",
+    "updateLesson": "Save Changes",
     "lessonTitle": "Lesson Title",
     "lessonPlaceholder": "e.g. Setting up the environment",
     "type": "Type",
+    "deliveryMode": "Delivery mode",
+    "deliveryModeOptions": {
+      "preRecorded": "Pre-recorded",
+      "liveOnline": "Live online",
+      "offline": "In-person"
+    },
+    "deliveryModeScheduleHint": "Manage scheduled occurrences of this lesson from the organization calendar after saving.",
     "videoSource": "Video Source",
     "uploading": "Uploading...",
     "uploadVideo": "Upload Video",
@@ -215,6 +265,7 @@
     "selected": "Selected: {{url}}",
     "content": "Content / Description",
     "contentPlaceholder": "Lesson content or description...",
+    "contentOrVideoRequired": "Add lesson content or a video before saving.",
     "empty": "No chapters yet. Start by adding one.",
     "addFirst": "Add First Chapter"
   },
@@ -227,10 +278,43 @@
     "uploadFile": "Upload File",
     "download": "Download",
     "delete": "Delete",
+    "cancel": "Cancel",
     "moreActions": "More actions",
+    "empty": "No files match your filters.",
+    "loadFailed": "Could not load the content library.",
+    "courseRequired": "Choose a course before uploading.",
+    "uploadSuccess": "File uploaded",
+    "uploadSuccessDesc": "“{{name}}” was added to the library.",
+    "uploadFailedDesc": "Could not upload the file.",
+    "deleted": "File deleted",
+    "deleteFailed": "Could not delete the file",
+    "confirmDeleteTitle": "Delete this file?",
+    "confirmDeleteDesc": "“{{name}}” will be permanently removed from the library.",
     "units": {
+      "B": "{{value}} B",
       "KB": "{{value}} KB",
       "MB": "{{value}} MB"
+    },
+    "types": {
+      "pdf": "PDF",
+      "video": "Video",
+      "image": "Image",
+      "presentation": "Presentation",
+      "document": "Document"
+    },
+    "filters": {
+      "allTypes": "All types",
+      "allCourses": "All courses"
+    },
+    "uploadDialog": {
+      "title": "Upload content",
+      "course": "Course",
+      "coursePlaceholder": "Select a course",
+      "noCourses": "You have no courses yet.",
+      "selectFile": "Click to choose a file",
+      "allowed": "PDF, Office documents, images and video, up to 55 MB",
+      "progress": "Uploading… {{percent}}%",
+      "submit": "Upload"
     }
   },
   "courses": {
@@ -241,7 +325,7 @@
     "courseTitle": "Course Title",
     "titlePlaceholder": "e.g., ISTQB Foundation Level",
     "description": "Description",
-    "descriptionPlaceholder": "What will trainers learn?",
+    "descriptionPlaceholder": "What will trainees learn?",
     "category": "Category",
     "categoryPlaceholder": "e.g., Certification",
     "level": "Level",
@@ -250,13 +334,13 @@
     "emptyDesc": "Create your first course to get started",
     "moreActions": "Course actions",
     "edit": "Edit",
-    "viewTrainers": "View Trainers",
+    "viewTrainers": "View Trainees",
     "publish": "Publish",
     "archive": "Archive",
     "delete": "Delete",
     "noDescription": "No description",
-    "trainersCount_one": "{{count}} trainer",
-    "trainersCount_other": "{{count}} trainers",
+    "trainersCount_one": "{{count}} trainee",
+    "trainersCount_other": "{{count}} trainees",
     "publishFailed": "Publish failed",
     "archiveFailed": "Archive failed",
     "deleteFailed": "Delete failed",
@@ -290,10 +374,16 @@
       "titleLabel": "Title *",
       "titlePlaceholder": "e.g. Introduction to Machine Learning",
       "descriptionLabel": "Description",
-      "descriptionPlaceholder": "What will trainers learn?",
+      "descriptionPlaceholder": "What will trainees learn?",
       "category": "Category",
-      "categoryPlaceholder": "e.g. Computer Science",
-      "level": "Level"
+      "categoryPlaceholder": "Select a category",
+      "level": "Level",
+      "image": "Cover Image",
+      "uploadImage": "Upload Image",
+      "changeImage": "Change Image",
+      "removeImage": "Remove Image",
+      "uploading": "Uploading...",
+      "imageHint": "PNG, JPG, GIF or WebP, up to 5 MB."
     },
     "curriculum": {
       "title": "Course Curriculum",
@@ -346,20 +436,20 @@
   },
   "dashboard": {
     "title": "Instructor Dashboard",
-    "subtitle": "Monitor trainer performance and manage your courses",
+    "subtitle": "Monitor trainee performance and manage your courses",
     "myCourses": "My Courses",
     "createCourse": "Create Course",
     "loadFailed": "Failed to load your dashboard statistics.",
     "stats": {
       "totalCourses": "Total Courses",
-      "totalTrainers": "Total Trainers",
+      "totalTrainers": "Total Trainees",
       "completionRate": "Completion Rate",
       "avgQuizScore": "Avg Quiz Score"
     },
     "engagement": {
-      "title": "Trainer Engagement",
-      "description": "Weekly active trainers & lesson completions",
-      "activeTrainers": "Active Trainers",
+      "title": "Trainee Engagement",
+      "description": "Weekly active trainees & lesson completions",
+      "activeTrainers": "Active Trainees",
       "completions": "Completions"
     },
     "distribution": {
@@ -369,9 +459,9 @@
     },
     "insights": {
       "title": "Insights",
-      "description": "Observations about your courses and trainers, based on your data",
+      "description": "Observations about your courses and trainees, based on your data",
       "lowCompletion": "Course completion rate is {{rate}} — consider adding more engaging content",
-      "lowScore": "Average quiz score is {{score}} — trainers may need more preparation material",
+      "lowScore": "Average quiz score is {{score}} — trainees may need more preparation material",
       "highScore": "Great quiz performance! Average score is {{score}}",
       "drafts_one": "You have {{count}} draft course ready to publish",
       "drafts_other": "You have {{count}} draft courses ready to publish",
@@ -382,27 +472,53 @@
   "discussions": {
     "title": "Discussions",
     "subtitle": "Monitor and moderate course discussions",
-    "items": {
-      "1": {
-        "title": "How do I approach the final project?",
-        "course": "ML 101"
-      },
-      "2": {
-        "title": "Confusion about gradient descent steps",
-        "course": "ML 101"
-      },
-      "3": {
-        "title": "Study group for midterm?",
-        "course": "Statistics"
-      },
-      "4": {
-        "title": "Resource recommendation for regression",
-        "course": "ML 101"
-      },
-      "5": {
-        "title": "Assignment 2 deadline extension?",
-        "course": "Business Strategy"
-      }
+    "new": "New Thread",
+    "empty": "No discussions yet.",
+    "loadFailed": "Could not load discussions.",
+    "created": "Thread created",
+    "createFailed": "Could not create the thread.",
+    "delete": "Delete",
+    "deleted": "Thread deleted",
+    "deleteFailed": "Could not delete the thread.",
+    "confirmDeleteTitle": "Delete this thread?",
+    "confirmDeleteDesc": "“{{title}}” and its replies will be permanently removed.",
+    "pinned": "Pinned",
+    "locked": "Locked",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "stateFailed": "Could not update the thread.",
+    "close": "Close",
+    "repliesCount_zero": "No replies",
+    "repliesCount_one": "{{count}} reply",
+    "repliesCount_two": "{{count}} replies",
+    "repliesCount_few": "{{count}} replies",
+    "repliesCount_many": "{{count}} replies",
+    "repliesCount_other": "{{count}} replies",
+    "form": {
+      "title": "New discussion",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Discussion title...",
+      "body": "Message",
+      "bodyPlaceholder": "Start the discussion...",
+      "course": "Course",
+      "coursePlaceholder": "Select a course",
+      "required": "Enter a title and a message.",
+      "courseRequired": "Choose which of your courses this is for.",
+      "cancel": "Cancel",
+      "submit": "Create thread"
+    },
+    "thread": {
+      "reply": "Reply",
+      "replyPlaceholder": "Write a reply...",
+      "send": "Send",
+      "replyFailed": "Could not post the reply.",
+      "deleteReply": "Delete reply",
+      "deleteReplyFailed": "Could not delete the reply.",
+      "lockedNotice": "This thread is locked. New replies are disabled.",
+      "noReplies": "No replies yet.",
+      "loadFailed": "Could not load the thread."
     }
   },
   "editor": {
@@ -429,8 +545,10 @@
     "tabs": {
       "info": "Course Info",
       "curriculum": "Curriculum",
-      "trainers": "Trainers",
-      "settings": "Settings"
+      "trainers": "Trainees",
+      "certificate": "Certificate",
+      "settings": "Settings",
+      "assistants": "Teaching Assistants"
     },
     "info": {
       "title": "Basic Information",
@@ -442,7 +560,13 @@
       "level": "Level",
       "selectLevel": "Select level",
       "minApplicants": "Minimum Applicants",
-      "minApplicantsHint": "Minimum number of trainers required to start the course.",
+      "minApplicantsHint": "Minimum number of trainees required to start the course.",
+      "image": "Cover Image",
+      "uploadImage": "Upload Image",
+      "changeImage": "Change Image",
+      "removeImage": "Remove Image",
+      "uploading": "Uploading...",
+      "imageHint": "PNG, JPG, GIF or WebP, up to 5 MB.",
       "syllabus": "Syllabus Analysis",
       "analyzing": "Analyzing syllabus...",
       "uploadText": "Upload Text Syllabus (.txt or .md)",
@@ -455,14 +579,14 @@
       "save": "Save Curriculum"
     },
     "trainers": {
-      "title": "Enrolled Trainers",
-      "description": "Manage and view trainers enrolled in this course.",
-      "trainer": "Trainer",
+      "title": "Enrolled Trainees",
+      "description": "Manage and view trainees enrolled in this course.",
+      "trainer": "Trainee",
       "enrolledDate": "Enrolled Date",
       "progress": "Progress",
       "status": "Status",
-      "loadFailed": "Failed to load trainers.",
-      "empty": "No trainers enrolled yet.",
+      "loadFailed": "Failed to load trainees.",
+      "empty": "No trainees enrolled yet.",
       "completed": "Completed",
       "active": "Active"
     },
@@ -470,11 +594,11 @@
       "visibility": "Course Visibility",
       "visibilityDesc": "Control how your course is viewed by others.",
       "publish": "Publish Course",
-      "publishHint": "Make this course visible to trainers.",
+      "publishHint": "Make this course visible to trainees.",
       "danger": "Danger Zone",
       "dangerDesc": "Irreversible actions for this course.",
       "warning": "Warning",
-      "warningDesc": "Archiving a course will hide it from trainers but keep data. Deleting is permanent.",
+      "warningDesc": "Archiving a course will hide it from trainees but keep data. Deleting is permanent.",
       "archiveCourse": "Archive Course",
       "archiveHint": "Hide from public view.",
       "archive": "Archive",
@@ -488,47 +612,58 @@
   },
   "flashcards": {
     "title": "Flashcards Manager",
-    "subtitle": "Create and assign flashcard decks for your trainers",
-    "aiGenerate": "AI Generate",
+    "subtitle": "Create and assign flashcard decks for your trainees",
     "createDeck": "Create Deck",
-    "deckMeta": "{{course}} • {{count}} cards",
-    "trainersUsing": "{{count}} trainers",
-    "retention": "{{value}} retention",
-    "items": {
-      "1": {
-        "title": "Machine Learning Key Concepts",
-        "course": "ML 101"
-      },
-      "2": {
-        "title": "Statistical Methods",
-        "course": "Statistics"
-      },
-      "3": {
-        "title": "Business Models & Frameworks",
-        "course": "Business Strategy"
-      },
-      "4": {
-        "title": "Neural Networks Vocabulary",
-        "course": "ML 101"
-      }
+    "loadFailed": "Could not load your decks.",
+    "retry": "Try again",
+    "empty": "You haven't created any flashcard decks yet.",
+    "form": {
+      "createTitle": "Create Flashcard Deck",
+      "title": "Title",
+      "titlePlaceholder": "e.g., Machine Learning Key Concepts",
+      "titleRequired": "Enter a title.",
+      "description": "Description",
+      "descriptionPlaceholder": "What this deck covers...",
+      "course": "Course",
+      "coursePlaceholder": "Select a course",
+      "courseRequired": "Choose a course.",
+      "visibility": "Visibility",
+      "visibilityPrivate": "Private",
+      "visibilityPublished": "Published",
+      "visibilityHint": "Published decks notify enrolled trainees and appear on their Flashcards page.",
+      "cancel": "Cancel",
+      "submit": "Create Deck"
+    },
+    "toast": {
+      "created": "Deck created",
+      "createFailed": "Could not create the deck."
     }
   },
   "leaderboard": {
-    "title": "Trainer Leaderboard",
-    "subtitle": "Top performing trainers across your courses, ranked by lessons completed",
+    "title": "Trainee Leaderboard",
+    "subtitle": "Top performing trainees across your courses, ranked by points",
     "loadFailed": "Failed to load the leaderboard.",
-    "empty": "No trainers are enrolled in your courses yet.",
-    "lessons_one": "{{count}} lesson",
-    "lessons_other": "{{count}} lessons",
+    "empty": "No trainees are enrolled in your courses yet.",
+    "points_one": "{{count}} point",
+    "points_other": "{{count}} points",
     "quizAvg": "{{value}} quiz avg",
     "noQuizzes": "No quizzes",
     "fullRankings": "Full Rankings",
     "completed_one": "{{count}} completed",
-    "completed_other": "{{count}} completed"
+    "completed_other": "{{count}} completed",
+    "deletedTrainer": "Deleted trainee",
+    "filters": {
+      "allCourses": "All courses"
+    },
+    "periods": {
+      "week": "This week",
+      "month": "This month",
+      "all": "All time"
+    }
   },
   "notifications": {
     "title": "Notifications",
-    "subtitle": "Stay updated with trainer activity and system alerts.",
+    "subtitle": "Stay updated with trainee activity and system alerts.",
     "markAllRead": "Mark all as read",
     "empty": "No notifications found.",
     "items": {
@@ -596,9 +731,15 @@
     "fillAllDesc": "Select course, title, and generate questions first.",
     "resultsTitle": "{{title}} - Results",
     "resultsFailed": "Failed to load results.",
-    "noResults": "No trainer has taken this quiz yet.",
+    "noResults": "No trainee has taken this quiz yet.",
     "passed": "Passed",
     "failed": "Failed"
+  },
+  "sessions": {
+    "title": "My sessions",
+    "subtitle": "Scheduled Live-online and Offline lesson occurrences you teach.",
+    "empty": "No sessions found in this range.",
+    "manage": "Manage"
   },
   "settings": {
     "title": "Settings",
@@ -610,7 +751,7 @@
     },
     "profile": {
       "title": "Public Profile",
-      "description": "Your name is displayed to trainers on your course pages.",
+      "description": "Your name is displayed to trainees on your course pages.",
       "loadFailed": "Could not load your profile.",
       "firstName": "First Name",
       "lastName": "Last Name",
@@ -627,11 +768,11 @@
       "description": "Email notifications are coming soon. These switches are a preview and are not saved yet.",
       "emailHeading": "Email Notifications",
       "enrollments": "New Enrollments",
-      "enrollmentsDesc": "Receive an email when a trainer enrolls.",
+      "enrollmentsDesc": "Receive an email when a trainee enrolls.",
       "completions": "Course Completions",
-      "completionsDesc": "Receive an email when a trainer completes a course.",
+      "completionsDesc": "Receive an email when a trainee completes a course.",
       "questions": "Q&A Updates",
-      "questionsDesc": "Receive an email when a trainer asks a question."
+      "questionsDesc": "Receive an email when a trainee asks a question."
     },
     "security": {
       "title": "Security",
@@ -725,14 +866,14 @@
   },
   "trainers": {
     "all": {
-      "title": "All Trainers",
-      "subtitle": "Manage and view all trainers enrolled in your courses",
-      "search": "Search trainers...",
-      "directory": "Trainer Directory ({{count}})",
-      "loadFailed": "Failed to load trainers.",
-      "empty": "No trainers found.",
+      "title": "All Trainees",
+      "subtitle": "Manage and view all trainees enrolled in your courses",
+      "search": "Search trainees...",
+      "directory": "Trainee Directory ({{count}})",
+      "loadFailed": "Failed to load trainees.",
+      "empty": "No trainees found.",
       "columns": {
-        "trainer": "Trainer",
+        "trainer": "Trainee",
         "courses": "Enrolled Courses",
         "progress": "Avg. Progress",
         "lastActive": "Last Active",
@@ -747,20 +888,20 @@
       "completedPercent": "{{value}} Completed"
     },
     "course": {
-      "title": "Enrolled Trainers",
+      "title": "Enrolled Trainees",
       "fallbackCourse": "Course",
       "back": "Back to courses",
       "stats": {
-        "total": "Total Trainers",
+        "total": "Total Trainees",
         "completed": "Completed",
         "avgProgress": "Avg. Progress",
         "avgQuiz": "Avg. Quiz Score"
       },
-      "list": "Trainer List",
-      "loadFailed": "Failed to load trainers.",
-      "empty": "No trainers enrolled yet",
+      "list": "Trainee List",
+      "loadFailed": "Failed to load trainees.",
+      "empty": "No trainees enrolled yet",
       "columns": {
-        "trainer": "Trainer",
+        "trainer": "Trainee",
         "enrolled": "Enrolled",
         "progress": "Progress",
         "lessons": "Lessons",
@@ -768,6 +909,107 @@
         "lastActive": "Last Active"
       },
       "never": "Never"
+    }
+  },
+  "courseMeta": {
+    "tags": {
+      "label": "Tags",
+      "placeholder": "Type a tag and press Enter",
+      "hint": "Up to {{max}} tags, {{length}} characters each. Press Enter to add one.",
+      "remove": "Remove tag {{tag}}"
+    },
+    "outcomes": {
+      "label": "What trainees will learn",
+      "hint": "Up to {{max}} short outcomes, in the order they should appear on the course page.",
+      "placeholder": "e.g. Build a pivot table from raw data",
+      "add": "Add outcome",
+      "remove": "Remove outcome {{number}}",
+      "itemLabel": "Outcome {{number}}"
+    },
+    "prerequisites": {
+      "title": "Prerequisites",
+      "help": "Trainees must complete these courses first. Enrollment is blocked until they do."
+    },
+    "related": {
+      "title": "Related courses",
+      "help": "Optional courses you'd recommend alongside this one. They never block enrollment."
+    },
+    "picker": {
+      "search": "Search published courses...",
+      "empty": "No matching published courses.",
+      "none": "None selected.",
+      "loading": "Loading courses...",
+      "add": "Add {{title}}",
+      "remove": "Remove {{title}}",
+      "unknownCourse": "Unavailable course"
+    },
+    "saveFailed": "Could not save the course",
+    "department": {
+      "label": "Department",
+      "none": "No department",
+      "help": "Optional. Files the course under one of your organization's departments for reporting and catalog filtering.",
+      "unknown": "Unknown department"
+    }
+  },
+  "assistants": {
+    "title": "Teaching assistants",
+    "description": "Let other instructors of your organization help run this course.",
+    "help": "Each capability is granted on its own. Assistants never edit the course, its assignments or its quizzes.",
+    "add": "Add assistant",
+    "added": "Teaching assistant added",
+    "addFailed": "Could not add the teaching assistant",
+    "updateFailed": "Could not update the teaching assistant",
+    "removed": "Teaching assistant removed",
+    "removeFailed": "Could not remove the teaching assistant",
+    "remove": "Remove {{name}}",
+    "loadFailed": "Could not load the teaching assistants.",
+    "empty": "No teaching assistants yet.",
+    "unknownUser": "Unknown user",
+    "columns": {
+      "assistant": "Assistant",
+      "actions": "Actions"
+    },
+    "capabilities": {
+      "grade": {
+        "label": "Can grade",
+        "hint": "Review and grade submissions and read quiz results.",
+        "toggle": "Can grade: {{name}}"
+      },
+      "attendance": {
+        "label": "Can manage attendance",
+        "hint": "View the roster and mark attendance on scheduled sessions.",
+        "toggle": "Can manage attendance: {{name}}"
+      },
+      "message": {
+        "label": "Can message",
+        "hint": "Post course announcements and start, pin or lock discussions.",
+        "toggle": "Can message: {{name}}"
+      }
+    },
+    "dialog": {
+      "title": "Add a teaching assistant",
+      "description": "Choose an instructor of your organization and what they may help with.",
+      "searchLabel": "Instructor",
+      "searchPlaceholder": "Search by name or email",
+      "loading": "Loading instructors...",
+      "loadFailed": "Could not load the instructors.",
+      "empty": "No other instructors available.",
+      "choose": "Choose {{name}}",
+      "selected": "Selected: {{name}}",
+      "cancel": "Cancel",
+      "confirm": "Add assistant"
+    },
+    "removeDialog": {
+      "title": "Remove teaching assistant?",
+      "description": "{{name}} will immediately lose every capability on this course.",
+      "cancel": "Cancel",
+      "confirm": "Remove"
+    },
+    "errors": {
+      "not_instructor": "Choose an active instructor account from this course's organization.",
+      "is_course_instructor": "The course's own instructor cannot also be its teaching assistant.",
+      "already_assigned": "This instructor is already a teaching assistant on this course.",
+      "not_found": "This teaching assistant no longer exists."
     }
   }
 }

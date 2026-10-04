@@ -25,17 +25,24 @@ import {
   Loader2,
   GraduationCap,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useFormatters } from "@/lib/format";
+import { PriceTag } from "@/components/billing";
+import { isPaidCourse } from "@/components/courses";
+import { checkoutHref } from "@/lib/checkoutLink";
+import { useCourseDepartmentOptions, ALL_DEPARTMENTS } from "@/hooks/useDepartments";
 
 const CourseCatalog = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState<string>("all");
+  const [departmentFilter, setDepartmentFilter] = useState(ALL_DEPARTMENTS);
+  const { data: departments = [] } = useCourseDepartmentOptions();
   const [activeTab, setActiveTab] = useState("browse");
   const navigate = useNavigate();
   const { t } = useTranslation("courses");
+  const { t: tBilling } = useTranslation("billing");
   const { formatNumber, formatPercent } = useFormatters();
 
   const {
@@ -72,11 +79,18 @@ const CourseCatalog = () => {
       course.Title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (course.Description && course.Description.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesLevel = levelFilter === "all" || course.Level?.toLowerCase() === levelFilter.toLowerCase();
-    return matchesSearch && matchesLevel;
+    // Both tabs' lists (the published catalog and "my courses") come from useCourses and carry DepartmentId, so this
+    // filters in place like Level does.
+    const matchesDepartment = departmentFilter === ALL_DEPARTMENTS || course.DepartmentId === departmentFilter;
+    return matchesSearch && matchesLevel && matchesDepartment;
   });
 
   const renderCourseCard = (course: CourseWithEnrollment) => {
     const isEnrolled = !!course.Enrollment;
+    // A paid course the trainer does not own is never enrolled from here — POST /api/Enrollments answers
+    // 403 enrollment.purchase_required by design. It sends them to checkout instead.
+    const isPaid = isPaidCourse(course.AccessModel, course.Pricing);
+    const mustBuy = isPaid && !course.Owned && !isEnrolled;
 
     return (
       <Card
@@ -137,9 +151,16 @@ const CourseCatalog = () => {
               <Badge variant="secondary">
                 {course.Level ? t(`level.${course.Level.toLowerCase()}`, { defaultValue: course.Level }) : ""}
               </Badge>
+              {isPaid && (
+                <PriceTag pricing={course.Pricing} owned={course.Owned} size="sm" showFree={false} hideSaleBadge />
+              )}
             </div>
 
-            {!isEnrolled && (
+            {mustBuy ? (
+              <Button size="sm" asChild onClick={(e) => e.stopPropagation()}>
+                <Link to={checkoutHref("Course", course.Id)}>{tBilling("price.buyNow")}</Link>
+              </Button>
+            ) : !isEnrolled ? (
               <Button
                 size="sm"
                 onClick={(e) => {
@@ -154,7 +175,7 @@ const CourseCatalog = () => {
                   t("catalog.enroll")
                 )}
               </Button>
-            )}
+            ) : null}
 
             {isEnrolled && (
               <Button
@@ -241,6 +262,17 @@ const CourseCatalog = () => {
                     <SelectItem value="advanced">{t("level.advanced")}</SelectItem>
                   </SelectContent>
                 </Select>
+                {departments.length > 0 && (
+                  <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                    <SelectTrigger className="w-44" aria-label={t("list.department")}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={ALL_DEPARTMENTS}>{t("list.allDepartments")}</SelectItem>
+                      {departments.map((d) => <SelectItem key={d.Id} value={d.Id}>{d.Name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
 

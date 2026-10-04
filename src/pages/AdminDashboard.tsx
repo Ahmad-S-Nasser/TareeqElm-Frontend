@@ -29,17 +29,17 @@ const StatCard = ({
     title: string; value: string; sub?: string;
     icon: React.ElementType;
     trend?: { value: string; positive: boolean };
-    color: "rose" | "primary" | "emerald" | "amber";
+    color: "accent" | "primary" | "emerald" | "amber";
 }) => {
     const { t } = useTranslation("admin");
     const colorMap = {
-        rose: "from-rose-500/20 to-rose-500/5 border-rose-500/20 text-rose-500",
+        accent: "from-accent/20 to-accent/5 border-accent/20 text-accent",
         primary: "from-primary/20 to-primary/5 border-primary/20 text-primary",
         emerald: "from-emerald-500/20 to-emerald-500/5 border-emerald-500/20 text-emerald-500",
         amber: "from-amber-500/20 to-amber-500/5 border-amber-500/20 text-amber-500",
     };
     const iconBg = {
-        rose: "bg-rose-500 text-white",
+        accent: "bg-accent text-accent-foreground",
         primary: "bg-primary text-primary-foreground",
         emerald: "bg-emerald-500 text-white",
         amber: "bg-amber-500 text-white",
@@ -109,7 +109,7 @@ const AdminDashboard = () => {
                 <div className="max-w-7xl mx-auto space-y-8">
 
                     {/* Hero */}
-                    <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-rose-600 via-rose-500 to-orange-500 p-8 text-white shadow-xl">
+                    <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-warning to-warning-glow p-8 text-warning-foreground shadow-xl">
                         <div className="absolute inset-0 opacity-10">
                             <div className="absolute top-0 end-0 w-96 h-96 rounded-full bg-white blur-3xl translate-x-1/2 rtl:-translate-x-1/2 -translate-y-1/2" />
                             <div className="absolute bottom-0 start-0 w-64 h-64 rounded-full bg-white blur-3xl -translate-x-1/2 rtl:translate-x-1/2 translate-y-1/2" />
@@ -117,32 +117,32 @@ const AdminDashboard = () => {
                         <div className="relative flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
+                                    <div className="w-2 h-2 rounded-full bg-emerald-700 animate-pulse" />
                                     <span className="text-xs font-semibold uppercase tracking-widest opacity-80">{t("admin:dashboard.liveBadge")}</span>
                                 </div>
                                 <h1 className="text-4xl font-black tracking-tight">{t("admin:dashboard.pageTitle")}</h1>
-                                <p className="text-white/70 mt-1 text-sm">
+                                <p className="text-warning-foreground/70 mt-1 text-sm">
                                     {t("admin:dashboard.subtitle", { date: formatDate(new Date(), { weekday: "long", month: "long", day: "numeric" }) })}
                                 </p>
                             </div>
                             <div className="flex gap-3">
                                 <Button
                                     onClick={() => navigate("/admin/courses")}
-                                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 border backdrop-blur-sm font-semibold"
+                                    className="bg-warning-foreground/10 hover:bg-warning-foreground/15 text-warning-foreground border-warning-foreground/20 border backdrop-blur-sm font-semibold"
                                     variant="secondary"
                                 >
                                     <BookOpen className="w-4 h-4 me-2" /> {t("admin:dashboard.allCourses")}
                                 </Button>
                                 <Button
                                     onClick={() => navigate("/admin/users")}
-                                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 border backdrop-blur-sm font-semibold"
+                                    className="bg-warning-foreground/10 hover:bg-warning-foreground/15 text-warning-foreground border-warning-foreground/20 border backdrop-blur-sm font-semibold"
                                     variant="secondary"
                                 >
                                     <Users className="w-4 h-4 me-2" /> {t("admin:dashboard.userManagement")}
                                 </Button>
                             </div>
                         </div>
-                        <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/20">
+                        <div className="relative grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-6 border-t border-warning-foreground/20">
                             {[
                                 { key: "totalUsers", val: formatNumber(stats.TotalUsers), icon: Users },
                                 { key: "activeCourses", val: formatNumber(stats.ActiveCourses), icon: BookOpen },
@@ -163,7 +163,7 @@ const AdminDashboard = () => {
                     {/* Stat Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <StatCard title={t("admin:dashboard.cards.totalUsers.title")} value={formatNumber(stats.TotalUsers)} sub={t("admin:dashboard.cards.totalUsers.sub")} icon={Users} color="primary" />
-                        <StatCard title={t("admin:dashboard.cards.activeCourses.title")} value={formatNumber(stats.ActiveCourses)} sub={t("admin:dashboard.cards.activeCourses.sub")} icon={BookOpen} color="rose" />
+                        <StatCard title={t("admin:dashboard.cards.activeCourses.title")} value={formatNumber(stats.ActiveCourses)} sub={t("admin:dashboard.cards.activeCourses.sub")} icon={BookOpen} color="accent" />
                         <StatCard title={t("admin:dashboard.cards.avgCompletion.title")} value={formatPercent(stats.AvgCompletion)} sub={t("admin:dashboard.cards.avgCompletion.sub")} icon={TrendingUp} color="emerald" />
                         <StatCard title={t("admin:dashboard.cards.atRisk.title")} value={formatNumber(stats.AtRiskCount)} sub={t("admin:dashboard.cards.atRisk.sub")} icon={AlertTriangle} color="amber" />
                     </div>
@@ -173,9 +173,9 @@ const AdminDashboard = () => {
                         <div className="lg:col-span-2 space-y-4">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-lg font-bold flex items-center gap-2">
-                                    <BarChart2 className="w-5 h-5 text-rose-500" /> {t("admin:dashboard.coursePerformance")}
+                                    <BarChart2 className="w-5 h-5 text-accent" /> {t("admin:dashboard.coursePerformance")}
                                 </h2>
-                                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-rose-500" onClick={() => navigate("/admin/analytics")}>
+                                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-accent" onClick={() => navigate("/admin/analytics")}>
                                     {t("common:actions.viewAll")} <ChevronRight className="w-3 h-3 ms-1 rtl:rotate-180" />
                                 </Button>
                             </div>
@@ -184,11 +184,11 @@ const AdminDashboard = () => {
                                     <Card className="border-border/50"><CardContent className="p-8 text-center text-sm text-muted-foreground">{t("admin:dashboard.noCourseData")}</CardContent></Card>
                                 )}
                                 {topCourses.map((course, i) => (
-                                    <Card key={course.CourseId ?? `${course.Name}-${i}`} className="border-border/50 hover:border-rose-300/50 transition-all duration-200 hover:shadow-md cursor-pointer">
+                                    <Card key={course.CourseId ?? `${course.Name}-${i}`} className="border-border/50 hover:border-accent/50 transition-all duration-200 hover:shadow-md cursor-pointer">
                                         <CardContent className="p-4">
                                             <div className="flex items-center gap-4">
                                                 <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black shrink-0",
-                                                    i === 0 && "bg-rose-500/10 text-rose-500",
+                                                    i === 0 && "bg-accent/10 text-accent",
                                                     i === 1 && "bg-primary/10 text-primary",
                                                     i === 2 && "bg-emerald-500/10 text-emerald-500",
                                                     i === 3 && "bg-amber-500/10 text-amber-500",
@@ -232,7 +232,7 @@ const AdminDashboard = () => {
                                         { key: "analytics", path: "/admin/analytics", icon: BarChart2 },
                                     ].map((a) => (
                                         <Button key={a.key} variant="ghost" className="w-full justify-start gap-3 text-sm" onClick={() => navigate(a.path)}>
-                                            <a.icon className="w-4 h-4 text-rose-500" /> {t(`admin:dashboard.quick.${a.key}`)}
+                                            <a.icon className="w-4 h-4 text-accent" /> {t(`admin:dashboard.quick.${a.key}`)}
                                         </Button>
                                     ))}
                                 </CardContent>

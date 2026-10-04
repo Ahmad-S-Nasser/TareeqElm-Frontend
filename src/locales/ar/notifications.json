@@ -1,0 +1,107 @@
+{
+  "notification": {
+    "announcement": {
+      "title": "إعلان جديد: {{announcementTitle}}",
+      "body": "نشر {{authorName}} “{{announcementTitle}}”."
+    },
+    "flashcards_due": {
+      "title": "{{count}} بطاقة تعليمية مستحقة",
+      "body": "لديك بطاقات تعليمية جاهزة للمراجعة."
+    },
+    "streak_risk": {
+      "title": "سلسلة الأيام المتتالية ({{streak}} يوم) معرّضة للانقطاع",
+      "body": "تعلّم اليوم للحفاظ على سلسلتك."
+    },
+    "course_completed": {
+      "title": "تم إكمال الدورة",
+      "body": "أكملت دورة {{courseTitle}}. عمل رائع!"
+    },
+    "new_trainer": {
+      "title": "متدرّب جديد التحق بالدورة",
+      "body": "التحق {{trainerName}} بدورة {{courseTitle}}."
+    },
+    "trainer_completed": {
+      "title": "أكمل متدرّب دورة",
+      "body": "أكمل {{trainerName}} دورة {{courseTitle}}."
+    },
+    "at_risk": {
+      "title": "متدرّب معرّض للتعثر",
+      "body": "لم ينشط {{trainerName}} في دورة {{courseTitle}} منذ {{days}} يوم."
+    },
+    "assignment_created": {
+      "title": "واجب جديد: {{assignmentTitle}}",
+      "body": "تم نشر {{assignmentTitle}} في دورة {{courseTitle}}، والموعد النهائي {{dueAt}}."
+    },
+    "assignment_due_soon": {
+      "title": "موعد تسليم واجب قريب",
+      "body": "الواجب {{assignmentTitle}} في دورة {{courseTitle}} موعده يقترب."
+    },
+    "submission_received": {
+      "title": "تسليم جديد",
+      "body": "سلّم {{trainerName}} واجب {{assignmentTitle}} في دورة {{courseTitle}}."
+    },
+    "assignment_graded": {
+      "title": "تم تقييم الواجب",
+      "body": "تم تقييم {{assignmentTitle}} في دورة {{courseTitle}}: {{score}}/{{maxScore}}."
+    },
+    "discussion_reply": {
+      "title": "رد جديد في {{threadTitle}}",
+      "body": "رد {{replierName}} في {{threadTitle}} ({{courseTitle}})."
+    },
+    "deck_published": {
+      "title": "مجموعة بطاقات تعليمية جديدة: {{deckTitle}}",
+      "body": "نشر {{instructorName}} مجموعة {{deckTitle}} لدورة {{courseTitle}}."
+    },
+    "enrollment_status": {
+      "title": "تحديث حالة الالتحاق",
+      "body": "تم تحديث حالة التحاقك بدورة {{courseTitle}}."
+    }
+  },
+  "types": {
+    "announcement": "الإعلانات",
+    "flashcards_due": "تذكيرات البطاقات التعليمية",
+    "streak_risk": "تنبيهات خطر انقطاع السلسلة",
+    "course_completed": "إكمال الدورات",
+    "new_trainer": "التحاق متدرّبين جدد",
+    "trainer_completed": "إكمال المتدرّبين للدورات",
+    "at_risk": "تنبيهات المتدرّبين المعرّضين للتعثر",
+    "assignment_created": "الواجبات الجديدة",
+    "assignment_due_soon": "تذكيرات اقتراب موعد التسليم",
+    "submission_received": "التسليمات الجديدة",
+    "assignment_graded": "الواجبات المقيَّمة",
+    "discussion_reply": "ردود النقاشات",
+    "deck_published": "مجموعات البطاقات التعليمية الجديدة",
+    "enrollment_status": "تغييرات حالة الالتحاق"
+  },
+  "panel": {
+    "title": "الإشعارات",
+    "markAllRead": "تعليم الكل كمقروء",
+    "empty": "لا توجد إشعارات جديدة.",
+    "loadFailed": "تعذّر تحميل الإشعارات.",
+    "viewAll": "عرض كل الإشعارات"
+  },
+  "page": {
+    "title": "الإشعارات",
+    "subtitle": "تابع كل ما يحتاج انتباهك.",
+    "markAllRead": "تعليم الكل كمقروء",
+    "markRead": "تعليم كمقروء",
+    "delete": "حذف",
+    "empty": "لا توجد إشعارات بعد.",
+    "emptyHint": "ستظهر هنا آخر التحديثات فور حدوثها.",
+    "loadFailed": "تعذّر تحميل إشعاراتك.",
+    "loading": "جارٍ تحميل الإشعارات...",
+    "unreadTab": "غير مقروءة",
+    "allTab": "الكل",
+    "deleteFailed": "تعذّر حذف الإشعار.",
+    "markReadFailed": "تعذّر تعليم الإشعار كمقروء.",
+    "markAllReadFailed": "تعذّر تعليم كل الإشعارات كمقروءة.",
+    "unreadCount": "{{count}} غير مقروء"
+  },
+  "settings": {
+    "title": "تفضيلات الإشعارات",
+    "description": "اختر الإشعارات التي تريد استقبالها.",
+    "saveFailed": "تعذّر حفظ تفضيلاتك.",
+    "saved": "تم حفظ التفضيلات",
+    "loadFailed": "تعذّر تحميل تفضيلاتك."
+  }
+}

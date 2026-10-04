@@ -4,8 +4,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useStudySession } from '@/components/learning/studySessionContext';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Pause, Play, CheckCircle, Volume2, StopCircle, Sparkles, Lock, AlertCircle, FileText } from 'lucide-react';
+import { ArrowLeft, Pause, Play, CheckCircle, Volume2, StopCircle, Sparkles, Lock, AlertCircle, FileText, CalendarClock, MapPin } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
@@ -13,6 +14,8 @@ import api, { getApiError } from '@/lib/api';
 import { useProgress } from '@/hooks/useProgress';
 import { useCourses } from '@/hooks/useCourses';
 import { useToast } from '@/hooks/use-toast';
+import { useFormatters } from '@/lib/format';
+import { JoinSessionButton } from '@/components/organization/JoinSessionButton';
 
 interface LessonDto {
     Id: string;
@@ -22,7 +25,114 @@ interface LessonDto {
     VideoUrl: string | null;
     OrderIndex: number;
     DurationMinutes: number | null;
+    /** LiveOnline | Offline | PreRecorded — only PreRecorded shows the video/reading player below. */
+    DeliveryMode?: string;
 }
+
+interface LessonSessionDto {
+    Id: string;
+    CourseId: string;
+    LessonId: string;
+    StartsAt: string;
+    DurationMinutes: number;
+    TimeZone: string;
+    DeliveryMode: 'LiveOnline' | 'Offline';
+    Status: 'Scheduled' | 'Cancelled' | 'Completed';
+    InstructorName: string | null;
+    RoomName: string | null;
+    LocationNote: string | null;
+    AttendanceStatus: 'Present' | 'Absent' | 'Late' | 'Excused' | null;
+}
+
+const attendanceBadgeClass: Record<string, string> = {
+    Present: 'bg-emerald-500/10 text-emerald-600',
+    Absent: 'bg-destructive/10 text-destructive',
+    Late: 'bg-amber-500/10 text-amber-600',
+    Excused: 'bg-muted text-muted-foreground',
+};
+
+/**
+ * What a LiveOnline/Offline lesson shows instead of the video/reading player: every scheduled occurrence, with a Join
+ * button (LiveOnline, not yet attended) or the room (Offline), mirroring MyAttendance.tsx's own status-badge pattern —
+ * there is no "joinable now" time-window check anywhere in this app, so this lists sessions the same status-based way.
+ */
+const LessonSessionsPanel = ({ courseId, lessonId }: { courseId: string; lessonId: string }) => {
+    const { t } = useTranslation(['learning', 'common']);
+    const { formatDateTime } = useFormatters();
+
+    const { data: sessions = [], isLoading, isError, error } = useQuery({
+        queryKey: ['lesson-sessions', courseId, lessonId],
+        queryFn: async () => (await api.get<LessonSessionDto[]>(`/courses/${courseId}/lessons/${lessonId}/sessions`)).data,
+        enabled: !!courseId && !!lessonId,
+    });
+
+    if (isLoading) {
+        return (
+            <Card className="aspect-video flex items-center justify-center bg-muted/30">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </Card>
+        );
+    }
+
+    if (isError) {
+        return (
+            <Card className="aspect-video flex items-center justify-center bg-muted/30">
+                <p className="text-sm text-destructive px-6 text-center">{getApiError(error, t('player.session.loadFailed'))}</p>
+            </Card>
+        );
+    }
+
+    if (sessions.length === 0) {
+        return (
+            <Card className="aspect-video flex items-center justify-center bg-muted/30">
+                <div className="text-center text-muted-foreground px-6">
+                    <CalendarClock className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">{t('player.session.notScheduled')}</p>
+                </div>
+            </Card>
+        );
+    }
+
+    return (
+        <div className="space-y-3">
+            {sessions.map((session) => (
+                <Card key={session.Id} className="border-border/50">
+                    <CardContent className="p-4 flex items-center justify-between gap-4">
+                        <div className="min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                                <CalendarClock className="w-4 h-4 text-primary shrink-0" />
+                                <p className="text-sm font-medium">
+                                    {formatDateTime(session.StartsAt, { dateStyle: 'medium', timeStyle: 'short', timeZone: session.TimeZone })}
+                                </p>
+                                {session.AttendanceStatus ? (
+                                    <Badge className={attendanceBadgeClass[session.AttendanceStatus]}>
+                                        {t(`myAttendance.status.${session.AttendanceStatus.toLowerCase()}`)}
+                                    </Badge>
+                                ) : session.Status === 'Cancelled' ? (
+                                    <Badge variant="outline">{t('myAttendance.cancelled')}</Badge>
+                                ) : session.Status === 'Scheduled' ? (
+                                    <Badge variant="outline">{t('myAttendance.upcoming')}</Badge>
+                                ) : null}
+                            </div>
+                            {session.DeliveryMode === 'Offline' ? (
+                                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                    <MapPin className="w-3.5 h-3.5 shrink-0" />
+                                    {session.RoomName ?? t('player.session.roomTbd')}
+                                    {session.LocationNote ? ` · ${session.LocationNote}` : ''}
+                                </p>
+                            ) : (
+                                session.InstructorName && <p className="text-xs text-muted-foreground">{session.InstructorName}</p>
+                            )}
+                        </div>
+                        {session.DeliveryMode === 'LiveOnline' && session.Status === 'Scheduled' && !session.AttendanceStatus && (
+                            <JoinSessionButton courseId={courseId} sessionId={session.Id} />
+                        )}
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    );
+};
 
 interface CourseDetailDto {
     Id: string;
@@ -89,6 +199,7 @@ const LessonPlayer = () => {
     const lessonTitle = lesson?.Title ?? "";
     const lessonContent = contentUnlocked ? (lesson?.Content ?? "") : "";
     const videoUrl = contentUnlocked && lesson?.VideoUrl ? resolveMediaUrl(lesson.VideoUrl) : null;
+    const isScheduledLesson = lesson?.DeliveryMode === 'LiveOnline' || lesson?.DeliveryMode === 'Offline';
     const completed = !!lessonId && isLessonCompleted(lessonId);
 
     // Track study time only when the lesson is actually available to the trainer.
@@ -274,7 +385,9 @@ const LessonPlayer = () => {
             <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6 relative mt-32 sm:mt-20">
                 {/* Video Player Section */}
                 <div className="lg:col-span-2 space-y-4">
-                    {videoUrl ? (
+                    {isScheduledLesson && courseId && lessonId ? (
+                        <LessonSessionsPanel courseId={courseId} lessonId={lessonId} />
+                    ) : videoUrl ? (
                         <Card className="overflow-hidden bg-black aspect-video relative group">
                             <video
                                 ref={videoRef}

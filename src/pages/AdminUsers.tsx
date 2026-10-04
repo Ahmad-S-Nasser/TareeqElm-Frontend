@@ -16,7 +16,7 @@ import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-    Users, Plus, Search, Filter, Pencil, UserCheck, UserX, Building2, Shield, Loader2,
+    Users, Plus, Search, Filter, Pencil, UserCheck, UserX, Building2, Shield, Loader2, Copy, Check,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,11 +24,18 @@ import { useTranslation } from "react-i18next";
 import api, { getApiError } from "@/lib/api";
 import { useFormatters } from "@/lib/format";
 import { parseApiRole } from "@/lib/roles";
+import { Can } from "@/components/routing/Can";
+import { PERMISSIONS } from "@/lib/permissions";
+import { ROLES_QUERY_KEY, type RoleInfo } from "@/components/roles/rbac";
+import { useOrganizationsAdminQuery } from "@/hooks/useOrganizationsAdmin";
 
 type UserRole = "Admin" | "Instructor" | "Organization" | "Trainer";
 const ROLES: UserRole[] = ["Admin", "Instructor", "Organization", "Trainer"];
 const PAGE_SIZE = 20;
 const NO_DEPARTMENT = "none";
+const NO_ORGANIZATION = "none";
+const NO_CUSTOM_ROLE = "none";
+const ALL_CUSTOM_ROLES = "all";
 
 interface ManagedUser {
     Id: string;
@@ -36,10 +43,16 @@ interface ManagedUser {
     Email: string;
     Role: string;
     IsActive: boolean;
+    OrganizationId: string | null;
+    OrganizationName?: string | null;
     DepartmentId: string | null;
     DepartmentName?: string | null;
     AvatarUrl: string | null;
+    CustomRoleId?: string | null;
+    CustomRoleName?: string | null;
     CreatedAt: string;
+    /** Only present in the Create response — the one-time plaintext initial password. */
+    GeneratedPassword?: string | null;
 }
 interface DepartmentOption { Id: string; Name: string }
 interface UsersPage { items: ManagedUser[]; total: number }
@@ -51,18 +64,21 @@ const fetchUsers = async (params: Record<string, string | number | boolean | und
 };
 
 const AdminUsers = () => {
-    const { t } = useTranslation(["admin", "common", "roles"]);
+    const { t } = useTranslation(["admin", "common", "roles", "rbac"]);
     const { formatNumber } = useFormatters();
     const roleLabel = (r: string) => { const ar = parseApiRole(r); return ar ? t(`roles:${ar}.name`) : t("common:labels.unknown"); };
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [search, setSearch] = useState("");
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const [filterRole, setFilterRole] = useState("all");
+    const [filterCustomRole, setFilterCustomRole] = useState(ALL_CUSTOM_ROLES);
     const [page, setPage] = useState(1);
     const [isAddOpen, setIsAddOpen] = useState(false);
-    const [newUser, setNewUser] = useState({ fullName: "", email: "", password: "", role: "Trainer" as UserRole, departmentId: NO_DEPARTMENT });
+    const [newUser, setNewUser] = useState({ fullName: "", email: "", role: "Trainer" as UserRole, organizationId: NO_ORGANIZATION, departmentId: NO_DEPARTMENT });
+    const [revealedPassword, setRevealedPassword] = useState<{ name: string; email: string; password: string } | null>(null);
+    const [passwordCopied, setPasswordCopied] = useState(false);
     const [editing, setEditing] = useState<ManagedUser | null>(null);
-    const [edit, setEdit] = useState({ role: "Trainer" as string, isActive: true, departmentId: NO_DEPARTMENT, newPassword: "" });
+    const [edit, setEdit] = useState({ role: "Trainer" as string, isActive: true, organizationId: NO_ORGANIZATION, departmentId: NO_DEPARTMENT, newPassword: "", customRoleId: NO_CUSTOM_ROLE });
     const { toast } = useToast();
     const { user: me } = useAuth();
     const queryClient = useQueryClient();
@@ -73,10 +89,11 @@ const AdminUsers = () => {
     }, [search]);
 
     const roleParam = filterRole === "all" ? undefined : filterRole;
+    const customRoleParam = filterCustomRole === ALL_CUSTOM_ROLES ? undefined : filterCustomRole;
 
     const { data, isLoading, isError, error, isFetching } = useQuery({
-        queryKey: ["admin-users", debouncedSearch, roleParam, page],
-        queryFn: () => fetchUsers({ search: debouncedSearch || undefined, role: roleParam, page, pageSize: PAGE_SIZE }),
+        queryKey: ["admin-users", debouncedSearch, roleParam, customRoleParam, page],
+        queryFn: () => fetchUsers({ search: debouncedSearch || undefined, role: roleParam, customRoleId: customRoleParam, page, pageSize: PAGE_SIZE }),
         placeholderData: keepPreviousData,
     });
 
@@ -97,12 +114,21 @@ const AdminUsers = () => {
         queryKey: ["departments"],
         queryFn: async () => (await api.get<DepartmentOption[]>("/Departments")).data,
     });
+    const { data: organizations = [] } = useOrganizationsAdminQuery();
+
+    // Custom roles (built-in roles are chosen with the base-role select).
+    const { data: allRoles = [], isError: rolesError } = useQuery({
+        queryKey: ROLES_QUERY_KEY,
+        queryFn: async () => (await api.get<RoleInfo[]>("/roles")).data,
+    });
+    const customRoles = allRoles.filter((r) => !r.IsSystem);
 
     const users = data?.items ?? [];
     const total = data?.total ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-    // Show the resolved department name, never the id.
+    // Show the resolved department/organization name, never the id.
     const deptName = (u: ManagedUser) => u.DepartmentName ?? (u.DepartmentId ? (departments.find((d) => d.Id === u.DepartmentId)?.Name ?? t("common:deletedDepartment")) : null);
+    const orgName = (u: ManagedUser) => u.OrganizationName ?? (u.OrganizationId ? (organizations.find((o) => o.Id === u.OrganizationId)?.Name ?? t("common:deletedOrganization")) : null);
 
     const invalidate = () => {
         queryClient.invalidateQueries({ queryKey: ["admin-users"] });
@@ -110,20 +136,19 @@ const AdminUsers = () => {
     };
 
     const createMutation = useMutation({
-        mutationFn: async () => {
-            await api.post("/admin/users", {
-                FullName: newUser.fullName.trim(),
-                Email: newUser.email.trim(),
-                Password: newUser.password,
-                Role: newUser.role,
-                DepartmentId: newUser.departmentId === NO_DEPARTMENT ? undefined : newUser.departmentId,
-            });
-        },
-        onSuccess: () => {
+        mutationFn: async () => (await api.post<ManagedUser>("/admin/users", {
+            FullName: newUser.fullName.trim(),
+            Email: newUser.email.trim(),
+            Role: newUser.role,
+            OrganizationId: newUser.role === "Admin" || newUser.organizationId === NO_ORGANIZATION ? undefined : newUser.organizationId,
+            DepartmentId: newUser.departmentId === NO_DEPARTMENT ? undefined : newUser.departmentId,
+        })).data,
+        onSuccess: (created) => {
             invalidate();
             setIsAddOpen(false);
-            setNewUser({ fullName: "", email: "", password: "", role: "Trainer", departmentId: NO_DEPARTMENT });
-            toast({ title: t("admin:users.toast.created"), description: t("admin:users.toast.createdDescription", { name: newUser.fullName.trim() }) });
+            setNewUser({ fullName: "", email: "", role: "Trainer", organizationId: NO_ORGANIZATION, departmentId: NO_DEPARTMENT });
+            if (created.GeneratedPassword) setRevealedPassword({ name: created.FullName, email: created.Email, password: created.GeneratedPassword });
+            toast({ title: t("admin:users.toast.created"), description: t("admin:users.toast.createdDescription", { name: created.FullName }) });
         },
         onError: (err: unknown) => toast({ variant: "destructive", title: t("admin:users.toast.createFailed"), description: getApiError(err, t("admin:users.toast.createFailed")) }),
     });
@@ -134,13 +159,20 @@ const AdminUsers = () => {
             const body: Record<string, unknown> = {
                 Role: edit.role,
                 IsActive: edit.isActive,
+                OrganizationId: edit.role === "Admin" ? "" : (edit.organizationId === NO_ORGANIZATION ? undefined : edit.organizationId),
                 DepartmentId: edit.departmentId === NO_DEPARTMENT ? "" : edit.departmentId,
             };
             if (edit.newPassword) body.NewPassword = edit.newPassword;
             await api.put(`/admin/users/${editing.Id}`, body);
+            // The custom role has its own endpoint; only call it when the assignment actually changed.
+            const before = editing.CustomRoleId ?? NO_CUSTOM_ROLE;
+            if (!isSelf && edit.customRoleId !== before) {
+                await api.put(`/admin/users/${editing.Id}/role`, { CustomRoleId: edit.customRoleId === NO_CUSTOM_ROLE ? "" : edit.customRoleId });
+            }
         },
         onSuccess: () => {
             invalidate();
+            queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY }); // user counts per role
             setEditing(null);
             toast({ title: t("admin:users.toast.updated", { name: editing?.FullName ?? "" }) });
         },
@@ -152,8 +184,8 @@ const AdminUsers = () => {
             toast({ variant: "destructive", title: t("admin:users.toast.missingFields"), description: t("admin:users.toast.missingFieldsDescription") });
             return;
         }
-        if (newUser.password.length < 8) {
-            toast({ variant: "destructive", title: t("admin:users.toast.passwordShort"), description: t("admin:users.toast.passwordShortDescription") });
+        if (newUser.role !== "Admin" && newUser.organizationId === NO_ORGANIZATION) {
+            toast({ variant: "destructive", title: t("admin:users.organizationRequired"), description: t("admin:users.organizationRequiredDescription") });
             return;
         }
         createMutation.mutate();
@@ -161,12 +193,19 @@ const AdminUsers = () => {
 
     const openEdit = (u: ManagedUser) => {
         setEditing(u);
-        setEdit({ role: u.Role, isActive: u.IsActive, departmentId: u.DepartmentId ?? NO_DEPARTMENT, newPassword: "" });
+        setEdit({
+            role: u.Role, isActive: u.IsActive, organizationId: u.OrganizationId ?? NO_ORGANIZATION,
+            departmentId: u.DepartmentId ?? NO_DEPARTMENT, newPassword: "", customRoleId: u.CustomRoleId ?? NO_CUSTOM_ROLE,
+        });
     };
 
     const handleSaveEdit = () => {
         if (edit.newPassword && edit.newPassword.length < 8) {
             toast({ variant: "destructive", title: t("admin:users.toast.passwordShort"), description: t("admin:users.toast.passwordShortDescription") });
+            return;
+        }
+        if (edit.role !== "Admin" && edit.organizationId === NO_ORGANIZATION) {
+            toast({ variant: "destructive", title: t("admin:users.organizationRequired"), description: t("admin:users.organizationRequiredDescription") });
             return;
         }
         updateMutation.mutate();
@@ -190,9 +229,11 @@ const AdminUsers = () => {
                             <h1 className="text-3xl font-black">{t("admin:users.title")}</h1>
                             <p className="text-muted-foreground text-sm mt-1">{t("admin:users.subtitle")}</p>
                         </div>
-                        <Button className="bg-rose-500 hover:bg-rose-600 text-white border-0" onClick={() => setIsAddOpen(true)}>
-                            <Plus className="w-4 h-4 me-2" /> {t("admin:users.add")}
-                        </Button>
+                        <Can permission={PERMISSIONS.usersManage}>
+                            <Button className="bg-accent hover:bg-accent/90 text-accent-foreground border-0" onClick={() => setIsAddOpen(true)}>
+                                <Plus className="w-4 h-4 me-2" /> {t("admin:users.add")}
+                            </Button>
+                        </Can>
                     </div>
 
                     {/* Stats row */}
@@ -200,7 +241,7 @@ const AdminUsers = () => {
                         {[
                             { key: "total", val: totalAll, icon: Users, color: "bg-primary/10 text-primary" },
                             { key: "active", val: totalActive, icon: UserCheck, color: "bg-emerald-500/10 text-emerald-500" },
-                            { key: "inactive", val: totalInactive, icon: UserX, color: "bg-rose-500/10 text-rose-500" },
+                            { key: "inactive", val: totalInactive, icon: UserX, color: "bg-destructive/10 text-destructive" },
                         ].map((s) => (
                             <Card key={s.key} className="border-border/50">
                                 <CardContent className="p-4 flex items-center gap-3">
@@ -232,6 +273,17 @@ const AdminUsers = () => {
                                 {ROLES.map((r) => <SelectItem key={r} value={r}>{roleLabel(r)}</SelectItem>)}
                             </SelectContent>
                         </Select>
+                        {customRoles.length > 0 && (
+                            <Select value={filterCustomRole} onValueChange={(v) => { setFilterCustomRole(v); setPage(1); }}>
+                                <SelectTrigger className="w-full sm:w-52" aria-label={t("rbac:users.customRole")}>
+                                    <SelectValue placeholder={t("rbac:users.allCustomRoles")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value={ALL_CUSTOM_ROLES}>{t("rbac:users.allCustomRoles")}</SelectItem>
+                                    {customRoles.map((r) => <SelectItem key={r.Id} value={r.Id}>{r.Name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        )}
                     </div>
 
                     {/* Table */}
@@ -242,6 +294,7 @@ const AdminUsers = () => {
                                     <thead>
                                         <tr className="border-b border-border/50 bg-muted/30">
                                             <th className="text-start px-5 py-3 font-semibold text-muted-foreground">{t("admin:users.table.name")}</th>
+                                            <th className="text-start px-5 py-3 font-semibold text-muted-foreground hidden lg:table-cell">{t("admin:users.table.organization")}</th>
                                             <th className="text-start px-5 py-3 font-semibold text-muted-foreground hidden md:table-cell">{t("admin:users.table.department")}</th>
                                             <th className="text-start px-5 py-3 font-semibold text-muted-foreground hidden sm:table-cell">{t("admin:users.table.role")}</th>
                                             <th className="text-start px-5 py-3 font-semibold text-muted-foreground">{t("admin:users.table.status")}</th>
@@ -250,10 +303,10 @@ const AdminUsers = () => {
                                     </thead>
                                     <tbody>
                                         {isLoading && (
-                                            <tr><td colSpan={5} className="text-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary inline" /></td></tr>
+                                            <tr><td colSpan={6} className="text-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary inline" /></td></tr>
                                         )}
                                         {isError && (
-                                            <tr><td colSpan={5} className="text-center py-12 text-destructive">{getApiError(error, t("admin:users.loadFailed"))}</td></tr>
+                                            <tr><td colSpan={6} className="text-center py-12 text-destructive">{getApiError(error, t("admin:users.loadFailed"))}</td></tr>
                                         )}
                                         {users.map((u) => (
                                             <tr key={u.Id} className={cn("border-b border-border/30 hover:bg-muted/20 transition-colors", isFetching && "opacity-70")}>
@@ -262,7 +315,7 @@ const AdminUsers = () => {
                                                         {u.AvatarUrl ? (
                                                             <img src={u.AvatarUrl} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
                                                         ) : (
-                                                            <div className="w-8 h-8 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center font-bold text-xs shrink-0">
+                                                            <div className="w-8 h-8 rounded-full bg-accent/10 text-accent flex items-center justify-center font-bold text-xs shrink-0">
                                                                 {u.FullName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                                                             </div>
                                                         )}
@@ -272,6 +325,11 @@ const AdminUsers = () => {
                                                         </div>
                                                     </div>
                                                 </td>
+                                                <td className="px-5 py-3.5 hidden lg:table-cell">
+                                                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                                                        <Building2 className="w-3.5 h-3.5" /> {orgName(u) ?? t("admin:users.noOrganization")}
+                                                    </span>
+                                                </td>
                                                 <td className="px-5 py-3.5 hidden md:table-cell">
                                                     <span className="flex items-center gap-1.5 text-muted-foreground">
                                                         <Building2 className="w-3.5 h-3.5" /> {deptName(u) ?? "-"}
@@ -280,6 +338,7 @@ const AdminUsers = () => {
                                                 <td className="px-5 py-3.5 hidden sm:table-cell">
                                                     <span className="flex items-center gap-1.5 text-muted-foreground">
                                                         <Shield className="w-3.5 h-3.5" /> {roleLabel(u.Role)}
+                                                        {u.CustomRoleName && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{u.CustomRoleName}</Badge>}
                                                     </span>
                                                 </td>
                                                 <td className="px-5 py-3.5">
@@ -288,15 +347,17 @@ const AdminUsers = () => {
                                                     </Badge>
                                                 </td>
                                                 <td className="px-5 py-3.5 text-end">
-                                                    <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => openEdit(u)} aria-label={t("admin:users.editAria", { name: u.FullName })}>
-                                                        <Pencil className="w-4 h-4" />
-                                                    </Button>
+                                                    <Can permission={PERMISSIONS.usersManage}>
+                                                        <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => openEdit(u)} aria-label={t("admin:users.editAria", { name: u.FullName })}>
+                                                            <Pencil className="w-4 h-4" />
+                                                        </Button>
+                                                    </Can>
                                                 </td>
                                             </tr>
                                         ))}
                                         {!isLoading && !isError && users.length === 0 && (
                                             <tr>
-                                                <td colSpan={5} className="text-center py-12 text-muted-foreground">{t("admin:users.empty")}</td>
+                                                <td colSpan={6} className="text-center py-12 text-muted-foreground">{t("admin:users.empty")}</td>
                                             </tr>
                                         )}
                                     </tbody>
@@ -333,10 +394,7 @@ const AdminUsers = () => {
                             <Label htmlFor="nu-email">{t("admin:users.fields.email")}</Label>
                             <Input id="nu-email" type="email" placeholder={t("admin:users.fields.emailPlaceholder")} value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="nu-pass">{t("admin:users.fields.initialPassword")}</Label>
-                            <Input id="nu-pass" type="password" placeholder={t("admin:users.fields.passwordPlaceholder")} value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} />
-                        </div>
+                        <p className="text-xs text-muted-foreground">{t("admin:users.fields.passwordGeneratedNote")}</p>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>{t("admin:users.fields.role")}</Label>
@@ -356,10 +414,21 @@ const AdminUsers = () => {
                                 </Select>
                             </div>
                         </div>
+                        {newUser.role !== "Admin" && (
+                            <div className="space-y-2">
+                                <Label>{t("admin:users.fields.organization")}</Label>
+                                <Select value={newUser.organizationId} onValueChange={(v) => setNewUser({ ...newUser, organizationId: v })}>
+                                    <SelectTrigger><SelectValue placeholder={t("admin:users.selectOrganization")} /></SelectTrigger>
+                                    <SelectContent>
+                                        {organizations.map((o) => <SelectItem key={o.Id} value={o.Id}>{o.Name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsAddOpen(false)}>{t("common:actions.cancel")}</Button>
-                        <Button onClick={handleAddUser} disabled={createMutation.isPending} className="bg-rose-500 hover:bg-rose-600 text-white border-0">
+                        <Button onClick={handleAddUser} disabled={createMutation.isPending} className="bg-warning hover:bg-warning/90 text-warning-foreground border-0">
                             {createMutation.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
                             {t("admin:users.add")}
                         </Button>
@@ -395,6 +464,30 @@ const AdminUsers = () => {
                             </div>
                         </div>
                         {isSelf && <p className="text-xs text-muted-foreground">{t("admin:users.edit_dialog.selfNote")}</p>}
+                        {edit.role !== "Admin" && (
+                            <div className="space-y-2">
+                                <Label>{t("admin:users.fields.organization")}</Label>
+                                <Select value={edit.organizationId} onValueChange={(v) => setEdit({ ...edit, organizationId: v })} disabled={isSelf}>
+                                    <SelectTrigger><SelectValue placeholder={t("admin:users.selectOrganization")} /></SelectTrigger>
+                                    <SelectContent>
+                                        {organizations.map((o) => <SelectItem key={o.Id} value={o.Id}>{o.Name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+                        <Can permission={PERMISSIONS.rolesManage}>
+                            <div className="space-y-2">
+                                <Label>{t("rbac:users.customRole")}</Label>
+                                <Select value={edit.customRoleId} onValueChange={(v) => setEdit({ ...edit, customRoleId: v })} disabled={isSelf || rolesError}>
+                                    <SelectTrigger aria-label={t("rbac:users.customRole")}><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={NO_CUSTOM_ROLE}>{t("rbac:users.noCustomRole")}</SelectItem>
+                                        {customRoles.map((r) => <SelectItem key={r.Id} value={r.Id}>{r.Name}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-xs text-muted-foreground">{rolesError ? t("rbac:users.rolesLoadFailed") : t("rbac:users.customRoleHint")}</p>
+                            </div>
+                        </Can>
                         <div className="space-y-2">
                             <Label>{t("admin:users.fields.department")}</Label>
                             <Select value={edit.departmentId} onValueChange={(v) => setEdit({ ...edit, departmentId: v })}>
@@ -412,9 +505,45 @@ const AdminUsers = () => {
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setEditing(null)}>{t("common:actions.cancel")}</Button>
-                        <Button onClick={handleSaveEdit} disabled={updateMutation.isPending} className="bg-rose-500 hover:bg-rose-600 text-white border-0">
+                        <Button onClick={handleSaveEdit} disabled={updateMutation.isPending} className="bg-warning hover:bg-warning/90 text-warning-foreground border-0">
                             {updateMutation.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
                             {t("admin:users.edit_dialog.saveChanges")}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* One-time reveal of the server-generated initial password — shown once, never retrievable again. */}
+            <Dialog open={!!revealedPassword} onOpenChange={(open) => { if (!open) { setRevealedPassword(null); setPasswordCopied(false); } }}>
+                <DialogContent className="sm:max-w-[440px]">
+                    <DialogHeader>
+                        <DialogTitle>{t("admin:users.passwordReveal.title")}</DialogTitle>
+                        <DialogDescription>
+                            {t("admin:users.passwordReveal.description", { name: revealedPassword?.name ?? "" })}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-3 py-2">
+                        <div className="flex items-center justify-between gap-2 rounded-lg border border-border/50 bg-muted/30 px-3 py-2">
+                            <code dir="ltr" className="text-sm font-mono">{revealedPassword?.password}</code>
+                            <Button
+                                type="button" variant="ghost" size="icon" className="w-8 h-8 shrink-0"
+                                onClick={async () => {
+                                    if (!revealedPassword) return;
+                                    try {
+                                        await navigator.clipboard.writeText(revealedPassword.password);
+                                        setPasswordCopied(true);
+                                    } catch { /* clipboard unavailable; the value is still shown on screen */ }
+                                }}
+                                aria-label={t("admin:users.passwordReveal.copy")}
+                            >
+                                {passwordCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                            </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{t("admin:users.passwordReveal.warning")}</p>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={() => { setRevealedPassword(null); setPasswordCopied(false); }} className="bg-warning hover:bg-warning/90 text-warning-foreground border-0">
+                            {t("admin:users.passwordReveal.done")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -40,9 +40,10 @@
     --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
     
-    /* Warning - Yellow */
+    /* Warning - Amber Gold */
     --warning: 45 93% 54%;
     --warning-foreground: 222 47% 11%;
+    --warning-glow: 47 91% 61%;
     
     /* Destructive - Red */
     --destructive: 0 84% 60%;
@@ -59,6 +60,7 @@
     --gradient-primary: linear-gradient(135deg, hsl(217 91% 53%), hsl(217 91% 65%));
     --gradient-accent: linear-gradient(135deg, hsl(263 70% 50%), hsl(280 70% 60%));
     --gradient-success: linear-gradient(135deg, hsl(160 84% 39%), hsl(160 84% 50%));
+    --gradient-warning: linear-gradient(135deg, hsl(45 93% 54%), hsl(38 92% 50%));
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 14% 98%));
     
     /* Shadows */
@@ -67,6 +69,7 @@
     --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.1), 0 4px 6px -4px hsl(222 47% 11% / 0.1);
     --shadow-glow-primary: 0 0 20px hsl(217 91% 53% / 0.3);
     --shadow-glow-accent: 0 0 20px hsl(263 70% 50% / 0.3);
+    --shadow-glow-warning: 0 0 20px hsl(45 93% 54% / 0.3);
     
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
@@ -139,13 +142,21 @@
   .gradient-success {
     background: var(--gradient-success);
   }
-  
+
+  .gradient-warning {
+    background: var(--gradient-warning);
+  }
+
   .shadow-glow-primary {
     box-shadow: var(--shadow-glow-primary);
   }
-  
+
   .shadow-glow-accent {
     box-shadow: var(--shadow-glow-accent);
+  }
+
+  .shadow-glow-warning {
+    box-shadow: var(--shadow-glow-warning);
   }
   
   .glass {

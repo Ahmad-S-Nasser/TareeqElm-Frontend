@@ -6,23 +6,25 @@ import {
   Brain,
   FileQuestion,
   ClipboardCheck,
+  ClipboardList,
+  MessageSquare,
   BarChart3,
-  Settings,
   ChevronLeft,
   Sparkles,
   GraduationCap,
-  LogOut,
   CalendarDays,
+  CalendarClock,
   RotateCcw,
   Award,
-  Bell,
   User,
+  ShoppingBag,
+  BadgeCheck,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
+import logo from "@/assets/logo.png";
 
 interface NavItem {
   icon: React.ElementType;
@@ -37,6 +39,9 @@ const navItems: NavItem[] = [
   { icon: GraduationCap, labelKey: "myCourses", href: "/courses" },
   { icon: Brain, labelKey: "flashcards", href: "/flashcards" },
   { icon: ClipboardCheck, labelKey: "quizzes", href: "/quizzes" },
+  { icon: ClipboardList, labelKey: "assignments", href: "/assignments" },
+  { icon: CalendarClock, labelKey: "myAttendance", href: "/attendance" },
+  { icon: MessageSquare, labelKey: "discussions", href: "/discussions" },
   { icon: FileQuestion, labelKey: "mockExams", href: "/mock-exam" },
   { icon: BarChart3, labelKey: "analytics", href: "/analytics" },
   { icon: Sparkles, labelKey: "aiTutor", href: "/ai-tutor" },
@@ -44,8 +49,9 @@ const navItems: NavItem[] = [
   { icon: CalendarDays, labelKey: "timeBlocking", href: "/time-blocking" },
   { icon: RotateCcw, labelKey: "spacedRepetition", href: "/spaced-repetition" },
   { icon: Award, labelKey: "achievements", href: "/achievements" },
+  { icon: BadgeCheck, labelKey: "myCertificates", href: "/certificates" },
+  { icon: ShoppingBag, labelKey: "myPurchases", href: "/purchases" },
   { icon: User, labelKey: "myProfile", href: "/profile" },
-  { icon: Bell, labelKey: "notifications", href: "/notifications" },
 ];
 
 interface SidebarContentProps {
@@ -58,12 +64,6 @@ export const ApplicantSidebarContent = ({ collapsed, onItemClick, className }: S
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation("nav");
-  const { signOut } = useAuth();
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/auth");
-  };
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -74,12 +74,12 @@ export const ApplicantSidebarContent = ({ collapsed, onItemClick, className }: S
     <div className={cn("flex flex-col h-full bg-card", className)}>
       {/* Logo */}
       <div className="p-4 flex items-center gap-3 border-b border-border/50">
-        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0 shadow-glow-primary">
-          <GraduationCap className="w-5 h-5 text-primary-foreground" />
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
+          <img src={logo} alt="" className="w-10 h-10 object-contain" />
         </div>
         {!collapsed && (
           <div className="animate-fade-in text-start">
-            <h1 className="font-bold text-lg">{t("sidebar.brand.applicant")}</h1>
+            <h1 className="font-extrabold text-lg text-black">{t("sidebar.brand.applicant")}</h1>
             <p className="text-xs text-muted-foreground">{t("sidebar.portal.applicant")}</p>
           </div>
         )}
@@ -126,30 +126,7 @@ export const ApplicantSidebarContent = ({ collapsed, onItemClick, className }: S
 
       {/* Footer */}
       <div className="p-3 border-t border-border/50 space-y-1">
-        <button
-          onClick={() => handleNavigate("/settings")}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-muted text-muted-foreground hover:text-foreground"
-        >
-          <Settings className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && (
-            <span className="flex-1 text-start text-sm font-medium animate-fade-in">
-              {t("sidebar.applicant.settings")}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={handleSignOut}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-        >
-          <LogOut className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && (
-            <span className="flex-1 text-start text-sm font-medium animate-fade-in">
-              {t("sidebar.signOut")}
-            </span>
-          )}
-        </button>
-        {!collapsed && <LanguageSwitcher className="mt-2 lg:hidden" />}
+        {!collapsed && <LanguageSwitcher className="lg:hidden" />}
       </div>
     </div>
   );

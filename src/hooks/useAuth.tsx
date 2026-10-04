@@ -13,6 +13,13 @@ export interface AuthUser {
   Email: string;
   Role: string;
   AvatarUrl?: string | null;
+  /** Extra role assigned by an admin (null when none) and its resolved name. */
+  CustomRoleId?: string | null;
+  CustomRoleName?: string | null;
+  /** Effective permissions right now (base-role defaults + custom role). Absent on sessions saved before RBAC. */
+  Permissions?: string[];
+  /** True when this account's password was set by someone else (admin/org creation) and must be changed before anything else works. */
+  MustChangePassword?: boolean;
 }
 
 /** A sign-in/sign-up failure: `message` is user-facing (already translated), `code` is the API's stable error code. */
@@ -29,11 +36,18 @@ interface AuthContextType {
   user: AuthUser | null;
   role: AppRole | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: AuthError | null }>;
+  /** Exactly one of joinCode/requestedOrganizationId is required. A join code joins immediately (session created); a
+   * requested org submits a request that needs approval first — no session is created, `pending` is true instead. */
+  signUp: (
+    email: string, password: string, fullName: string,
+    joinCode?: string, requestedOrganizationId?: string
+  ) => Promise<{ error: AuthError | null; pending?: boolean; message?: string }>;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   /** Merges profile changes into the signed-in user (state and stored session). */
   updateUser: (patch: Partial<Pick<AuthUser, 'FullName' | 'AvatarUrl'>>) => void;
+  /** Re-reads the user (role, custom role, permissions) from GET /Auth/me so role edits apply without signing in again. */
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -88,6 +102,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    if (!localStorage.getItem(TOKEN_KEY)) return;
+    try {
+      const response = await api.get<AuthUser>('/Auth/me');
+      const fresh = response.data;
+      if (!fresh || typeof fresh !== 'object' || !fresh.Id) return;
+      if (!localStorage.getItem(TOKEN_KEY)) return; // signed out while the request was in flight
+      setUser((current) => {
+        if (!current || current.Id !== fresh.Id) return current;
+        const next: AuthUser = { ...current, ...fresh, Permissions: Array.isArray(fresh.Permissions) ? fresh.Permissions : [] };
+        try { localStorage.setItem(USER_KEY, JSON.stringify(next)); } catch { /* storage unavailable */ }
+        return next;
+      });
+      setRole(parseApiRole(fresh.Role));
+    } catch {
+      // Offline or rejected: keep the stored session (a 401 is handled by the API interceptor).
+    }
+  }, []);
+
   // Restore the session on load, but never trust a token that has already expired.
   useEffect(() => {
     const savedUser = localStorage.getItem(USER_KEY);
@@ -108,7 +141,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     setLoading(false);
-  }, []);
+    if (savedUser && token) void refreshUser();
+  }, [refreshUser]);
 
   // Sign out of React state when the API rejects the token, and when it expires while the app is open.
   useEffect(() => {
@@ -136,13 +170,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [applySession]);
 
   // Self-registration always creates a Trainer; the server ignores any role sent by the client.
-  const signUp = useCallback(async (email: string, password: string, fullName: string) => {
+  const signUp = useCallback(async (
+    email: string, password: string, fullName: string,
+    joinCode?: string, requestedOrganizationId?: string
+  ) => {
     try {
       const response = await api.post('/Auth/register', {
         Email: email,
         Password: password,
-        FullName: fullName
+        FullName: fullName,
+        JoinCode: joinCode || undefined,
+        RequestedOrganizationId: requestedOrganizationId || undefined,
       });
+      if (response.data?.Pending) {
+        return { error: null, pending: true, message: response.data.Message as string | undefined };
+      }
       const { Token, ExpiresAt, User: userData } = response.data;
       applySession(Token, ExpiresAt, userData);
       return { error: null };
@@ -152,8 +194,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [applySession]);
 
   const value = useMemo(
-    () => ({ user, role, loading, signUp, signIn, signOut, updateUser }),
-    [user, role, loading, signUp, signIn, signOut, updateUser]
+    () => ({ user, role, loading, signUp, signIn, signOut, updateUser, refreshUser }),
+    [user, role, loading, signUp, signIn, signOut, updateUser, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

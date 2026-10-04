@@ -1,94 +1,140 @@
-import { useState } from "react";
-import { AdminSidebar, AdminSidebarContent } from "@/components/layout/AdminSidebar";
-import { Header } from "@/components/layout/Header";
-import { cn } from "@/lib/utils";
+/**
+ * Admin → Platform Courses (catalog v12 phase 3).
+ *
+ * Real authoring at last: list/create/edit/publish/archive/delete through the same `/api/Courses` endpoints the
+ * instructor-facing screens use (the creating caller becomes `InstructorId`, so an Admin's own course naturally lands
+ * as platform-owned — `CourseService.VisibleTo` already narrows `GET /Courses` to exactly that for an Admin caller,
+ * no extra scoping needed here), plus the one thing only a platform course has: a license price an organization pays
+ * once to add it to its own library.
+ */
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+    AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import {
+    Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-    Dialog, DialogContent, DialogDescription, DialogFooter,
-    DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-    BookOpen, Plus, Upload, FileText, Video,
-    CheckCircle2, Clock, Loader2, Sparkles, Search,
-    Users, Star, MoreHorizontal,
-} from "lucide-react";
+import { AdminSidebar, AdminSidebarContent } from "@/components/layout/AdminSidebar";
+import { Header } from "@/components/layout/Header";
+import { CourseOwnershipBadge, MoneyInput } from "@/components/billing";
+import { BookOpen, Loader2, Pencil, Plus, Search, Tag, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useTranslation } from "react-i18next";
+import {
+    ADMIN_COURSES_PAGE_SIZE, useAdminCoursesQuery, useCreatePlatformCourse, useDeletePlatformCourse,
+    useSetCourseLicensePrice, useUpdatePlatformCourse, type AdminCourse,
+} from "@/hooks/useAdminCourses";
+import { getApiError } from "@/lib/api";
 import { useFormatters } from "@/lib/format";
+import { usePlatformCurrency } from "@/lib/money";
+import { cn } from "@/lib/utils";
 
-type CourseStatus = "Draft" | "Processing" | "Active";
-type Course = {
-    id: number; seed?: number; title: string; description: string;
-    audience: string; duration: string; status: CourseStatus;
-    enrolled: number; completion: number; aiScore: number;
-    processing?: number;
-};
+const ALL = "all";
 
-// Demo data: `seed` courses take their texts from admin:courses.seed.<n>.* so they follow the active language.
-const initialCourses: Course[] = [
-    { id: 1, seed: 1, title: "", description: "", audience: "", duration: "", status: "Active", enrolled: 48, completion: 82, aiScore: 91 },
-    { id: 2, seed: 2, title: "", description: "", audience: "", duration: "", status: "Active", enrolled: 36, completion: 74, aiScore: 88 },
-    { id: 3, seed: 3, title: "", description: "", audience: "", duration: "", status: "Active", enrolled: 64, completion: 91, aiScore: 94 },
-    { id: 4, seed: 4, title: "", description: "", audience: "", duration: "", status: "Active", enrolled: 29, completion: 65, aiScore: 79 },
-    { id: 5, seed: 5, title: "", description: "", audience: "", duration: "", status: "Processing", enrolled: 0, completion: 0, aiScore: 0, processing: 65 },
-];
+interface CourseForm {
+    title: string;
+    description: string;
+    category: string;
+    level: string;
+}
+
+const emptyForm: CourseForm = { title: "", description: "", category: "", level: "" };
+const formOf = (course: AdminCourse): CourseForm => ({
+    title: course.Title, description: course.Description ?? "", category: course.Category ?? "", level: course.Level ?? "",
+});
 
 const AdminCourses = () => {
-    const { t } = useTranslation(["admin", "common"]);
-    const { formatNumber, formatPercent } = useFormatters();
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [courses, setCourses] = useState<Course[]>(initialCourses);
-    const [search, setSearch] = useState("");
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [uploadCourseId, setUploadCourseId] = useState<number | null>(null);
-    const [dragOver, setDragOver] = useState(false);
-    const [newCourse, setNewCourse] = useState({ title: "", description: "", audience: "", duration: "" });
+    const { t } = useTranslation(["billing", "common"]);
+    const { formatCurrency, formatNumber } = useFormatters();
     const { toast } = useToast();
+    const { currency: platformCurrency } = usePlatformCurrency();
 
-    const text = (c: Course, field: "title" | "description" | "audience" | "duration") =>
-        c.seed ? t(`courses.seed.${c.seed}.${field}`) : c[field];
-    const filtered = courses.filter((c) => text(c, "title").toLowerCase().includes(search.toLowerCase()));
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [status, setStatus] = useState(ALL);
 
-    const handleCreateCourse = () => {
-        if (!newCourse.title) {
-            toast({ variant: "destructive", title: t("courses.toast.titleRequired") });
+    const [editing, setEditing] = useState<AdminCourse | null>(null);
+    const [isDialogOpen, setDialogOpen] = useState(false);
+    const [form, setForm] = useState<CourseForm>(emptyForm);
+    const [deleting, setDeleting] = useState<AdminCourse | null>(null);
+    const [pricing, setPricing] = useState<AdminCourse | null>(null);
+    const [licenseAmount, setLicenseAmount] = useState<number | null>(null);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const filters = useMemo(
+        () => ({ search: debouncedSearch || undefined, status: status === ALL ? undefined : status, pageSize: ADMIN_COURSES_PAGE_SIZE }),
+        [debouncedSearch, status]
+    );
+    const { data: courses = [], isLoading, isError, error, isFetching } = useAdminCoursesQuery(filters);
+
+    const createMutation = useCreatePlatformCourse();
+    const updateMutation = useUpdatePlatformCourse();
+    const deleteMutation = useDeletePlatformCourse();
+    const licenseMutation = useSetCourseLicensePrice();
+
+    const openCreate = () => { setEditing(null); setForm(emptyForm); setDialogOpen(true); };
+    const openEdit = (course: AdminCourse) => { setEditing(course); setForm(formOf(course)); setDialogOpen(true); };
+    const openPricing = (course: AdminCourse) => { setPricing(course); setLicenseAmount(course.LicensePrice?.Amount ?? null); };
+
+    const handleSave = () => {
+        const title = form.title.trim();
+        if (!title) { toast({ variant: "destructive", title: t("billing:platformCourses.titleRequired") }); return; }
+        const body = {
+            Title: title,
+            Description: form.description.trim() || null,
+            Category: form.category.trim() || null,
+            Level: form.level.trim() || null,
+        };
+        const onError = (err: unknown) =>
+            toast({ variant: "destructive", title: t("billing:platformCourses.saveFailed"), description: getApiError(err, t("billing:platformCourses.saveFailed")) });
+        const onSuccess = () => { setDialogOpen(false); setEditing(null); toast({ title: t("billing:platformCourses.saved") }); };
+        if (editing) updateMutation.mutate({ id: editing.Id, body }, { onSuccess, onError });
+        else createMutation.mutate(body, { onSuccess, onError });
+    };
+
+    const handleStatusChange = (course: AdminCourse, next: "Published" | "Archived") =>
+        updateMutation.mutate({ id: course.Id, body: { Status: next } }, {
+            onError: (err: unknown) => toast({ variant: "destructive", title: t("billing:platformCourses.saveFailed"), description: getApiError(err) }),
+        });
+
+    const handleDelete = () => {
+        if (!deleting) return;
+        deleteMutation.mutate(deleting.Id, {
+            onSuccess: () => { setDeleting(null); toast({ title: t("billing:platformCourses.deleted") }); },
+            onError: (err: unknown) =>
+                toast({ variant: "destructive", title: t("billing:platformCourses.deleteFailed"), description: getApiError(err, t("billing:platformCourses.deleteFailed")) }),
+        });
+    };
+
+    const handleSavePricing = () => {
+        if (!pricing || !licenseAmount || licenseAmount <= 0) {
+            toast({ variant: "destructive", title: t("billing:platformCourses.licensePriceInvalid") });
             return;
         }
-        const created: Course = { id: Date.now(), ...newCourse, status: "Draft", enrolled: 0, completion: 0, aiScore: 0 };
-        setCourses([...courses, created]);
-        setIsCreateOpen(false);
-        setNewCourse({ title: "", description: "", audience: "", duration: "" });
-        toast({ title: t("courses.toast.created"), description: t("courses.toast.createdDescription", { title: created.title }) });
-    };
-
-    const handleUpload = (files: FileList | null, courseId: number) => {
-        if (!files?.length) return;
-        toast({ title: t("courses.toast.uploadStarted"), description: t("courses.toast.uploadStartedDescription", { file: files[0].name }) });
-        setCourses(prev => prev.map(c => c.id === courseId ? { ...c, status: "Processing" as CourseStatus, processing: 0 } : c));
-        setUploadCourseId(null);
-        let pct = 0;
-        const iv = setInterval(() => {
-            pct += 20;
-            if (pct >= 100) {
-                clearInterval(iv);
-                setCourses(prev => prev.map(c => c.id === courseId ? { ...c, status: "Active" as CourseStatus, processing: 100, enrolled: 0, completion: 0, aiScore: 85 } : c));
-                toast({ title: t("courses.toast.processed"), description: t("courses.toast.processedDescription") });
-            } else {
-                setCourses(prev => prev.map(c => c.id === courseId ? { ...c, processing: pct } : c));
+        licenseMutation.mutate(
+            { id: pricing.Id, body: { IsFree: false, Amount: licenseAmount, Currency: pricing.LicensePrice?.Currency ?? platformCurrency } },
+            {
+                onSuccess: () => { setPricing(null); toast({ title: t("billing:platformCourses.licensePriceSaved") }); },
+                onError: (err: unknown) =>
+                    toast({ variant: "destructive", title: t("billing:platformCourses.licensePriceSaveFailed"), description: getApiError(err, t("billing:platformCourses.licensePriceSaveFailed")) }),
             }
-        }, 600);
+        );
     };
 
-    const statusColor = (s: CourseStatus) =>
-        s === "Active" ? "text-emerald-600 border-emerald-200 bg-emerald-50 dark:bg-emerald-950/20" :
-            s === "Processing" ? "text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950/20" :
-                "text-muted-foreground border-border bg-muted";
+    const isSaving = createMutation.isPending || updateMutation.isPending;
 
     return (
         <div className="min-h-screen bg-background">
@@ -98,122 +144,186 @@ const AdminCourses = () => {
                 <div className="max-w-7xl mx-auto space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-black">{t("courses.title")}</h1>
-                            <p className="text-muted-foreground text-sm mt-1">{t("courses.subtitle")}</p>
+                            <h1 className="text-3xl font-black">{t("billing:platformCourses.title")}</h1>
+                            <p className="text-muted-foreground text-sm mt-1">{t("billing:platformCourses.subtitle")}</p>
                         </div>
-                        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                            <DialogTrigger asChild>
-                                <Button className="bg-rose-500 hover:bg-rose-600 text-white border-0"><Plus className="w-4 h-4 me-2" /> {t("courses.create")}</Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-[480px]">
-                                <DialogHeader>
-                                    <DialogTitle>{t("courses.createDialog.title")}</DialogTitle>
-                                    <DialogDescription>{t("courses.createDialog.description")}</DialogDescription>
-                                </DialogHeader>
-                                <div className="space-y-4 py-4">
-                                    <div className="space-y-2"><Label>{t("courses.fields.title")}</Label><Input placeholder={t("courses.fields.titlePlaceholder")} value={newCourse.title} onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })} /></div>
-                                    <div className="space-y-2"><Label>{t("courses.fields.description")}</Label><Textarea placeholder={t("courses.fields.descriptionPlaceholder")} rows={3} value={newCourse.description} onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })} /></div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2"><Label>{t("courses.fields.audience")}</Label><Input placeholder={t("courses.fields.audiencePlaceholder")} value={newCourse.audience} onChange={(e) => setNewCourse({ ...newCourse, audience: e.target.value })} /></div>
-                                        <div className="space-y-2"><Label>{t("courses.fields.duration")}</Label><Input placeholder={t("courses.fields.durationPlaceholder")} value={newCourse.duration} onChange={(e) => setNewCourse({ ...newCourse, duration: e.target.value })} /></div>
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setIsCreateOpen(false)}>{t("common:actions.cancel")}</Button>
-                                    <Button onClick={handleCreateCourse} className="bg-rose-500 hover:bg-rose-600 text-white border-0">{t("courses.create")}</Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
+                        <Button onClick={openCreate}>
+                            <Plus className="w-4 h-4 me-2" /> {t("billing:platformCourses.create")}
+                        </Button>
                     </div>
 
-                    <div className="relative max-w-sm">
-                        <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input className="ps-9" placeholder={t("courses.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} />
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="relative flex-1">
+                            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <Input className="ps-9" placeholder={t("common:actions.search")} value={search}
+                                onChange={(e) => setSearch(e.target.value)} aria-label={t("common:actions.search")} />
+                        </div>
+                        <Select value={status} onValueChange={setStatus}>
+                            <SelectTrigger className="w-full sm:w-52" aria-label={t("billing:common.status")}>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={ALL}>{t("billing:common.allStatuses")}</SelectItem>
+                                <SelectItem value="Draft">{t("courses:status.Draft")}</SelectItem>
+                                <SelectItem value="Published">{t("courses:status.Published")}</SelectItem>
+                                <SelectItem value="Archived">{t("courses:status.Archived")}</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                        {filtered.map((course, i) => (
-                            <Card key={course.id} className="border-border/50 hover:border-rose-300/50 transition-all duration-200 hover:shadow-lg flex flex-col">
-                                <CardContent className="p-5 flex flex-col h-full">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
-                                            i % 4 === 0 && "bg-rose-500/10 text-rose-500",
-                                            i % 4 === 1 && "bg-primary/10 text-primary",
-                                            i % 4 === 2 && "bg-emerald-500/10 text-emerald-500",
-                                            i % 4 === 3 && "bg-amber-500/10 text-amber-500",
-                                        )}><BookOpen className="w-6 h-6" /></div>
-                                        <div className="flex items-center gap-2">
-                                            <Badge variant="outline" className={cn("text-xs font-semibold", statusColor(course.status))}>
-                                                {course.status === "Processing" ? <><Loader2 className="w-3 h-3 me-1 animate-spin" />{t("courses.status.Processing")}</> : course.status === "Active" ? <><CheckCircle2 className="w-3 h-3 me-1" />{t("courses.status.Active")}</> : t("courses.status.Draft")}
-                                            </Badge>
-                                            <Button variant="ghost" size="icon" className="w-7 h-7" aria-label={t("courses.moreActions")}><MoreHorizontal className="w-4 h-4" /></Button>
-                                        </div>
-                                    </div>
-                                    <h3 className="font-bold text-base mb-1">{text(course, "title")}</h3>
-                                    <p className="text-sm text-muted-foreground flex-1 mb-3">{text(course, "description")}</p>
-                                    <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
-                                        {text(course, "audience") && <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" />{text(course, "audience")}</span>}
-                                        {text(course, "duration") && <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{text(course, "duration")}</span>}
-                                    </div>
-                                    {course.status === "Processing" && (
-                                        <div className="mb-3">
-                                            <div className="flex justify-between text-xs mb-1">
-                                                <span className="text-amber-600 font-medium flex items-center gap-1"><Sparkles className="w-3 h-3" />{t("courses.aiIndexing")}</span>
-                                                <span>{formatPercent(course.processing ?? 0)}</span>
-                                            </div>
-                                            <Progress value={course.processing ?? 0} className="h-1.5" />
-                                        </div>
-                                    )}
-                                    {course.status === "Active" && (
-                                        <div className="grid grid-cols-3 gap-2 mb-3">
-                                            {[{ l: t("courses.stat.enrolled"), v: formatNumber(course.enrolled) }, { l: t("courses.stat.done"), v: formatPercent(course.completion) }, { l: t("courses.stat.score"), v: formatPercent(course.aiScore) }].map((s) => (
-                                                <div key={s.l} className="text-center bg-muted/40 rounded-lg py-1.5"><p className="font-bold text-sm">{s.v}</p><p className="text-xs text-muted-foreground">{s.l}</p></div>
-                                            ))}
-                                        </div>
-                                    )}
-                                    <div className="flex gap-2 mt-auto pt-3 border-t border-border/40">
-                                        <Dialog open={uploadCourseId === course.id} onOpenChange={(o) => setUploadCourseId(o ? course.id : null)}>
-                                            <DialogTrigger asChild>
-                                                <Button variant="outline" size="sm" className="flex-1"><Upload className="w-3.5 h-3.5 me-1.5" /> {t("courses.upload")}</Button>
-                                            </DialogTrigger>
-                                            <DialogContent>
-                                                <DialogHeader>
-                                                    <DialogTitle>{t("courses.uploadDialog.title")}</DialogTitle>
-                                                    <DialogDescription>{t("courses.uploadDialog.description", { course: text(course, "title") })}</DialogDescription>
-                                                </DialogHeader>
-                                                <div
-                                                    className={cn("border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors", dragOver ? "border-rose-400 bg-rose-50 dark:bg-rose-950/20" : "border-border/50 hover:border-rose-300")}
-                                                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                                                    onDragLeave={() => setDragOver(false)}
-                                                    onDrop={(e) => { e.preventDefault(); setDragOver(false); handleUpload(e.dataTransfer.files, course.id); }}
-                                                    onClick={() => document.getElementById(`fi-${course.id}`)?.click()}
-                                                >
-                                                    <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-                                                    <p className="font-semibold">{t("courses.uploadDialog.drop")}</p>
-                                                    <p className="text-sm text-muted-foreground mt-1">{t("courses.uploadDialog.types")}</p>
-                                                    <div className="flex justify-center gap-4 mt-3 text-xs text-muted-foreground">
-                                                        {[FileText, Video].map((Icon, i) => (<span key={i} className="flex items-center gap-1"><Icon className="w-3.5 h-3.5" />{[t("courses.uploadDialog.pdf"), t("courses.uploadDialog.video")][i]}</span>))}
-                                                    </div>
-                                                    <input id={`fi-${course.id}`} type="file" multiple className="hidden" onChange={(e) => handleUpload(e.target.files, course.id)} />
-                                                </div>
-                                                <DialogFooter><Button variant="outline" onClick={() => setUploadCourseId(null)}>{t("common:actions.close")}</Button></DialogFooter>
-                                            </DialogContent>
-                                        </Dialog>
-                                        {course.status === "Active" && (
-                                            <Button variant="ghost" size="sm" className="text-amber-600 hover:bg-amber-50" onClick={() => toast({ title: t("courses.toast.regenerated"), description: t("courses.toast.regeneratedDescription") })}>
-                                                <Star className="w-3.5 h-3.5 me-1" /> {t("courses.questions")}
-                                            </Button>
+                    <Card className="border-border/50">
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b border-border/50 bg-muted/30">
+                                            <th className="text-start px-5 py-3 font-semibold text-muted-foreground">{t("billing:platformCourses.titleField")}</th>
+                                            <th className="text-start px-5 py-3 font-semibold text-muted-foreground">{t("billing:common.status")}</th>
+                                            <th className="text-start px-5 py-3 font-semibold text-muted-foreground hidden md:table-cell">{t("billing:platformCourses.ownership")}</th>
+                                            <th className="text-start px-5 py-3 font-semibold text-muted-foreground">{t("billing:platformCourses.licensePrice")}</th>
+                                            <th className="text-start px-5 py-3 font-semibold text-muted-foreground hidden lg:table-cell">{t("billing:platformCourses.enrolledCount")}</th>
+                                            <th className="px-5 py-3" />
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {isLoading && (
+                                            <tr><td colSpan={6} className="text-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary inline" /></td></tr>
                                         )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                        {filtered.length === 0 && (
-                            <div className="col-span-full text-center py-16 text-muted-foreground"><BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" /><p className="font-semibold">{t("courses.empty")}</p></div>
-                        )}
-                    </div>
+                                        {isError && (
+                                            <tr><td colSpan={6} className="text-center py-12 text-destructive">{getApiError(error, t("billing:platformCourses.loadFailed"))}</td></tr>
+                                        )}
+                                        {courses.map((course) => (
+                                            <tr key={course.Id} className={cn("border-b border-border/30 hover:bg-muted/20 transition-colors", isFetching && "opacity-70")}>
+                                                <td className="px-5 py-3.5">
+                                                    <p className="font-semibold">{course.Title}</p>
+                                                    {course.Category && <p className="text-xs text-muted-foreground">{course.Category}</p>}
+                                                </td>
+                                                <td className="px-5 py-3.5">
+                                                    <Badge variant="outline" className="text-xs font-semibold">{t(`courses:status.${course.Status}`)}</Badge>
+                                                </td>
+                                                <td className="px-5 py-3.5 hidden md:table-cell">
+                                                    <CourseOwnershipBadge organizationId={course.OrganizationId} organizationName={course.OrganizationName} />
+                                                </td>
+                                                <td className="px-5 py-3.5">
+                                                    <Button variant="ghost" size="sm" className="h-auto px-2 py-1 font-semibold tabular-nums" onClick={() => openPricing(course)}>
+                                                        {course.LicensePrice
+                                                            ? formatCurrency(course.LicensePrice.Amount, course.LicensePrice.Currency)
+                                                            : <span className="text-muted-foreground font-normal">{t("billing:platformCourses.notLicensable")}</span>}
+                                                    </Button>
+                                                </td>
+                                                <td className="px-5 py-3.5 hidden lg:table-cell text-muted-foreground tabular-nums">{formatNumber(course.EnrolledCount)}</td>
+                                                <td className="px-5 py-3.5 text-end whitespace-nowrap space-x-1 rtl:space-x-reverse">
+                                                    {course.Status === "Draft" && (
+                                                        <Button size="sm" variant="outline" onClick={() => handleStatusChange(course, "Published")}>
+                                                            {t("billing:platformCourses.publish")}
+                                                        </Button>
+                                                    )}
+                                                    {course.Status === "Published" && (
+                                                        <Button size="sm" variant="outline" onClick={() => handleStatusChange(course, "Archived")}>
+                                                            {t("billing:platformCourses.archive")}
+                                                        </Button>
+                                                    )}
+                                                    <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => openEdit(course)} aria-label={t("billing:platformCourses.edit")}>
+                                                        <Pencil className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="w-8 h-8 text-destructive" onClick={() => setDeleting(course)} aria-label={t("billing:platformCourses.delete")}>
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {!isLoading && !isError && courses.length === 0 && (
+                                            <tr>
+                                                <td colSpan={6} className="text-center py-12">
+                                                    <BookOpen className="w-8 h-8 mx-auto mb-3 text-muted-foreground/50" />
+                                                    <p className="text-muted-foreground">{t("billing:platformCourses.empty")}</p>
+                                                    <p className="text-xs text-muted-foreground mt-1">{t("billing:platformCourses.emptyHint")}</p>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </main>
+
+            {/* Create / edit */}
+            <Dialog open={isDialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setEditing(null); }}>
+                <DialogContent className="sm:max-w-[560px]">
+                    <DialogHeader>
+                        <DialogTitle>{editing ? t("billing:platformCourses.edit") : t("billing:platformCourses.create")}</DialogTitle>
+                        <DialogDescription>{t("billing:platformCourses.subtitle")}</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="course-title">{t("billing:platformCourses.titleField")}</Label>
+                            <Input id="course-title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="course-description">{t("billing:platformCourses.descriptionField")}</Label>
+                            <Textarea id="course-description" rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="course-category">{t("billing:platformCourses.categoryField")}</Label>
+                                <Input id="course-category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="course-level">{t("billing:platformCourses.levelField")}</Label>
+                                <Input id="course-level" value={form.level} onChange={(e) => setForm({ ...form, level: e.target.value })} />
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setDialogOpen(false)}>{t("billing:common.cancel")}</Button>
+                        <Button onClick={handleSave} disabled={isSaving}>
+                            {isSaving && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
+                            {t("billing:common.save")}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* License price */}
+            <Dialog open={!!pricing} onOpenChange={(open) => !open && setPricing(null)}>
+                <DialogContent className="sm:max-w-[420px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2"><Tag className="w-4 h-4" /> {t("billing:platformCourses.setLicensePrice")}</DialogTitle>
+                        <DialogDescription>{t("billing:platformCourses.licensePriceHint")}</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-2 py-2">
+                        <Label htmlFor="license-amount">{t("billing:platformCourses.licensePrice")}</Label>
+                        <MoneyInput id="license-amount" value={licenseAmount} currency={pricing?.LicensePrice?.Currency ?? platformCurrency}
+                            onChange={setLicenseAmount} />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setPricing(null)}>{t("billing:common.cancel")}</Button>
+                        <Button onClick={handleSavePricing} disabled={licenseMutation.isPending}>
+                            {licenseMutation.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
+                            {t("billing:common.save")}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete */}
+            <AlertDialog open={!!deleting} onOpenChange={(open) => !open && setDeleting(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t("billing:platformCourses.deleteConfirm", { title: deleting?.Title ?? "" })}</AlertDialogTitle>
+                        <AlertDialogDescription>{t("billing:platformCourses.deleteConfirmHint")}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>{t("billing:common.cancel")}</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} disabled={deleteMutation.isPending}>
+                            {deleteMutation.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
+                            {t("billing:platformCourses.delete")}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

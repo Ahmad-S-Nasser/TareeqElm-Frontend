@@ -42,10 +42,13 @@ describe("Organization pages in Arabic", () => {
     await i18n.changeLanguage("ar");
   });
 
-  it("renders the placeholder page in Arabic", () => {
+  it("renders the exams page in Arabic", async () => {
+    mock.onGet("/organization/exams").reply(200, []);
+    mock.onGet("/Courses").reply(200, []);
+    mock.onGet("/Departments").reply(200, []);
     renderWithProviders(<OrganizationExams />);
-    expect(screen.getByText("إدارة الامتحانات")).toBeInTheDocument();
-    expect(screen.getByText("غير متاح بعد")).toBeInTheDocument();
+    expect(screen.getByText("الامتحانات")).toBeInTheDocument();
+    expect(await screen.findByText("لا توجد اختبارات مطابقة لعوامل التصفية.")).toBeInTheDocument();
     expect(document.documentElement.dir).toBe("rtl");
   });
 

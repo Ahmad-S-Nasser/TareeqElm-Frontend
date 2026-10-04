@@ -21,6 +21,7 @@ const queryClient = createQueryClient();
 // ── Shared / onboarding ─────────────────────────────────────────────────────
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
+const SetNewPassword = lazy(() => import("./pages/SetNewPassword"));
 
 // ── Trainer (role "applicant") ──────────────────────────────────────────────
 const ApplicantDashboard = lazy(() => import("./pages/ApplicantDashboard"));
@@ -41,6 +42,16 @@ const AIStudyCoach = lazy(() => import("./pages/AIStudyCoach"));
 const Achievements = lazy(() => import("./pages/Achievements"));
 const TrainerQuizzes = lazy(() => import("./pages/TrainerQuizzes"));
 const QuizRunner = lazy(() => import("./pages/QuizRunner"));
+const TrainerAssignments = lazy(() => import("./pages/TrainerAssignments"));
+const MyAttendance = lazy(() => import("./pages/MyAttendance"));
+const TrainerDiscussions = lazy(() => import("./pages/TrainerDiscussions"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const MyPurchases = lazy(() => import("./pages/MyPurchases"));
+const OrderReceipt = lazy(() => import("./pages/OrderReceipt"));
+const MyCertificates = lazy(() => import("./pages/MyCertificates"));
+
+// ── Public certificate verification (no sign-in) ─────────────────────────────
+const CertificateVerify = lazy(() => import("./pages/CertificateVerify"));
 
 // ── Instructor ──────────────────────────────────────────────────────────────
 const InstructorDashboard = lazy(() => import("./pages/InstructorDashboard"));
@@ -57,29 +68,51 @@ const InstructorNotifications = lazy(() => import("./pages/InstructorNotificatio
 const AllTrainers = lazy(() => import("./pages/AllTrainers"));
 const InstructorCurriculum = lazy(() => import("./pages/InstructorCurriculum"));
 const InstructorAssignments = lazy(() => import("./pages/InstructorAssignments"));
+const InstructorSessions = lazy(() => import("./pages/InstructorSessions"));
 const InstructorQuizzes = lazy(() => import("./pages/InstructorQuizzes"));
 const InstructorDiscussions = lazy(() => import("./pages/InstructorDiscussions"));
 const InstructorAnnouncements = lazy(() => import("./pages/InstructorAnnouncements"));
 const InstructorFlashcards = lazy(() => import("./pages/InstructorFlashcards"));
 const InstructorLeaderboard = lazy(() => import("./pages/InstructorLeaderboard"));
+const InstructorEarnings = lazy(() => import("./pages/InstructorEarnings"));
 
 // ── Organization ──────────────────────────────────────────────────────────────
 const OrganizationDashboard = lazy(() => import("./pages/OrganizationDashboard"));
 const OrganizationDepartments = lazy(() => import("./pages/OrganizationDepartments"));
+const OrganizationFacilities = lazy(() => import("./pages/OrganizationFacilities"));
 const OrganizationInstructors = lazy(() => import("./pages/OrganizationInstructors"));
 const OrganizationTrainers = lazy(() => import("./pages/OrganizationTrainers"));
 const OrganizationCourses = lazy(() => import("./pages/OrganizationCourses"));
 const OrganizationAnalytics = lazy(() => import("./pages/OrganizationAnalytics"));
 const OrganizationSettings = lazy(() => import("./pages/OrganizationSettings"));
 const OrganizationAcademicTerms = lazy(() => import("./pages/OrganizationAcademicTerms"));
+const OrganizationAcademicYears = lazy(() => import("./pages/OrganizationAcademicYears"));
+const OrganizationGrades = lazy(() => import("./pages/OrganizationGrades"));
+const OrganizationCalendar = lazy(() => import("./pages/OrganizationCalendar"));
 const OrganizationSections = lazy(() => import("./pages/OrganizationSections"));
 const OrganizationEnrollment = lazy(() => import("./pages/OrganizationEnrollment"));
 const OrganizationExams = lazy(() => import("./pages/OrganizationExams"));
 const OrganizationAnnouncements = lazy(() => import("./pages/OrganizationAnnouncements"));
 const OrganizationContentLibrary = lazy(() => import("./pages/OrganizationContentLibrary"));
 const OrganizationReports = lazy(() => import("./pages/OrganizationReports"));
+const FinancialOrdersReport = lazy(() => import("./pages/reports/FinancialOrdersReport"));
+const DepartmentAnalyticsReport = lazy(() => import("./pages/reports/DepartmentAnalyticsReport"));
+const TraineePerformanceReport = lazy(() => import("./pages/reports/TraineePerformanceReport"));
+const CourseCompletionReport = lazy(() => import("./pages/reports/CourseCompletionReport"));
+const InstructorActivityReport = lazy(() => import("./pages/reports/InstructorActivityReport"));
 const OrganizationAIInsights = lazy(() => import("./pages/OrganizationAIInsights"));
 const OrganizationRoles = lazy(() => import("./pages/OrganizationRoles"));
+const OrganizationCatalogPricing = lazy(() => import("./pages/OrganizationCatalogPricing"));
+const OrganizationRevenue = lazy(() => import("./pages/OrganizationRevenue"));
+const OrganizationInvoices = lazy(() => import("./pages/OrganizationInvoices"));
+const OrganizationRefundRequests = lazy(() => import("./pages/OrganizationRefundRequests"));
+const OrganizationOrders = lazy(() => import("./pages/OrganizationOrders"));
+const OrganizationPlatformCourses = lazy(() => import("./pages/OrganizationPlatformCourses"));
+const OrganizationBilling = lazy(() => import("./pages/OrganizationBilling"));
+const OrganizationCoupons = lazy(() => import("./pages/OrganizationCoupons"));
+const OrganizationPayouts = lazy(() => import("./pages/OrganizationPayouts"));
+const OrganizationPendingMembers = lazy(() => import("./pages/OrganizationPendingMembers"));
+const InvoiceDocument = lazy(() => import("./pages/InvoiceDocument"));
 
 // ── Admin ───────────────────────────────────────────────────────────────────
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -87,7 +120,17 @@ const AdminUsers = lazy(() => import("./pages/AdminUsers"));
 const AdminCourses = lazy(() => import("./pages/AdminCourses"));
 const AdminEnrollments = lazy(() => import("./pages/AdminEnrollments"));
 const AdminAnalytics = lazy(() => import("./pages/AdminAnalytics"));
+const AdminRoles = lazy(() => import("./pages/AdminRoles"));
 const AdminSettings = lazy(() => import("./pages/AdminSettings"));
+const AdminCatalogPricing = lazy(() => import("./pages/AdminCatalogPricing"));
+const AdminRevenue = lazy(() => import("./pages/AdminRevenue"));
+const AdminOrders = lazy(() => import("./pages/AdminOrders"));
+const AdminRefundRequests = lazy(() => import("./pages/AdminRefundRequests"));
+const AdminCoupons = lazy(() => import("./pages/AdminCoupons"));
+const AdminPayouts = lazy(() => import("./pages/AdminPayouts"));
+const AdminLeads = lazy(() => import("./pages/AdminLeads"));
+const AdminOrganizations = lazy(() => import("./pages/AdminOrganizations"));
+const AdminAuditLog = lazy(() => import("./pages/AdminAuditLog"));
 
 /** "/" sends guests to sign-in and signed-in users to their own dashboard. */
 const RootRedirect = () => {
@@ -104,16 +147,22 @@ const AppRoutes = () => (
     <Route path="/auth" element={<Auth />} />
     <Route path="/login" element={<Auth />} />
     <Route path="/signup" element={<Auth />} />
+    {/* Anyone holding a printed certificate can check it here; the page itself needs no account. */}
+    {/* RoleGroup without a RoleGuard: just the error boundary + Suspense for the lazy page. */}
+    <Route element={<RoleGroup />}>
+      <Route path="/verify/:code" element={<CertificateVerify />} />
+    </Route>
 
     {/* Any signed-in user: onboarding + shared pages */}
     <Route element={<RoleGuard />}>
       <Route element={<RoleGroup />}>
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/profile" element={<UserProfile />} />
+        <Route path="/auth/set-password" element={<SetNewPassword />} />
       </Route>
     </Route>
 
-    {/* Trainer (16). To add a page: add a lazy import above and a <Route> here. */}
+    {/* Trainer (18). To add a page: add a lazy import above and a <Route> here. */}
     <Route element={<RoleGuard roles={["applicant"]} />}>
       <Route element={<RoleGroup />}>
         <Route path="/dashboard" element={<ApplicantDashboard />} />
@@ -134,6 +183,14 @@ const AppRoutes = () => (
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/quizzes" element={<TrainerQuizzes />} />
         <Route path="/quizzes/:quizId" element={<QuizRunner />} />
+        <Route path="/assignments" element={<TrainerAssignments />} />
+        <Route path="/attendance" element={<MyAttendance />} />
+        <Route path="/discussions" element={<TrainerDiscussions />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/purchases" element={<MyPurchases />} />
+        <Route path="/purchases/:orderId" element={<OrderReceipt />} />
+        <Route path="/certificates" element={<MyCertificates />} />
+        <Route path="/certificates/:certificateId" element={<MyCertificates />} />
       </Route>
     </Route>
 
@@ -154,11 +211,13 @@ const AppRoutes = () => (
         <Route path="/instructor/trainers" element={<AllTrainers />} />
         <Route path="/instructor/curriculum" element={<InstructorCurriculum />} />
         <Route path="/instructor/assignments" element={<InstructorAssignments />} />
+        <Route path="/instructor/sessions" element={<InstructorSessions />} />
         <Route path="/instructor/quizzes" element={<InstructorQuizzes />} />
         <Route path="/instructor/discussions" element={<InstructorDiscussions />} />
         <Route path="/instructor/announcements" element={<InstructorAnnouncements />} />
         <Route path="/instructor/flashcards" element={<InstructorFlashcards />} />
         <Route path="/instructor/leaderboard" element={<InstructorLeaderboard />} />
+        <Route path="/instructor/earnings" element={<InstructorEarnings />} />
       </Route>
     </Route>
 
@@ -171,20 +230,40 @@ const AppRoutes = () => (
       <Route element={<RoleGroup />}>
         <Route path="/organization" element={<OrganizationDashboard />} />
         <Route path="/organization/departments" element={<OrganizationDepartments />} />
+        <Route path="/organization/facilities" element={<OrganizationFacilities />} />
         <Route path="/organization/instructors" element={<OrganizationInstructors />} />
         <Route path="/organization/trainers" element={<OrganizationTrainers />} />
         <Route path="/organization/courses" element={<OrganizationCourses />} />
         <Route path="/organization/analytics" element={<OrganizationAnalytics />} />
         <Route path="/organization/settings" element={<OrganizationSettings />} />
         <Route path="/organization/terms" element={<OrganizationAcademicTerms />} />
+        <Route path="/organization/academic-years" element={<OrganizationAcademicYears />} />
+        <Route path="/organization/grades" element={<OrganizationGrades />} />
+        <Route path="/organization/calendar" element={<OrganizationCalendar />} />
         <Route path="/organization/sections" element={<OrganizationSections />} />
         <Route path="/organization/enrollment" element={<OrganizationEnrollment />} />
         <Route path="/organization/exams" element={<OrganizationExams />} />
         <Route path="/organization/announcements" element={<OrganizationAnnouncements />} />
         <Route path="/organization/content" element={<OrganizationContentLibrary />} />
         <Route path="/organization/reports" element={<OrganizationReports />} />
+        <Route path="/organization/reports/financial" element={<FinancialOrdersReport />} />
+        <Route path="/organization/reports/department-analytics" element={<DepartmentAnalyticsReport />} />
+        <Route path="/organization/reports/trainee-performance" element={<TraineePerformanceReport />} />
+        <Route path="/organization/reports/course-completion" element={<CourseCompletionReport />} />
+        <Route path="/organization/reports/instructor-activity" element={<InstructorActivityReport />} />
         <Route path="/organization/ai-insights" element={<OrganizationAIInsights />} />
         <Route path="/organization/roles" element={<OrganizationRoles />} />
+        <Route path="/organization/catalog" element={<OrganizationCatalogPricing />} />
+        <Route path="/organization/revenue" element={<OrganizationRevenue />} />
+        <Route path="/organization/invoices" element={<OrganizationInvoices />} />
+        <Route path="/organization/invoices/:invoiceId" element={<InvoiceDocument />} />
+        <Route path="/organization/refund-requests" element={<OrganizationRefundRequests />} />
+        <Route path="/organization/orders" element={<OrganizationOrders />} />
+        <Route path="/organization/platform-courses" element={<OrganizationPlatformCourses />} />
+        <Route path="/organization/billing" element={<OrganizationBilling />} />
+        <Route path="/organization/coupons" element={<OrganizationCoupons />} />
+        <Route path="/organization/payouts" element={<OrganizationPayouts />} />
+        <Route path="/organization/pending-members" element={<OrganizationPendingMembers />} />
         <Route path="/organization/*" element={<NotFound />} />
       </Route>
     </Route>
@@ -197,7 +276,17 @@ const AppRoutes = () => (
         <Route path="/admin/courses" element={<AdminCourses />} />
         <Route path="/admin/enrollments" element={<AdminEnrollments />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
+        <Route path="/admin/roles" element={<AdminRoles />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route path="/admin/catalog" element={<AdminCatalogPricing />} />
+        <Route path="/admin/revenue" element={<AdminRevenue />} />
+        <Route path="/admin/orders" element={<AdminOrders />} />
+        <Route path="/admin/refund-requests" element={<AdminRefundRequests />} />
+        <Route path="/admin/coupons" element={<AdminCoupons />} />
+        <Route path="/admin/payouts" element={<AdminPayouts />} />
+        <Route path="/admin/leads" element={<AdminLeads />} />
+        <Route path="/admin/organizations" element={<AdminOrganizations />} />
+        <Route path="/admin/audit" element={<AdminAuditLog />} />
       </Route>
     </Route>
 

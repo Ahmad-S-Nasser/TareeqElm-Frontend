@@ -14,6 +14,7 @@ import { TodaysPlan } from "@/components/dashboard/TodaysPlan";
 import { WeaknessAnalysis } from "@/components/dashboard/WeaknessAnalysis";
 import { AIChatBar } from "@/components/dashboard/AIChatBar";
 import { StudyCoachWidget } from "@/components/dashboard/StudyCoachWidget";
+import { AnnouncementsFeedCard } from "@/components/dashboard/AnnouncementsFeedCard";
 import { FloatingCoachButton } from "@/components/dashboard/FloatingCoachButton";
 import { useCourses } from "@/hooks/useCourses";
 import { useProgress } from "@/hooks/useProgress";
@@ -196,6 +197,7 @@ const ApplicantDashboard = () => {
             <div className="space-y-6 animate-slide-up" style={{ animationDelay: "300ms" }}>
               <TodaysPlan items={todaysPlanItems} onToggleComplete={handleTogglePlanItem} />
               <StudyCoachWidget />
+              <AnnouncementsFeedCard />
             </div>
           </div>
         </div>

@@ -1,4 +1,114 @@
 {
+  "myAttendance": {
+    "title": "My attendance",
+    "subtitle": "Your Live-online and Offline session history, and upcoming sessions you can join.",
+    "loadFailed": "Could not load your attendance.",
+    "empty": "No sessions found for your enrolled courses.",
+    "upcoming": "Upcoming",
+    "cancelled": "Cancelled",
+    "status": {
+      "present": "Present",
+      "absent": "Absent",
+      "late": "Late",
+      "excused": "Excused"
+    }
+  },
+  "assignments": {
+    "title": "Assignments",
+    "subtitle": "Track and submit your coursework",
+    "empty": "You have no assignments yet.",
+    "emptyHint": "Assignments from your enrolled courses will show up here.",
+    "loadFailed": "Could not load your assignments.",
+    "allCourses": "All courses",
+    "due": "Due {{date}}",
+    "maxScore": "{{score}} pts",
+    "lateAllowed": "Late submissions allowed",
+    "status": {
+      "notSubmitted": "Not submitted",
+      "submitted": "Submitted",
+      "late": "Submitted late",
+      "graded": "Graded"
+    },
+    "viewDetails": "View assignment",
+    "detail": {
+      "title": "Assignment",
+      "attachments": "Attachments",
+      "noAttachments": "No attachments.",
+      "download": "Download",
+      "yourSubmission": "Your submission",
+      "grade": "Grade",
+      "feedback": "Feedback",
+      "noFeedback": "No feedback yet.",
+      "submittedOn": "Submitted {{date}}",
+      "submitTitle": "Submit your work",
+      "text": "Text answer",
+      "textPlaceholder": "Write your answer...",
+      "addFile": "Add file",
+      "removeFile": "Remove file",
+      "uploading": "Uploading… {{percent}}%",
+      "submit": "Submit assignment",
+      "resubmit": "Resubmit",
+      "submitted": "Submission received",
+      "submitFailed": "Could not submit your work.",
+      "closedNotice": "This assignment no longer accepts submissions.",
+      "gradedNotice": "This submission has been graded and can no longer be changed.",
+      "required": "Add some text or attach a file before submitting.",
+      "close": "Close"
+    }
+  },
+  "discussions": {
+    "title": "Discussions",
+    "subtitle": "Ask questions and join the conversation",
+    "empty": "No discussions yet.",
+    "emptyHint": "Start a discussion once your instructor allows it, or check back later.",
+    "loadFailed": "Could not load discussions.",
+    "new": "New Thread",
+    "created": "Thread created",
+    "createFailed": "Could not create the thread.",
+    "pinned": "Pinned",
+    "locked": "Locked",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "lock": "Lock",
+    "unlock": "Unlock",
+    "stateFailed": "Could not update the thread.",
+    "delete": "Delete",
+    "deleted": "Thread deleted",
+    "deleteFailed": "Could not delete the thread.",
+    "confirmDeleteTitle": "Delete this thread?",
+    "confirmDeleteDesc": "“{{title}}” and its replies will be permanently removed.",
+    "repliesCount_zero": "No replies",
+    "repliesCount_one": "{{count}} reply",
+    "repliesCount_two": "{{count}} replies",
+    "repliesCount_few": "{{count}} replies",
+    "repliesCount_many": "{{count}} replies",
+    "repliesCount_other": "{{count}} replies",
+    "form": {
+      "title": "New discussion",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Discussion title...",
+      "body": "Message",
+      "bodyPlaceholder": "Start the discussion...",
+      "course": "Course",
+      "coursePlaceholder": "Select a course",
+      "required": "Enter a title and a message.",
+      "courseRequired": "Choose a course.",
+      "cancel": "Cancel",
+      "submit": "Create thread"
+    },
+    "thread": {
+      "reply": "Reply",
+      "replyPlaceholder": "Write a reply...",
+      "send": "Send",
+      "replyFailed": "Could not post the reply.",
+      "deleteReply": "Delete",
+      "deleteReplyFailed": "Could not delete the reply.",
+      "lockedNotice": "This thread is locked. New replies are disabled.",
+      "noReplies": "No replies yet.",
+      "loadFailed": "Could not load the thread.",
+      "close": "Close"
+    }
+  },
   "player": {
     "lessonCompleted": "Lesson completed",
     "progressSaved": "Your progress has been saved.",
@@ -25,56 +135,112 @@
     "explainClip": "Explain Clip?",
     "explanation": "Explanation",
     "explanationDesc": "A simplified explanation of the selected text.",
-    "analyzing": "Analyzing context..."
+    "analyzing": "Analyzing context...",
+    "session": {
+      "loadFailed": "Could not load this lesson's scheduled sessions.",
+      "notScheduled": "Your instructor hasn't scheduled this session yet. Check back soon.",
+      "roomTbd": "Room to be announced"
+    }
   },
   "flashcards": {
-    "dueCount_one": "{{count}} due",
-    "dueCount_other": "{{count}} due",
-    "cardsCount_one": "{{count}} card",
-    "cardsCount_other": "{{count}} cards",
-    "studied": "Studied {{date}}",
-    "mastery": "Mastery",
-    "cardOf": "Card {{current}} of {{total}}",
-    "exit": "Exit Session",
-    "question": "Question",
-    "hint": "Hint",
-    "clickToFlip": "Click to flip",
-    "answer": "Answer",
-    "reveal": "Reveal Answer",
-    "howWell": "How well did you know this?",
-    "rating": {
-      "again": "Again",
-      "hard": "Hard",
-      "good": "Good",
-      "easy": "Easy"
-    },
     "title": "Flashcards",
     "subtitle": "Master concepts with spaced repetition learning",
     "createDeck": "Create Deck",
+    "createTitle": "Create New Deck",
+    "deckName": "Deck Name",
+    "deckNamePlaceholder": "e.g., JavaScript Basics",
+    "deckNameRequired": "Enter a deck name.",
+    "topic": "Description",
+    "topicPlaceholder": "e.g., Core language concepts",
     "totalCards": "Total Cards",
     "masteredLabel": "Mastered",
     "dueToday": "Due Today",
     "decksActive": "Decks Active",
     "dueForReview": "Cards Due for Review",
-    "dueSummary": "You have {{cards}} cards across {{decks}} decks ready for review",
+    "dueSummary": "You have {{cards}} cards ready for review",
     "startReview": "Start Review",
     "yourDecks": "Your Decks",
-    "createTitle": "Create New Deck",
-    "deckName": "Deck Name",
-    "deckNamePlaceholder": "e.g., JavaScript Basics",
-    "topic": "Topic / Description",
-    "topicPlaceholder": "e.g., Core language concepts",
-    "addInitial": "Add Initial Card",
-    "front": "Question (Front)",
-    "frontPlaceholder": "Enter question",
-    "back": "Answer (Back)",
-    "backPlaceholder": "Enter answer",
-    "complete": "Study Session Complete!",
-    "resultLine": "You got {{correct}} out of {{total}} cards correct",
-    "backToDecks": "Back to Decks",
-    "studyAgain": "Study Again",
-    "noCards": "No cards in this deck yet.",
-    "goBack": "Go Back"
+    "loadFailed": "Could not load your decks.",
+    "empty": "No decks yet. Create one to get started.",
+    "manage": "Manage",
+    "addToMyCards": "Add to my review set",
+    "byInstructor": "By {{name}}",
+    "cardsCount": "{{count}} cards",
+    "kind": {
+      "personal": "Personal",
+      "instructor": "Instructor"
+    },
+    "visibility": {
+      "private": "Private",
+      "published": "Published"
+    },
+    "myStudySet": {
+      "title": "My Review Cards",
+      "empty": "You haven't added any cards to your review set yet."
+    },
+    "toast": {
+      "deckCreated": "Deck created",
+      "deckCreateFailed": "Could not create the deck.",
+      "addedCards": "Added {{added}} new card(s) ({{alreadyOwned}} already in your set)",
+      "addFailed": "Could not add these cards to your review set."
+    },
+    "cards": {
+      "add": "Add Card",
+      "addTitle": "Add Card",
+      "editTitle": "Edit Card",
+      "edit": "Edit card",
+      "delete": "Delete card",
+      "question": "Question",
+      "questionPlaceholder": "Enter the question",
+      "answer": "Answer",
+      "answerPlaceholder": "Enter the answer",
+      "hint": "Hint (optional)",
+      "hintPlaceholder": "Enter an optional hint",
+      "hintLabel": "Hint: {{hint}}",
+      "required": "Enter a question and an answer.",
+      "saved": "Card updated",
+      "created": "Card added",
+      "saveFailed": "Could not save the card.",
+      "deleted": "Card deleted",
+      "deleteFailed": "Could not delete the card.",
+      "loadFailed": "Could not load the deck's cards.",
+      "empty": "No cards in this deck yet.",
+      "confirmDeleteTitle": "Delete this card?",
+      "confirmDeleteDesc": "This card will be permanently removed from the deck."
+    },
+    "import": {
+      "button": "Import",
+      "result": "Imported {{imported}}, skipped {{skipped}} of {{total}} rows",
+      "failed": "Could not import the file."
+    },
+    "export": {
+      "csv": "Export CSV",
+      "json": "Export JSON",
+      "failed": "Could not export the deck."
+    },
+    "publish": {
+      "publishedHint": "Published — enrolled trainees can see this deck.",
+      "privateHint": "Private — only you can see this deck.",
+      "published": "Deck published",
+      "unpublished": "Deck made private",
+      "failed": "Could not update the deck's visibility."
+    },
+    "study": {
+      "title": "Review Session",
+      "exit": "Exit",
+      "cardOf": "Card {{current}} of {{total}}",
+      "question": "Question",
+      "answer": "Answer",
+      "hint": "Hint",
+      "clickToFlip": "Click card to flip",
+      "reveal": "Reveal Answer",
+      "howWell": "How well did you know this?",
+      "empty": "No cards are due for review right now.",
+      "complete": {
+        "title": "Session Complete!",
+        "summary": "You reviewed {{count}} cards, {{correct}} of them well."
+      }
+    }
   },
   "spaced": {
     "strength": {
@@ -126,7 +292,7 @@
     "subtitle": "Master your knowledge with scientifically-proven interval-based review.",
     "aiGenerate": "AI Generate",
     "generatorTitle": "AI Flashcard Generator",
-    "generatorDesc": "Enter a topic and the AI will generate study flashcards for you.",
+    "generatorDesc": "Enter a topic and the AI will generate flashcards for you.",
     "generatorPlaceholder": "e.g. React Hooks, Calculus Derivatives, World War II",
     "generating": "Generating...",
     "generate": "Generate Flashcards",
@@ -200,7 +366,7 @@
     },
     "stats": {
       "totalBlocks": "Total Blocks",
-      "studyTime": "Study Time",
+      "studyTime": "Learning Time",
       "breaks": "Breaks",
       "focusRatio": "Focus Ratio",
       "streak": "Streak"
@@ -215,7 +381,7 @@
     },
     "loadFailed": "Failed to load time blocks",
     "title": "Time Blocking",
-    "subtitle": "Schedule focused blocks to maximize your productivity and study performance.",
+    "subtitle": "Schedule focused blocks to maximize your productivity and learning performance.",
     "day": "Day",
     "week": "Week",
     "generating": "Generating...",
@@ -233,7 +399,7 @@
     "start": "Start",
     "end": "End",
     "category": {
-      "study": "Study",
+      "study": "Learning",
       "break": "Break",
       "review": "Review",
       "practice": "Practice",
@@ -243,7 +409,7 @@
     "days_one": "{{count}} day",
     "days_other": "{{count}} days",
     "keepGoing": "Keep it going!",
-    "weeklyHours": "Weekly Study Hours",
+    "weeklyHours": "Weekly Learning Hours",
     "hoursShort": "{{value}}h",
     "weekTotal": "Total: {{value}}h this week",
     "todaySchedule": "Today's Schedule",
@@ -262,7 +428,7 @@
       "ai": "<b>Use AI Schedule</b> – let the AI generate an optimized day based on your energy levels.",
       "energy": "<b>Set your peak energy</b> – the AI prioritizes deep work during your most productive hours.",
       "breaks": "<b>Include breaks</b> – the Pomodoro technique suggests 25 min work / 5 min break cycles.",
-      "focus": "<b>Track your focus score</b> – complete pomodoros and study blocks to boost your daily score."
+      "focus": "<b>Track your focus score</b> – complete pomodoros and learning blocks to boost your daily score."
     }
   },
   "pomodoro": {
@@ -410,40 +576,40 @@
     },
     "na": "N/A",
     "title": "Learning Analytics",
-    "subtitle": "Track your study patterns, focus scores, and retention to optimize your learning.",
+    "subtitle": "Track your training patterns, focus scores, and retention to optimize your learning.",
     "streakDays_one": "{{count}} day streak",
     "streakDays_other": "{{count}} day streak",
     "hoursValue": "{{value}}h",
     "minutesShort": "{{value}}m",
     "stats": {
-      "totalStudy": "Total Study Time",
+      "totalStudy": "Total Learning Time",
       "avgFocus": "Avg Focus Score",
       "retention": "Flashcard Retention",
-      "bestTime": "Best Study Time"
+      "bestTime": "Best Learning Time"
     },
     "tabs": {
       "overview": "Overview",
       "focus": "Focus",
       "retention": "Retention"
     },
-    "activity": "Study Activity (Last 12 Months)",
-    "noSessionsYet": "No study sessions recorded yet. Open a lesson to start tracking.",
-    "weeklyHours": "Weekly Study Hours",
-    "plannedHours": "Planned Study Hours",
+    "activity": "Learning Activity (Last 12 Months)",
+    "noSessionsYet": "No learning sessions recorded yet. Open a lesson to start tracking.",
+    "weeklyHours": "Weekly Learning Hours",
+    "plannedHours": "Planned Learning Hours",
     "weekTotal": "Total: {{value}}h this week",
     "plannedTotal": "Planned this week: {{value}}h (from your time blocks)",
     "insights": "Weekly Insights",
     "insight": {
-      "bestDay": "Your most productive day this week was <b>{{day}}</b> with {{hours}}h of study time.",
-      "noTime": "No study time tracked yet this week.",
-      "bestTime": "Your best study time is <b>{{time}}</b>.",
-      "sessions_one": "You've had <b>{{n}}</b> study session this week.",
-      "sessions_other": "You've had <b>{{n}}</b> study sessions this week.",
+      "bestDay": "Your most productive day this week was <b>{{day}}</b> with {{hours}}h of learning time.",
+      "noTime": "No learning time tracked yet this week.",
+      "bestTime": "Your best learning time is <b>{{time}}</b>.",
+      "sessions_one": "You've had <b>{{n}}</b> learning session this week.",
+      "sessions_other": "You've had <b>{{n}}</b> learning sessions this week.",
       "reviewed_one": "You've reviewed <b>{{n}}</b> flashcard in the last 7 days.",
       "reviewed_other": "You've reviewed <b>{{n}}</b> flashcards in the last 7 days."
     },
-    "dailyMinutes": "Daily Study Minutes (Last 2 Weeks)",
-    "noSessionsChart": "No study sessions yet. Your daily study time will appear here.",
+    "dailyMinutes": "Daily Learning Minutes (Last 2 Weeks)",
+    "noSessionsChart": "No learning sessions yet. Your daily learning time will appear here.",
     "avgFocus": "Average Focus",
     "longestSession": "Longest Session",
     "last12": "Last 12 months",
@@ -475,7 +641,7 @@
       "proficient": "Proficient",
       "mastered": "Mastered"
     },
-    "trainer": "Trainer",
+    "trainer": "Trainee",
     "overall": "Overall",
     "lastActive": "Last active: {{date}}",
     "score": "Score:",
@@ -487,15 +653,15 @@
       "declining": "declining"
     },
     "notStarted": "Not started",
-    "totalTrainers": "Total Trainers",
+    "totalTrainers": "Total Trainees",
     "avgMastery": "Avg. Mastery",
-    "struggling": "Trainers Struggling",
-    "mastered": "Trainers Mastered"
+    "struggling": "Trainees Struggling",
+    "mastered": "Trainees Mastered"
   },
   "heatmap": {
     "noActivity": "No activity",
-    "sessions_one": "{{count}} study session",
-    "sessions_other": "{{count}} study sessions",
+    "sessions_one": "{{count}} learning session",
+    "sessions_other": "{{count}} learning sessions",
     "less": "Less",
     "more": "More"
   }

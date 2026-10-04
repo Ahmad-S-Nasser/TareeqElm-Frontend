@@ -86,4 +86,11 @@ export const getApiError = (error: unknown, fallback?: string): string => {
   return fallbackText;
 };
 
+/** The stable business-rule `code` of a ProblemDetails response (e.g. `enrollment.prerequisites_not_met`), if any. */
+export const getApiErrorCode = (error: unknown): string | undefined => {
+  if (!axios.isAxiosError(error)) return undefined;
+  const data = error.response?.data as unknown;
+  return isRecord(data) && typeof data.code === 'string' ? data.code : undefined;
+};
+
 export default api;

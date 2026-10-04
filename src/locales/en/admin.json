@@ -26,7 +26,7 @@
         "sub": "Global average"
       },
       "atRisk": {
-        "title": "At-risk trainers",
+        "title": "At-risk trainees",
         "sub": "Below 50% progress"
       }
     },
@@ -65,9 +65,132 @@
       "course_delete": "deleted a course",
       "course_publish": "published a course",
       "course_archive": "archived a course",
+      "course_status_change": "changed a course status",
+      "course_pricing_update": "changed a course price",
+      "course_pricing_grandfather": "kept enrolled trainees' free access",
+      "chapter_pricing_update": "changed a chapter price",
+      "auth_login_success": "signed in",
+      "auth_login_failure": "failed to sign in",
+      "auth_register": "registered an account",
+      "auth_password_change": "changed a password",
+      "preferences_update": "updated preferences",
+      "role_create": "created a role",
+      "role_update": "updated a role",
+      "role_delete": "deleted a role",
+      "track_create": "created a track",
+      "track_update": "updated a track",
+      "track_delete": "deleted a track",
+      "track_courses_update": "changed a track's courses",
+      "track_pricing_update": "changed a track price",
+      "order_create": "placed an order",
+      "order_paid": "completed an order payment",
+      "order_mark_paid": "marked an order as paid",
+      "order_cancel": "cancelled an order",
+      "order_expired": "let an order expire",
+      "order_reapply": "re-applied what an order granted",
+      "order_reconciled": "reconciled an order",
+      "order_refund": "refunded an order",
+      "order_refund_access_kept": "refunded an order and kept the access",
+      "order_refund_failed": "failed to refund an order",
+      "payment_amount_mismatch": "received a payment for the wrong amount",
+      "payment_event_abandoned": "abandoned a payment event",
+      "coupon_create": "created a coupon",
+      "coupon_update": "updated a coupon",
+      "coupon_delete": "deleted a coupon",
+      "coupon_deactivate": "switched a coupon off",
+      "entitlement_grant": "granted access",
+      "entitlement_grant_enroll": "enrolled a trainee with granted access",
+      "entitlement_revoke": "revoked access",
+      "entitlement_revoke_unenroll": "unenrolled a trainee after revoking access",
+      "payout_create": "created a payout",
+      "payout_approve": "approved a payout",
+      "payout_mark_paid": "marked a payout as paid",
+      "payout_cancel": "cancelled a payout",
+      "payout_commission": "changed an instructor's commission",
+      "enrollment_bulk": "enrolled trainees in bulk",
+      "enrollment_unenroll": "unenrolled a trainee",
+      "announcement_create": "posted an announcement",
+      "announcement_update": "updated an announcement",
+      "announcement_delete": "deleted an announcement",
+      "assignment_create": "created an assignment",
+      "assignment_update": "updated an assignment",
+      "assignment_delete": "deleted an assignment",
+      "assignment_grade": "graded a submission",
+      "discussion_create": "started a discussion",
+      "discussion_update": "updated a discussion",
+      "discussion_delete": "deleted a discussion",
+      "discussion_reply": "replied in a discussion",
+      "discussion_reply_delete": "deleted a reply",
+      "discussion_state": "changed a discussion's state",
+      "deck_create": "created a flashcard deck",
+      "deck_update": "updated a flashcard deck",
+      "deck_delete": "deleted a flashcard deck",
+      "deck_card_create": "added a flashcard",
+      "deck_card_update": "updated a flashcard",
+      "deck_card_delete": "deleted a flashcard",
+      "deck_card_import": "imported flashcards",
+      "deck_add_to_my_cards": "copied a deck into their own cards",
+      "content_create": "added a content item",
+      "content_delete": "deleted a content item",
+      "quiz_delete": "deleted a quiz",
+      "section_create": "created a section",
+      "section_update": "updated a section",
+      "section_delete": "deleted a section",
+      "department_create": "created a department",
+      "department_update": "updated a department",
+      "department_delete": "deleted a department",
+      "term_create": "created an academic term",
+      "term_update": "updated an academic term",
+      "term_delete": "deleted an academic term",
+      "lead_status_update": "changed a lead's status",
+      "settings_update": "changed the platform settings",
       "unknown": "performed an action"
     },
-    "line": "{{actor}} {{action}} · {{target}}"
+    "line": "{{actor}} {{action}} · {{target}}",
+    "title": "Audit log",
+    "subtitle": "Who did what, and when.",
+    "filters": {
+      "actor": "Actor",
+      "action": "Action",
+      "targetType": "Target",
+      "anyAction": "Any action",
+      "anyTargetType": "Any target",
+      "from": "From",
+      "to": "To",
+      "clearActor": "Clear the actor filter",
+      "actorHint": "Click a name in the table to see only that person's actions.",
+      "reset": "Clear filters"
+    },
+    "table": {
+      "when": "When",
+      "actor": "Actor",
+      "action": "Action",
+      "target": "Target",
+      "detail": "Detail",
+      "ip": "IP"
+    },
+    "system": "System",
+    "noTarget": "—",
+    "noDetail": "—",
+    "empty": "No audit entries match these filters.",
+    "emptyHint": "Try a wider date range, or clear the filters.",
+    "loadFailed": "Could not load the audit log.",
+    "pageInfo": "Page {{page}} of {{pages}} · {{count}} entries",
+    "targets": {
+      "User": "User",
+      "Course": "Course",
+      "Chapter": "Chapter",
+      "Track": "Track",
+      "Order": "Order",
+      "Refund": "Refund",
+      "Coupon": "Coupon",
+      "Payout": "Payout",
+      "Entitlement": "Access grant",
+      "Enrollment": "Enrollment",
+      "Role": "Role",
+      "Lead": "Lead",
+      "PlatformSettings": "Platform settings"
+    }
   },
   "users": {
     "title": "User management",
@@ -82,6 +205,7 @@
     "allRoles": "All roles",
     "table": {
       "name": "Name",
+      "organization": "Organization",
       "department": "Department",
       "role": "Role",
       "status": "Status"
@@ -93,21 +217,25 @@
     "loadFailed": "Could not load users.",
     "empty": "No users match your search.",
     "noDepartment": "None",
+    "noOrganization": "Platform-wide (Admin)",
+    "selectOrganization": "Select an organization",
+    "organizationRequired": "Organization required",
+    "organizationRequiredDescription": "Choose an organization for this role — only Admin is platform-wide.",
     "editAria": "Edit {{name}}",
     "pageInfo_one": "Page {{page}} of {{pages}} · {{count}} user",
     "pageInfo_other": "Page {{page}} of {{pages}} · {{count}} users",
     "add_dialog": {
       "title": "Add a new user",
-      "description": "Create an account and set an initial password."
+      "description": "Create an account — a password is generated for it automatically."
     },
     "fields": {
       "fullName": "Full name",
       "fullNamePlaceholder": "Jane Smith",
       "email": "Email",
       "emailPlaceholder": "jane@example.com",
-      "initialPassword": "Initial password",
-      "passwordPlaceholder": "At least 8 characters",
+      "passwordGeneratedNote": "A password is generated automatically. You'll see it once after creating this account — the new user must change it on first login.",
       "role": "Role",
+      "organization": "Organization",
       "department": "Department",
       "status": "Status",
       "resetPassword": "Reset password (optional)",
@@ -118,9 +246,16 @@
       "selfNote": "You cannot change your own role or deactivate yourself.",
       "saveChanges": "Save changes"
     },
+    "passwordReveal": {
+      "title": "Account created",
+      "description": "Here's {{name}}'s initial password — it won't be shown again. Share it with them; they'll be asked to set their own on first login.",
+      "copy": "Copy password",
+      "warning": "Make sure to copy or share this now.",
+      "done": "Done"
+    },
     "toast": {
       "created": "User created",
-      "createdDescription": "{{name}} can now sign in with the password you set.",
+      "createdDescription": "{{name}}'s account was created.",
       "createFailed": "Could not create user",
       "updated": "{{name}} updated",
       "updateFailed": "Could not update user",
@@ -132,20 +267,18 @@
   },
   "enrollments": {
     "title": "Enrollment management",
-    "subtitle": "Enrollment counts per course. Trainers enroll themselves in published courses.",
-    "coursesCount": "Courses",
+    "subtitle": "Manage trainee enrollments, approvals and waitlists across every course.",
+    "coursesCount": "Published courses",
     "totalEnrollments": "Total enrollments",
-    "searchPlaceholder": "Search courses or instructors…",
-    "loadFailed": "Could not load courses.",
-    "empty": "No courses found.",
-    "enrolled_one": "{{count}} enrolled",
-    "enrolled_other": "{{count}} enrolled",
-    "note": "Direct assignment and open-enrollment controls are not available yet.",
-    "status": {
-      "Draft": "Draft",
-      "Published": "Published",
-      "Archived": "Archived",
-      "unknown": "Unknown"
+    "searchPlaceholder": "Search trainees…",
+    "allCourses": "All courses",
+    "allStatuses": "All statuses",
+    "loadFailed": "Could not load enrollments.",
+    "empty": "No enrollments match your filters.",
+    "pageInfo": "Page {{page}} of {{pages}} · {{count}} enrollments",
+    "tabs": {
+      "enrollments": "Enrollments",
+      "access": "Access"
     }
   },
   "courses": {
@@ -236,76 +369,35 @@
   },
   "analytics": {
     "title": "Analytics & insights",
-    "subtitle": "Performance trends, skill gaps and decision data",
-    "export": "Export report",
-    "vsLastMonth": "{{value}} vs last month",
+    "subtitle": "Organization-wide stats and the trainees who need attention.",
+    "export": "Export at-risk list",
+    "loadFailed": "Could not load analytics.",
     "kpi": {
+      "totalTrainers": "Total trainees",
+      "activeInstructors": "Active instructors",
       "completion": "Organization completion rate",
-      "score": "Avg. assessment score",
-      "improvement": "Pre to post improvement",
-      "atRisk": "At-risk employees"
-    },
-    "topics": {
-      "title": "Topic difficulty trends",
-      "avg": "{{value}} avg.",
-      "struggling": "{{value}} struggling"
-    },
-    "departments": {
-      "title": "Department comparison",
-      "atRisk": "{{count}} at risk",
-      "doneScore": "{{completion}} done · {{score}} score"
+      "atRisk": "At-risk trainees"
     },
     "flagged": {
-      "title": "Employees flagged for low performance",
-      "employee": "Employee",
+      "title": "Trainees flagged as at risk",
+      "subtitle": "Enrolled, not completed, and inactive for a while.",
+      "trainer": "Trainee",
       "course": "Course",
-      "score": "Score",
-      "completion": "Completion",
-      "action": "Action",
-      "followUp": "Follow up"
+      "department": "Department",
+      "daysInactive": "Days inactive",
+      "progress": "Progress",
+      "empty": "No trainees are currently at risk."
     },
     "toast": {
       "exported": "Report exported",
-      "exportedDescription": "{{file}} downloaded.",
-      "sessionPlanned": "Session planned",
-      "sessionPlannedDescription": "Follow-up session scheduled for {{name}}."
+      "exportedDescription": "{{file}} downloaded."
     },
     "csv": {
+      "trainer": "Trainee",
+      "course": "Course",
       "department": "Department",
-      "completion": "Completion %",
-      "avgScore": "Avg. score",
-      "employees": "Employees",
-      "atRisk": "At risk"
-    },
-    "seed": {
-      "topics": {
-        "1": "React Hooks",
-        "2": "Python Data Structures",
-        "3": "Conflict Resolution",
-        "4": "Excel Pivot Tables",
-        "5": "Security Protocols"
-      },
-      "departments": {
-        "Engineering": "Engineering",
-        "Finance": "Finance",
-        "Operations": "Operations",
-        "DesignAndProduct": "Design & Product",
-        "SalesAndMarketing": "Sales & Marketing",
-        "All": "All",
-        "Analytics": "Analytics",
-        "IT": "IT",
-        "Sales": "Sales"
-      },
-      "people": {
-        "1": "Tom Chen",
-        "2": "Carlos Rivera",
-        "3": "Alice Mercer"
-      },
-      "courses": {
-        "1": "React Fundamentals",
-        "2": "Leadership Essentials",
-        "3": "Excel & Data Analysis"
-      }
+      "daysInactive": "Days inactive",
+      "progress": "Progress %"
     }
   },
   "settings": {
@@ -326,10 +418,7 @@
     },
     "languages": {
       "en": "English",
-      "ar": "Arabic",
-      "fr": "French",
-      "de": "German",
-      "es": "Spanish"
+      "ar": "Arabic"
     },
     "branding": {
       "title": "Branding",
@@ -347,11 +436,125 @@
       "notifyAtRiskSub": "Flag employees scoring below 50% for review"
     },
     "save": "Save settings",
+    "loadFailed": "Could not load the platform settings.",
     "toast": {
       "saved": "Settings saved",
-      "savedDescription": "Your organization settings have been updated.",
-      "logo": "Logo upload",
-      "logoDescription": "Logo upload is coming soon."
+      "savedDescription": "The platform settings have been updated.",
+      "saveFailed": "Could not save the settings",
+      "logoUploadFailed": "Could not upload the logo"
+    }
+  },
+  "leads": {
+    "title": "Leads",
+    "subtitle": "Business enquiries from the website's \"Join us\" form.",
+    "searchPlaceholder": "Search by company, contact or email…",
+    "filters": {
+      "anyStatus": "All statuses",
+      "anyOrganizationType": "All organization types",
+      "from": "From",
+      "to": "To",
+      "reset": "Clear filters"
+    },
+    "table": {
+      "company": "Company",
+      "contact": "Contact",
+      "email": "Email",
+      "organizationType": "Organization type",
+      "status": "Status",
+      "source": "Source page",
+      "submitted": "Submitted"
+    },
+    "status": {
+      "New": "New",
+      "Contacted": "Contacted",
+      "Qualified": "Qualified",
+      "Closed": "Closed"
+    },
+    "organizationType": {
+      "Enterprise": "Enterprise",
+      "University": "University",
+      "School": "School",
+      "Sme": "Small or medium business",
+      "Other": "Other"
+    },
+    "fields": {
+      "phone": "Phone",
+      "estimatedLearners": "Estimated learners",
+      "message": "Message",
+      "status": "Status",
+      "statusNote": "Status note",
+      "statusNoteHint": "Kept with the lead as an internal note — the visitor never sees it.",
+      "updatedAt": "Last updated"
+    },
+    "detail": {
+      "description": "Everything the visitor sent, and where the conversation stands.",
+      "updateStatus": "Update status",
+      "saving": "Saving…",
+      "saved": "Lead status updated.",
+      "saveFailed": "Could not update the lead status.",
+      "loadFailed": "Could not load this lead."
+    },
+    "openDetails": "Open details for {{company}}",
+    "notProvided": "Not provided",
+    "noMessage": "The visitor did not leave a message.",
+    "loading": "Loading leads…",
+    "loadFailed": "Could not load leads.",
+    "empty": "No leads match these filters.",
+    "emptyHint": "Try a wider date range, or clear the filters.",
+    "forbidden": "You do not have permission to view leads.",
+    "pageInfo": "Page {{page}} of {{pages}} · {{count}} leads"
+  },
+  "organizations": {
+    "title": "Organizations",
+    "subtitle": "Provision, edit and suspend the organizations on the platform.",
+    "add": "New organization",
+    "search": "Search organizations",
+    "loadFailed": "Could not load organizations.",
+    "empty": "No organizations found.",
+    "legacy": "Legacy",
+    "activeToggle": "Active: {{name}}",
+    "editOrg": "Edit {{name}}",
+    "createTitle": "Create an organization",
+    "editTitle": "Edit organization",
+    "formDescription": "The organization type decides which features it gets: only a school can manage academic years and grades.",
+    "create": "Create organization",
+    "save": "Save changes",
+    "created": "Organization created",
+    "updated": "Organization updated",
+    "activated": "Organization reactivated",
+    "suspended": "Organization suspended",
+    "saveFailed": "Could not save the organization",
+    "activeFailed": "Could not change the organization status",
+    "nameRequired": "The name must have at least 2 characters.",
+    "traineeCapInvalid": "The trainee cap must be a whole number of 0 or more.",
+    "uncapped": "Uncapped",
+    "columns": {
+      "name": "Name",
+      "kind": "Type",
+      "seatCap": "Seat cap",
+      "contactEmail": "Contact email",
+      "created": "Created",
+      "active": "Active",
+      "actions": "Actions"
+    },
+    "form": {
+      "kind": "Organization type",
+      "kindHint": "School turns on academic years and grades.",
+      "name": "Name",
+      "slug": "Slug",
+      "logoUrl": "Logo URL",
+      "contactEmail": "Contact email",
+      "isActive": "Active",
+      "seatCapTitle": "Trainee seat cap override",
+      "seatCapHint": "Independent of any package this organization has purchased — set directly for a negotiated deal. Leave the cap blank to make no change (it cannot be cleared back to uncapped here).",
+      "traineeCap": "Trainee cap",
+      "traineeCapPlaceholder": "Uncapped",
+      "packageTier": "Package label"
+    },
+    "kinds": {
+      "Company": "Company",
+      "Organization": "Organization",
+      "School": "School"
     }
   },
   "statistics": {

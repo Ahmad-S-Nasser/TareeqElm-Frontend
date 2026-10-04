@@ -68,12 +68,100 @@
   "enrollment": {
     "title": "إدارة التسجيل",
     "subtitle": "اعتماد طلبات التسجيل في الدورات أو رفضها ومتابعتها",
-    "body": "يسجّل المتدرّبون حاليًا في الدورات المفتوحة مباشرةً، لذا لا توجد طلبات تسجيل لمراجعتها."
+    "filters": {
+      "search": "ابحث عن متدرّب…",
+      "allCourses": "جميع الدورات",
+      "allSections": "جميع الشُّعب",
+      "allDepartments": "جميع الأقسام",
+      "allStatuses": "جميع الحالات",
+      "departmentAria": "القسم"
+    },
+    "status": {
+      "Active": "نشط",
+      "Pending": "قيد الانتظار",
+      "Waitlisted": "في قائمة الانتظار",
+      "Dropped": "منسحب",
+      "Rejected": "مرفوض"
+    },
+    "table": {
+      "trainer": "المتدرّب",
+      "course": "الدورة",
+      "section": "الشعبة",
+      "status": "الحالة",
+      "progress": "التقدّم",
+      "enrolledAt": "تاريخ التسجيل"
+    },
+    "noSection": "—",
+    "loadFailed": "تعذّر تحميل التسجيلات.",
+    "empty": "لا توجد تسجيلات مطابقة لعوامل التصفية.",
+    "pageInfo": "الصفحة {{page}} من {{pages}} · {{count}} تسجيل",
+    "approve": "اعتماد",
+    "reject": "رفض",
+    "unenroll": "إلغاء التسجيل",
+    "approved": "تم اعتماد التسجيل",
+    "approveFailed": "تعذّر اعتماد التسجيل",
+    "rejected": "تم رفض التسجيل",
+    "rejectFailed": "تعذّر رفض التسجيل",
+    "unenrolled": "تم إلغاء تسجيل المتدرّب",
+    "unenrollFailed": "تعذّر إلغاء تسجيل المتدرّب",
+    "confirmUnenrollTitle": "إلغاء تسجيل {{name}}؟",
+    "confirmUnenrollDescription": "سيُزال {{name}} من \"{{course}}\". يمكنك تسجيله مجددًا لاحقًا.",
+    "bulk": {
+      "trigger": "تسجيل جماعي",
+      "title": "تسجيل جماعي للمتدرّبين",
+      "description": "سجّل قائمة من المتدرّبين، أو كل متدرّب نشط في قسم معيّن، في دورة واحدة.",
+      "course": "الدورة",
+      "coursePlaceholder": "اختر دورة",
+      "section": "الشعبة (اختياري)",
+      "noSectionOption": "بدون شعبة",
+      "modeTrainers": "متدرّبون محدَّدون",
+      "modeDepartment": "قسم كامل",
+      "trainersLabel": "المتدرّبون",
+      "trainersSelected": "{{count}} محدَّدون",
+      "trainersSearchPlaceholder": "ابحث عن متدرّب…",
+      "noTrainersFound": "لم يُعثر على متدرّبين.",
+      "departmentLabel": "القسم",
+      "departmentPlaceholder": "اختر قسمًا",
+      "submit": "تسجيل",
+      "courseRequired": "اختر دورة",
+      "targetsRequired": "اختر متدرّبًا واحدًا على الأقل، أو قسمًا",
+      "resultTitle": "نتائج التسجيل الجماعي",
+      "resultOk": "{{count}} تم تسجيلهم",
+      "resultWaitlisted": "{{count}} في قائمة الانتظار",
+      "resultConflict": "{{count}} مسجَّلون مسبقًا",
+      "resultFull": "{{count}} تعذّر تسجيلهم",
+      "rowStatus": {
+        "ok": "تم التسجيل",
+        "waitlisted": "في قائمة الانتظار",
+        "conflict": "مسجَّل مسبقًا",
+        "full": "تعذّر التسجيل"
+      },
+      "close": "إغلاق",
+      "submitFailed": "تعذّر تنفيذ التسجيل الجماعي للمتدرّبين المحدَّدين"
+    }
   },
   "exams": {
-    "title": "إدارة الامتحانات",
-    "subtitle": "جدولة الامتحانات ومتابعة الدرجات ونسب النجاح",
-    "body": "جدولة الامتحانات وتصحيحها ليستا من ميزات المنصة بعد. نتائج الاختبارات متاحة للمدرّسين في دوراتهم."
+    "title": "الامتحانات",
+    "subtitle": "محاولات الاختبارات والمتوسطات ونسب النجاح في جميع الدورات",
+    "filters": {
+      "allCourses": "جميع الدورات",
+      "allDepartments": "جميع الأقسام"
+    },
+    "table": {
+      "exam": "الاختبار",
+      "course": "الدورة",
+      "department": "القسم",
+      "attempts": "المحاولات",
+      "average": "المتوسط",
+      "passRate": "نسبة النجاح"
+    },
+    "questionCount": "{{count}} أسئلة",
+    "noAttempts": "لا توجد محاولات بعد",
+    "viewResults": "عرض النتائج",
+    "loadFailed": "تعذّر تحميل الاختبارات.",
+    "empty": "لا توجد اختبارات مطابقة لعوامل التصفية.",
+    "resultsTitle": "نتائج المتدرّبين",
+    "resultsLoadFailed": "تعذّر تحميل النتائج."
   },
   "roles": {
     "title": "الأدوار والصلاحيات",
@@ -125,6 +213,105 @@
       "archived": "المؤرشفة"
     }
   },
+  "organizationKinds": {
+    "Company": "شركة",
+    "Organization": "مؤسسة",
+    "School": "مدرسة"
+  },
+  "academicStructure": {
+    "notEnabled": "السنوات الدراسية والصفوف متاحة للمؤسسات من نوع مدرسة فقط. اطلب من مسؤول النظام تغيير نوع مؤسستك إلى مدرسة."
+  },
+  "academicYears": {
+    "title": "السنوات الدراسية",
+    "subtitle": "خطّط لسنواتك الدراسية؛ تنتمي الفصول الدراسية والصفوف إلى سنة.",
+    "newYear": "سنة دراسية جديدة",
+    "createTitle": "إنشاء سنة دراسية",
+    "editTitle": "تعديل السنة الدراسية",
+    "createDescription": "سنة دراسية، مثل 2026/2027.",
+    "name": "الاسم",
+    "namePlaceholder": "مثال: 2026/2027",
+    "startDate": "تاريخ البداية",
+    "endDate": "تاريخ النهاية",
+    "statusLabel": "الحالة",
+    "createYear": "إنشاء السنة",
+    "saveYear": "حفظ التغييرات",
+    "created": "تم إنشاء السنة الدراسية",
+    "updated": "تم تحديث السنة الدراسية",
+    "deleted": "تم حذف السنة الدراسية",
+    "saveFailed": "تعذّر حفظ السنة الدراسية",
+    "deleteFailed": "تعذّر حذف السنة الدراسية",
+    "missingFields": "يرجى تعبئة جميع الحقول المطلوبة",
+    "endBeforeStart": "يجب أن يكون تاريخ النهاية بعد تاريخ البداية.",
+    "loadFailed": "تعذّر تحميل السنوات الدراسية.",
+    "empty": "لا توجد سنوات دراسية بعد. أنشئ سنة للبدء.",
+    "confirmDelete": "هل تريد حذف السنة الدراسية \"{{name}}\"؟",
+    "dateRange": "{{start}} — {{end}}",
+    "archive": "أرشفة",
+    "activate": "تفعيل",
+    "termsCount_zero": "لا فصول دراسية",
+    "termsCount_one": "فصل دراسي واحد",
+    "termsCount_two": "فصلان دراسيان",
+    "termsCount_few": "{{count}} فصول دراسية",
+    "termsCount_many": "{{count}} فصلًا دراسيًا",
+    "termsCount_other": "{{count}} فصل دراسي",
+    "gradesCount_zero": "لا صفوف",
+    "gradesCount_one": "صف واحد",
+    "gradesCount_two": "صفّان",
+    "gradesCount_few": "{{count}} صفوف",
+    "gradesCount_many": "{{count}} صفًا",
+    "gradesCount_other": "{{count}} صف",
+    "status": {
+      "active": "نشطة",
+      "upcoming": "قادمة",
+      "archived": "مؤرشفة"
+    },
+    "stats": {
+      "active": "السنوات النشطة",
+      "upcoming": "القادمة",
+      "archived": "المؤرشفة"
+    }
+  },
+  "grades": {
+    "title": "الصفوف",
+    "subtitle": "صفوف المتدرّبين لكل سنة دراسية، مع مدرّس للصف ومنهج.",
+    "newGrade": "صف جديد",
+    "createTitle": "إنشاء صف",
+    "editTitle": "تعديل الصف",
+    "createDescription": "صف من المتدرّبين ضمن سنة دراسية.",
+    "name": "الاسم",
+    "namePlaceholder": "مثال: الصف الخامس - أ",
+    "academicYear": "السنة الدراسية",
+    "noYear": "بدون سنة دراسية",
+    "homeroomInstructor": "مدرّس الصف",
+    "noHomeroom": "بدون مدرّس للصف",
+    "homeroom": "مدرّس الصف: {{name}}",
+    "capacity": "السعة",
+    "members": "المتدرّبون",
+    "curriculum": "دورات المنهج",
+    "noOptions": "لا توجد خيارات بعد.",
+    "filterByYear": "التصفية حسب السنة الدراسية",
+    "allYears": "جميع السنوات الدراسية",
+    "occupancy": "{{members}} / {{capacity}}",
+    "coursesCount_zero": "لا دورات",
+    "coursesCount_one": "دورة واحدة",
+    "coursesCount_two": "دورتان",
+    "coursesCount_few": "{{count}} دورات",
+    "coursesCount_many": "{{count}} دورة",
+    "coursesCount_other": "{{count}} دورة",
+    "createGrade": "إنشاء الصف",
+    "saveGrade": "حفظ التغييرات",
+    "created": "تم إنشاء الصف",
+    "updated": "تم تحديث الصف",
+    "deleted": "تم حذف الصف",
+    "saveFailed": "تعذّر حفظ الصف",
+    "deleteFailed": "تعذّر حذف الصف",
+    "loadFailed": "تعذّر تحميل الصفوف.",
+    "empty": "لا توجد صفوف بعد. أنشئ صفًا للبدء.",
+    "confirmDelete": "هل تريد حذف الصف \"{{name}}\"؟",
+    "nameRequired": "يرجى إدخال اسم.",
+    "capacityInvalid": "يجب أن تكون السعة عددًا صحيحًا لا يقل عن 1.",
+    "overCapacity": "عدد المتدرّبين المختارين يتجاوز السعة."
+  },
   "analytics": {
     "title": "التحليلات والتقارير",
     "subtitle": "رؤى حول أداء المؤسسة وتسجيل المتدرّبين.",
@@ -147,7 +334,56 @@
     "performanceSeries": "الأداء %",
     "coursesByDept": "الدورات حسب القسم",
     "coursesByDeptDesc": "حصة كل قسم من الدورات.",
-    "financialNotAvailable": "لا تتتبّع المنصة البيانات المالية بعد."
+    "financialNotAvailable": "لا تتتبّع المنصة البيانات المالية بعد.",
+    "financialNoAccess": "لا تملك صلاحية الوصول إلى البيانات المالية.",
+    "filters": "عوامل تصفية التحليلات المالية",
+    "comparison": {
+      "title": "مقارنة بالفترة السابقة",
+      "description": "من {{from}} إلى {{to}} مقابل الـ {{days}} يومًا التي سبقتها (من {{prevFrom}} إلى {{prevTo}}).",
+      "vsPrevious": "{{value}} مقارنة بالفترة السابقة",
+      "noPrior": "لا توجد بيانات في الفترة السابقة للمقارنة",
+      "previousValue": "السابق: {{value}}",
+      "up": "ارتفاع",
+      "down": "انخفاض",
+      "flat": "دون تغيير",
+      "metrics": {
+        "NetRevenue": "صافي الإيرادات",
+        "GrossRevenue": "إجمالي الإيرادات",
+        "PaidOrderCount": "الطلبات المدفوعة",
+        "AverageOrderValue": "متوسط قيمة الطلب"
+      }
+    },
+    "byDepartment": {
+      "title": "الإيرادات حسب القسم",
+      "description": "ما دفعه المشترون، موزعًا حسب قسم الدورة أو المسار الذي اشتروه.",
+      "share": "حصة الإيرادات",
+      "shareDesc": "نصيب كل قسم من إجمالي المبالغ المدفوعة.",
+      "series": "المدفوع",
+      "unassigned": "غير مُسند",
+      "unknown": "قسم محذوف",
+      "units": "المبيعات: {{units}}",
+      "empty": "لا توجد مبيعات في هذه الفترة بعد."
+    },
+    "goal": {
+      "title": "هدف الإيرادات",
+      "description": "الهدف للفترة من {{from}} إلى {{to}}.",
+      "none": "لم يُحدَّد هدف لهذه الفترة بعد.",
+      "actual": "المُحقَّق حتى الآن",
+      "target": "الهدف",
+      "progress": "{{percent}} من الهدف",
+      "onPace": "بالوتيرة الحالية: {{amount}}",
+      "notStarted": "لم تبدأ هذه الفترة بعد.",
+      "days": "اليوم {{elapsed}} من {{total}}",
+      "linearNote": "تقدير خطي بسيط مبني على متوسط الإيراد اليومي حتى الآن، وليس توقعًا.",
+      "targetLabel": "مبلغ الهدف",
+      "set": "تحديد الهدف",
+      "update": "تحديث الهدف",
+      "saved": "تم حفظ هدف الإيرادات",
+      "saveFailed": "تعذّر حفظ هدف الإيرادات.",
+      "invalidAmount": "أدخل هدفًا أكبر من صفر.",
+      "needsRange": "اختر فترة أطول من يوم واحد لتحديد هدف.",
+      "loadFailed": "تعذّر تحميل هدف الإيرادات."
+    }
   },
   "announcements": {
     "title": "الإعلانات",
@@ -272,7 +508,9 @@
     "lessonsCount_two": "درسان",
     "lessonsCount_few": "{{count}} دروس",
     "lessonsCount_many": "{{count}} درسًا",
-    "lessonsCount_other": "{{count}} درس"
+    "lessonsCount_other": "{{count}} درس",
+    "filterDepartment": "التصفية حسب القسم",
+    "allDepartments": "جميع الأقسام"
   },
   "departments": {
     "title": "الأقسام",
@@ -294,7 +532,151 @@
     "performance": "نتيجة الأداء",
     "viewDetails": "عرض تفاصيل القسم",
     "noneFound": "لم يتم العثور على أقسام",
-    "noneHint": "جرّب تعديل البحث أو أضف قسمًا جديدًا."
+    "noneHint": "جرّب تعديل البحث أو أضف قسمًا جديدًا.",
+    "assign": {
+      "action": "تعيين الدورات والمتدربين",
+      "actionFor": "تعيين الدورات والمتدربين إلى {{name}}",
+      "title": "التعيين إلى {{name}}",
+      "description": "اختر الدورات والمتدربين لإدراجهم ضمن هذا القسم. أي عنصر موجود في قسم آخر سيُنقل إلى هنا.",
+      "courses": "الدورات",
+      "trainers": "المتدربون",
+      "searchCourses": "ابحث في الدورات...",
+      "searchTrainers": "ابحث في المتدربين...",
+      "noCourses": "لم يتم العثور على دورات.",
+      "noTrainers": "لم يتم العثور على متدربين.",
+      "alreadyIn": "موجود في هذا القسم بالفعل",
+      "currently": "حاليًا: {{name}}",
+      "submit_zero": "تعيين {{count}} عنصر",
+      "submit_one": "تعيين عنصر واحد",
+      "submit_two": "تعيين عنصرين",
+      "submit_few": "تعيين {{count}} عناصر",
+      "submit_many": "تعيين {{count}} عنصرًا",
+      "submit_other": "تعيين {{count}} عنصر",
+      "success": "تم التعيين إلى {{name}}",
+      "failed": "تعذّر التعيين إلى القسم"
+    }
+  },
+  "facilities": {
+    "title": "المرافق",
+    "subtitle": "أدِر المباني والقاعات المستخدمة للجلسات الحضورية.",
+    "addBuilding": "إضافة مبنى",
+    "search": "ابحث عن مبنى...",
+    "loadFailed": "تعذّر تحميل المرافق.",
+    "actionsMenu": "إجراءات المبنى",
+    "confirmDeleteBuilding": "هل تريد حذف {{name}}؟ سيتم حذف قاعاته أيضًا.",
+    "buildingCreated": "تم إنشاء المبنى",
+    "buildingCreateFailed": "تعذّر إنشاء المبنى",
+    "buildingDeleted": "تم حذف المبنى",
+    "buildingDeleteFailed": "تعذّر حذف المبنى",
+    "buildingNameRequired": "اسم المبنى مطلوب",
+    "code": "الرمز: {{code}}",
+    "rooms": "القاعات",
+    "manageRooms": "إدارة القاعات",
+    "noneFound": "لم يتم العثور على مبانٍ",
+    "noneHint": "جرّب تعديل البحث أو أضف مبنى جديدًا.",
+    "addBuildingTitle": "إضافة مبنى جديد",
+    "addBuildingDescription": "أنشئ مبنى تديره هذه المؤسسة.",
+    "buildingName": "اسم المبنى",
+    "buildingNamePlaceholder": "مثال: المبنى أ",
+    "buildingCode": "الرمز",
+    "buildingCodePlaceholder": "مثال: A",
+    "address": "العنوان",
+    "addressPlaceholder": "مثال: 12 شارع الجامعة",
+    "roomsOf": "قاعات {{name}}",
+    "addRoom": "إضافة قاعة",
+    "roomName": "اسم القاعة",
+    "roomNamePlaceholder": "مثال: 3/2",
+    "roomCode": "الرمز",
+    "capacity": "السعة",
+    "capacityPlaceholder": "مثال: 30",
+    "roomNameRequired": "اسم القاعة مطلوب",
+    "roomCreated": "تم إنشاء القاعة",
+    "roomCreateFailed": "تعذّر إنشاء القاعة",
+    "roomDeleted": "تم حذف القاعة",
+    "roomDeleteFailed": "تعذّر حذف القاعة",
+    "loadRoomsFailed": "تعذّر تحميل القاعات.",
+    "noRoomsFound": "لا توجد قاعات بعد",
+    "noRoomsHint": "أضف أول قاعة لهذا المبنى.",
+    "confirmDeleteRoom": "هل تريد حذف القاعة {{name}}؟",
+    "close": "إغلاق"
+  },
+  "sessions": {
+    "title": "التقويم",
+    "subtitle": "جدولة وإدارة الجلسات المباشرة عبر الإنترنت والجلسات الحضورية.",
+    "newSession": "جلسة جديدة",
+    "editSession": "تعديل الجلسة",
+    "cancelSession": "إلغاء الجلسة",
+    "confirmCancelSession": "هل تريد إلغاء هذه الجلسة؟ لن يراها المتدرّبون بعد الآن كجلسة مجدولة.",
+    "created": "تمت جدولة الجلسة",
+    "createFailed": "تعذّرت جدولة الجلسة",
+    "updated": "تم تحديث الجلسة",
+    "updateFailed": "تعذّر تحديث الجلسة",
+    "cancelled": "تم إلغاء الجلسة",
+    "cancelFailed": "تعذّر إلغاء الجلسة",
+    "loadFailed": "تعذّر تحميل التقويم.",
+    "noneFound": "لا توجد جلسات",
+    "course": "الدورة",
+    "selectCourse": "اختر دورة",
+    "lesson": "الدرس",
+    "selectLesson": "اختر درسًا",
+    "noSchedulableLessons": "لا تحتوي هذه الدورة على درس مباشر عبر الإنترنت أو حضوري بعد. حدّد نمط تقديم الدرس في محرر المنهج أولًا.",
+    "startsAt": "يبدأ في",
+    "duration": "المدة",
+    "durationMinutes": "المدة (بالدقائق)",
+    "timeZone": "المنطقة الزمنية",
+    "room": "القاعة",
+    "selectRoom": "اختر قاعة",
+    "locationNotePlaceholder": "ملاحظة عن الموقع (اختياري)",
+    "meetingProvider": "مزوّد الاجتماع",
+    "manualLink": "رابط الاجتماع",
+    "manualLinkPlaceholder": "https://...",
+    "providerOptions": {
+      "manualLink": "رابط يدوي",
+      "coonMeeting": "Coon Meeting"
+    },
+    "status": {
+      "scheduled": "مجدولة",
+      "cancelled": "ملغاة",
+      "completed": "منتهية"
+    },
+    "createSession": "جدولة الجلسة",
+    "updateSession": "حفظ التغييرات",
+    "viewAttendance": "الحضور",
+    "calendar": {
+      "today": "اليوم",
+      "previous": "السابق",
+      "next": "التالي",
+      "month": "شهر",
+      "week": "أسبوع",
+      "day": "يوم",
+      "agenda": "جدول الأعمال",
+      "date": "التاريخ",
+      "time": "الوقت",
+      "event": "جلسة",
+      "noEventsInRange": "لا توجد جلسات في هذه الفترة.",
+      "showMore": "+{{count}} أخرى"
+    },
+    "attendance": {
+      "title": "الحضور",
+      "subtitle": "سجّل واستعرض من حضر هذه الجلسة.",
+      "loadFailed": "تعذّر تحميل قائمة الحضور.",
+      "markFailed": "تعذّر تحديث حضور هذا المتدرّب.",
+      "empty": "لا يوجد متدرّبون مسجَّلون في هذه الدورة بعد.",
+      "unmarked": "غير محدد",
+      "sourceManual": "يدوي",
+      "sourceAuto": "تلقائي",
+      "status": {
+        "present": "حاضر",
+        "absent": "غائب",
+        "late": "متأخر",
+        "excused": "معتذر"
+      }
+    },
+    "meeting": {
+      "join": "انضمام",
+      "joinFailed": "تعذّر الانضمام إلى هذه الجلسة الآن.",
+      "participant": "مشارك"
+    }
   },
   "instructors": {
     "title": "مدرّسو المؤسسة",
@@ -309,7 +691,46 @@
     "profile": "الملف الشخصي",
     "assigned": "المكلّف بها",
     "noneFound": "لم يتم العثور على مدرّسين",
-    "noneHint": "لم نجد مدرّسين يطابقون معاييرك. جرّب تعديل كلمة البحث."
+    "noneHint": "لم نجد مدرّسين يطابقون معاييرك. جرّب تعديل كلمة البحث.",
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "menu": {
+      "activate": "تفعيل",
+      "deactivate": "تعطيل",
+      "statusUpdated": "تم تحديث الحالة",
+      "statusUpdateFailed": "تعذّر تحديث الحالة"
+    },
+    "addDialog": {
+      "title": "إضافة مدرّس جديد",
+      "description": "أنشئ حساب مدرّس للمؤسسة.",
+      "fullName": "الاسم الكامل",
+      "fullNamePlaceholder": "مثال: د. سارة أحمد",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "instructor@example.com",
+      "password": "كلمة المرور الأولية",
+      "passwordPlaceholder": "8 أحرف على الأقل",
+      "department": "القسم",
+      "noDepartment": "بلا قسم",
+      "submit": "إضافة المدرّس",
+      "missingFields": "يرجى تعبئة الحقول المطلوبة",
+      "passwordShort": "يجب ألا تقل كلمة المرور عن 8 أحرف",
+      "created": "تمت إضافة المدرّس",
+      "createFailed": "تعذّر إضافة المدرّس"
+    },
+    "profileDialog": {
+      "title": "الملف الشخصي للمدرّس",
+      "email": "البريد الإلكتروني",
+      "department": "القسم",
+      "status": "الحالة",
+      "activeCourses": "الدورات النشطة"
+    },
+    "assignedDialog": {
+      "title": "الدورات التي يدرّسها {{name}}",
+      "loadFailed": "تعذّر تحميل الدورات المكلّف بها.",
+      "empty": "لا توجد دورات مكلّف بها بعد."
+    }
   },
   "trainers": {
     "title": "متدرّبو المؤسسة",
@@ -322,7 +743,36 @@
     "progress": "التقدّم الأكاديمي",
     "viewProfile": "عرض الملف الأكاديمي",
     "noneFound": "لم يتم العثور على متدرّبين",
-    "noneHint": "لم نجد متدرّبين يطابقون معاييرك. جرّب تعديل كلمة البحث."
+    "noneHint": "لم نجد متدرّبين يطابقون معاييرك. جرّب تعديل كلمة البحث.",
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "addDialog": {
+      "title": "تسجيل متدرّب جديد",
+      "description": "أنشئ حساب متدرّب للمؤسسة.",
+      "fullName": "الاسم الكامل",
+      "fullNamePlaceholder": "مثال: عمر خالد",
+      "email": "البريد الإلكتروني",
+      "emailPlaceholder": "trainer@example.com",
+      "password": "كلمة المرور الأولية",
+      "passwordPlaceholder": "8 أحرف على الأقل",
+      "department": "القسم",
+      "noDepartment": "بلا قسم",
+      "submit": "تسجيل المتدرّب",
+      "missingFields": "يرجى تعبئة الحقول المطلوبة",
+      "passwordShort": "يجب ألا تقل كلمة المرور عن 8 أحرف",
+      "created": "تم تسجيل المتدرّب",
+      "createFailed": "تعذّر تسجيل المتدرّب"
+    },
+    "profileDialog": {
+      "title": "الملف الأكاديمي لـ {{name}}",
+      "loadFailed": "تعذّر تحميل الملف الأكاديمي.",
+      "empty": "لم يسجَّل في أي دورة بعد.",
+      "course": "الدورة",
+      "progress": "التقدّم",
+      "issueCertificate": "إصدار شهادة أكاديمية"
+    }
   },
   "reports": {
     "title": "التقارير",
@@ -356,7 +806,176 @@
       },
       "instructorActivity": {
         "title": "تقرير نشاط المدرّسين",
-        "description": "ساعات التدريس ودرجات تفاعل المتدرّبين وتقييمات الدورات والمحتوى المرفوع"
+        "description": "الجلسات المُقدَّمة ونسب الحضور والمحتوى المرفوع والدورات والتسجيلات النشطة لكل مدرّس"
+      }
+    },
+    "financial": {
+      "noAccess": "لا تملك صلاحية الوصول إلى التقارير المالية.",
+      "title": "التقرير المالي والطلبات",
+      "subtitle": "الفواتير الصادرة للطلبات المدفوعة، مع إجماليات لكل ما يطابق عوامل التصفية.",
+      "status": "الحالة",
+      "allStatuses": "كل الحالات",
+      "statuses": {
+        "Issued": "صادرة",
+        "Voided": "ملغاة"
+      },
+      "provider": "مزوّد الدفع",
+      "allProviders": "كل المزوّدين",
+      "course": "الدورة",
+      "allCourses": "كل الدورات",
+      "search": "بحث",
+      "searchPlaceholder": "رقم الفاتورة أو المشتري أو رقم الطلب…",
+      "summary": {
+        "count": "الفواتير",
+        "totalAmount": "إجمالي الفواتير",
+        "totalTax": "إجمالي الضريبة",
+        "totalRefunded": "إجمالي المسترد",
+        "mixedCurrencies": "عملات مختلفة — جُمعت المبالغ كأرقام مجرّدة"
+      },
+      "table": {
+        "number": "الفاتورة",
+        "buyer": "المشتري",
+        "issuedAt": "تاريخ الإصدار",
+        "tax": "الضريبة",
+        "total": "الإجمالي",
+        "refunded": "-{{amount}} مسترد",
+        "status": "الحالة",
+        "currency": "العملة",
+        "orderId": "رقم الطلب"
+      },
+      "empty": "لا توجد فواتير تطابق عوامل التصفية هذه.",
+      "loadFailed": "تعذّر تحميل التقرير المالي.",
+      "export": "تصدير CSV",
+      "exporting": "جارٍ التصدير…",
+      "exported": "تم تصدير التقرير",
+      "exportFailed": "تعذّر التصدير",
+      "pageInfo": "الصفحة {{page}} من {{pages}} · {{total}} فاتورة"
+    },
+    "builder": {
+      "back": "العودة إلى التقارير",
+      "filters": "عوامل التصفية",
+      "generate": "إنشاء التقرير",
+      "regenerate": "إنشاء التقرير مجددًا",
+      "results": "نتائج التقرير",
+      "promptTitle": "شغّل هذا التقرير لعرض النتائج",
+      "promptDescription": "اختر عوامل التصفية، ثم انقر «إنشاء التقرير». لا يُحمَّل شيء قبل ذلك.",
+      "loading": "جارٍ إنشاء التقرير…",
+      "loadFailed": "تعذّر إنشاء هذا التقرير.",
+      "empty": "لا توجد بيانات تطابق عوامل التصفية هذه.",
+      "from": "من",
+      "to": "إلى",
+      "invalidRange": "يجب أن يكون تاريخ البداية في تاريخ النهاية أو قبله.",
+      "noAccess": "لا تملك صلاحية الوصول إلى هذا التقرير."
+    },
+    "launcher": {
+      "heading": "التقارير المتاحة",
+      "open": "فتح التقرير",
+      "financialOrders": {
+        "title": "التقرير المالي والطلبات",
+        "description": "فواتير الطلبات المدفوعة حسب الحالة والتاريخ ومزوّد الدفع والدورة، مع ملخّص الإجمالي والضريبة وتصدير CSV"
+      }
+    },
+    "departmentAnalytics": {
+      "title": "تحليلات الأقسام",
+      "subtitle": "قارن أداء الأقسام ودوراتها ومتدرّبيها خلال فترة زمنية.",
+      "description": "مقارنة الأداء بين الأقسام وتوزيع المتدرّبين وعدد الدورات خلال أي فترة زمنية",
+      "windowNote": "يحتسب الأداء التسجيلات التي تمّت في التواريخ المحددة فقط؛ أما أعداد الدورات والمتدرّبين فهي الإجماليات الحالية.",
+      "empty": "لا توجد بيانات أقسام بعد.",
+      "loadFailed": "تعذّر تحميل بيانات الأقسام."
+    },
+    "performanceFilters": {
+      "from": "من",
+      "to": "إلى",
+      "course": "الدورة",
+      "allCourses": "كل الدورات",
+      "department": "القسم",
+      "allDepartments": "كل الأقسام",
+      "invalidRange": "يجب أن يكون تاريخ البداية في تاريخ النهاية أو قبله."
+    },
+    "traineePerformance": {
+      "title": "أداء المتدرّبين",
+      "subtitle": "توزيع الدرجات ونسب النجاح والرسوب من محاولات الاختبارات خلال فترة زمنية.",
+      "noAccess": "لا تملك صلاحية الوصول إلى هذا التقرير.",
+      "loadFailed": "تعذّر إنشاء هذا التقرير.",
+      "empty": "لا توجد محاولات اختبار تطابق عوامل التصفية هذه.",
+      "passed": "ناجح",
+      "failed": "راسب",
+      "kpis": {
+        "attempts": "المحاولات",
+        "passRate": "نسبة النجاح",
+        "averageScore": "متوسط الدرجة"
+      },
+      "distribution": {
+        "title": "توزيع الدرجات",
+        "attempts": "محاولات"
+      },
+      "buckets": {
+        "0-59": "0-59%",
+        "60-69": "60-69%",
+        "70-79": "70-79%",
+        "80-89": "80-89%",
+        "90-100": "90-100%"
+      },
+      "byCourse": {
+        "title": "حسب الدورة"
+      },
+      "attempts": {
+        "title": "المحاولات"
+      },
+      "table": {
+        "trainee": "المتدرّب",
+        "course": "الدورة",
+        "quiz": "الاختبار",
+        "score": "الدرجة",
+        "result": "النتيجة",
+        "takenAt": "تاريخ المحاولة"
+      },
+      "pagination": {
+        "pageOf": "الصفحة {{page}} من {{pages}} · {{total}} محاولة",
+        "previous": "السابق",
+        "next": "التالي"
+      }
+    },
+    "courseCompletion": {
+      "title": "إكمال الدورات",
+      "subtitle": "معدلات الإكمال والانقطاع ومتوسط الوقت اللازم للإكمال حسب الدورة خلال فترة زمنية.",
+      "noAccess": "لا تملك صلاحية الوصول إلى هذا التقرير.",
+      "loadFailed": "تعذّر إنشاء هذا التقرير.",
+      "empty": "لا توجد تسجيلات تطابق عوامل التصفية هذه.",
+      "kpis": {
+        "enrollments": "التسجيلات",
+        "completionRate": "نسبة الإكمال",
+        "averageDays": "متوسط أيام الإكمال",
+        "dropoutRate": "نسبة الانقطاع"
+      },
+      "table": {
+        "course": "الدورة",
+        "enrollments": "التسجيلات",
+        "completed": "المكتملة",
+        "dropped": "المنقطعة",
+        "completionRate": "نسبة الإكمال",
+        "averageDays": "متوسط الأيام",
+        "dropoutRate": "نسبة الانقطاع"
+      },
+      "noCompletions": "لا توجد إكمالات بعد"
+    },
+    "instructorActivity": {
+      "title": "نشاط المدرّسين",
+      "subtitle": "الجلسات المُقدَّمة ونسبة الحضور والمحتوى المرفوع والعبء الحالي من الدورات لكل مدرّس.",
+      "noAccess": "لا تملك صلاحية الوصول إلى هذا التقرير.",
+      "loadFailed": "تعذّر إنشاء هذا التقرير.",
+      "empty": "لا يوجد مدرّسون يطابقون عوامل التصفية هذه.",
+      "instructor": "المدرّس",
+      "allInstructors": "كل المدرّسين",
+      "windowNote": "تُحتسب الجلسات والحضور والمحتوى المرفوع ضمن التواريخ المحددة فقط؛ أما الدورات والتسجيلات النشطة فهي الإجماليات الحالية.",
+      "noAttendance": "لا يوجد حضور مسجَّل في هذه التواريخ",
+      "table": {
+        "instructor": "المدرّس",
+        "sessionsTaught": "الجلسات المُقدَّمة",
+        "attendanceRate": "نسبة الحضور",
+        "contentUploads": "المحتوى المرفوع",
+        "activeCourses": "الدورات النشطة",
+        "activeEnrollments": "التسجيلات النشطة"
       }
     }
   },
@@ -375,42 +994,82 @@
   },
   "settings": {
     "title": "الإعدادات",
-    "subtitle": "أدِر ملف المؤسسة والفوترة وتفضيلات النظام.",
-    "saved": "تم حفظ الإعدادات",
-    "savedDescription": "تم تحديث تفضيلات مؤسستك.",
-    "saveChanges": "حفظ التغييرات",
-    "savePreferences": "حفظ التفضيلات",
+    "subtitle": "أدِر ملف المنصة وتفضيلات إشعاراتك.",
     "tabs": {
       "general": "عام",
-      "billing": "الفوترة",
       "notifications": "الإشعارات"
     },
-    "profile": {
-      "title": "ملف المؤسسة",
-      "description": "حدّث المعلومات العامة لمؤسستك.",
+    "org": {
+      "title": "المؤسسة",
       "name": "اسم المؤسسة",
-      "domain": "النطاق المخصّص",
-      "address": "العنوان"
+      "namePlaceholder": "شركة أكمي",
+      "logo": "الشعار",
+      "uploadLogo": "رفع الشعار",
+      "logoHint": "PNG أو JPG · يُوصى بحجم 512×512 بكسل"
     },
-    "billing": {
-      "title": "الاشتراك والفوترة",
-      "description": "أدِر خطة اشتراكك وطرق الدفع.",
-      "plan": "خطة المؤسسات",
-      "renews": "نشط • يتجدّد في {{date}}",
-      "manage": "إدارة",
-      "paymentMethod": "طريقة الدفع",
-      "card": "بطاقة Visa تنتهي بـ {{last4}}",
-      "update": "تحديث"
+    "joinCode": {
+      "title": "رمز الانضمام",
+      "description": "شارك هذا الرمز مع المتدرّبين لينضموا إلى مؤسستك فورًا عند التسجيل، دون الحاجة إلى موافقة.",
+      "copy": "نسخ رمز الانضمام",
+      "regenerate": "توليد رمز جديد",
+      "regenerated": "تم توليد رمز انضمام جديد",
+      "regenerateFailed": "تعذّر توليد رمز انضمام جديد",
+      "confirmTitle": "توليد رمز انضمام جديد؟",
+      "confirmDescription": "سيتوقف الرمز الحالي عن العمل فورًا. سيحتاج كل من شاركته معهم إلى الرمز الجديد.",
+      "confirmCancel": "إلغاء",
+      "confirmAction": "توليد رمز جديد"
     },
-    "notifications": {
-      "title": "تفضيلات الإشعارات",
-      "description": "اضبط كيف ومتى تصلك التنبيهات.",
-      "systemAlerts": "تنبيهات النظام",
-      "systemAlertsHint": "استلم رسائل بريدية عن تحديثات النظام المهمة.",
-      "applications": "طلبات انضمام المدرّسين الجديدة",
-      "applicationsHint": "أرسل إشعارًا عند تقديم مدرّس جديد طلب انضمام.",
-      "approvals": "اعتماد الدورات",
-      "approvalsHint": "أرسل إشعارًا عند تقديم دورات للاعتماد."
+    "locale": {
+      "title": "اللغة والمنطقة",
+      "timezone": "المنطقة الزمنية",
+      "language": "اللغة"
+    },
+    "languages": {
+      "en": "الإنجليزية",
+      "ar": "العربية"
+    },
+    "branding": {
+      "title": "الهوية البصرية",
+      "accent": "اللون الرئيسي",
+      "customColor": "لون مخصص",
+      "pickColor": "اختيار اللون {{color}}"
+    },
+    "ai": {
+      "title": "الذكاء الاصطناعي والإشعارات",
+      "enable": "تفعيل المساعد الذكي",
+      "enableSub": "السماح للمتدرّبين باستخدام محادثة الأسئلة والأجوبة الذكية في جميع الدورات",
+      "notifyCompletion": "الإشعار عند إكمال الدورة",
+      "notifyCompletionSub": "إرسال تنبيهات عند إكمال المتدرّبين لدورة",
+      "notifyAtRisk": "التنبيه عند وجود متدرّبين معرّضين للتعثر",
+      "notifyAtRiskSub": "رصد المتدرّبين غير النشطين للمراجعة"
+    },
+    "save": "حفظ الإعدادات",
+    "loadFailed": "تعذّر تحميل إعدادات المنصة.",
+    "toast": {
+      "saved": "تم حفظ الإعدادات",
+      "savedDescription": "تم تحديث إعدادات المنصة.",
+      "saveFailed": "تعذّر حفظ الإعدادات",
+      "logoUploadFailed": "تعذّر رفع الشعار"
     }
+  },
+  "pendingMembers": {
+    "title": "الأعضاء المعلّقون",
+    "subtitle": "متدرّبون طلبوا الانضمام إلى مؤسستك دون رمز انضمام. وافِق لتسمح لهم بتسجيل الدخول، أو ارفض ليتمكّنوا من المحاولة مرة أخرى.",
+    "noAccess": "لا تملك صلاحية الوصول إلى طلبات الانضمام المعلّقة.",
+    "columns": {
+      "name": "الاسم",
+      "requestedAt": "تاريخ الطلب",
+      "actions": "الإجراءات"
+    },
+    "approve": "موافقة",
+    "reject": "رفض",
+    "approved": "تمت الموافقة على {{name}}",
+    "approveFailed": "تعذّرت الموافقة على هذا الطلب",
+    "rejected": "تم رفض طلب {{name}}",
+    "rejectFailed": "تعذّر رفض هذا الطلب",
+    "loadFailed": "تعذّر تحميل الأعضاء المعلّقين.",
+    "empty": "لا توجد طلبات معلّقة.",
+    "confirmRejectTitle": "رفض هذا الطلب؟",
+    "confirmRejectDescription": "سيتم حذف حساب {{name}} المعلّق. يمكنه التسجيل مرة أخرى، مثلًا برمز انضمام أو مؤسسة مختلفة."
   }
 }

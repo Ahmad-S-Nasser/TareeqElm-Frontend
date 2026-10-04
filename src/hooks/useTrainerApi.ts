@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { useAuth } from './useAuth';
+import type { PricingDto } from './useBilling';
 
 // Shared, typed react-query hooks for the trainer statistics endpoints.
 
@@ -40,6 +41,7 @@ export interface ActivitySummary {
   Streak: number;
 }
 
+/** `CourseSummaryDto` — one row of `GET /api/Courses`. */
 export interface CourseSummary {
   Id: string;
   Title: string;
@@ -54,6 +56,26 @@ export interface CourseSummary {
   EnrolledCount: number;
   IsFeatured: boolean;
   DurationHours: number | null;
+  /**
+   * `Free | Subscription | AlaCarte`. Only `AlaCarte` *plus* a non-free `Pricing` gates anything; everything else is
+   * the pre-monetization free course. Optional here because plenty of older fixtures and pickers build this shape
+   * by hand.
+   */
+  AccessModel?: string | null;
+  /** A trainer's self-enroll lands Pending until an organization/instructor approves it. */
+  RequiresApproval?: boolean;
+  /** The course price; null for every free course. */
+  Pricing?: PricingDto | null;
+  /** The caller holds an active entitlement covering this course (bought it, or bought a track that contains it). */
+  Owned?: boolean;
+  /** At least one chapter of this course is sold separately. */
+  HasChapterPricing?: boolean;
+  /** Free-text catalog tags. Optional: older fixtures build this shape by hand. */
+  Tags?: string[];
+  /** The department the course is filed under; null when unassigned. Optional: older fixtures build this shape by hand. */
+  DepartmentId?: string | null;
+  /** Ordered "what you'll learn" bullets. */
+  Outcomes?: string[];
 }
 
 export interface EnrollmentDto {

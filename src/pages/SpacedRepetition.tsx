@@ -1,5 +1,4 @@
 import { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApplicantSidebar, ApplicantSidebarContent } from "@/components/layout/ApplicantSidebar";
 import { Header } from "@/components/layout/Header";
 import { cn } from "@/lib/utils";
@@ -12,52 +11,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertCircle, Brain, RotateCcw, CheckCircle2, XCircle, Clock, Layers, TrendingUp, Zap, Plus, Loader2, Sparkles, BookOpen, Target, Lightbulb, Wand2 } from "lucide-react";
 import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import i18n from "@/i18n";
 import { useFormatters } from "@/lib/format";
-import api, { getApiError } from "@/lib/api";
+import { getApiError } from "@/lib/api";
 import { ReviewModeSelector, type ReviewMode } from "@/components/spaced-repetition/ReviewModeSelector";
 import { MemoryStrengthBadge } from "@/components/spaced-repetition/MemoryStrengthBadge";
 import { ForgettingCurveChart } from "@/components/spaced-repetition/ForgettingCurveChart";
+import {
+  useFlashcardsQuery, useCreateFlashcard, useReviewFlashcard, useGenerateFlashcards, useExplainFlashcard,
+  type FlashcardCard, type FlashcardRating,
+} from "@/hooks/useFlashcards";
 
-interface ReviewCard {
-  id: string;
-  question: string;
-  answer: string;
-  /** Null when the card has no topic; shown as the localized "General". */
-  topic: string | null;
-  interval: number;
-  easeFactor: number;
-  repetitions: number;
-  nextReview: Date;
-  lastReviewed: Date | null;
-}
-
-type Difficulty = "again" | "hard" | "good" | "easy";
-
-interface FlashcardDto {
-  Id: string;
-  Topic: string | null;
-  Question: string;
-  Answer: string;
-  EaseFactor: number;
-  IntervalDays: number;
-  Repetitions: number;
-  NextReview: string;
-  LastReviewed: string | null;
-}
-
-const toCard = (d: FlashcardDto): ReviewCard => ({
-  id: d.Id,
-  question: d.Question,
-  answer: d.Answer,
-  topic: d.Topic || null,
-  interval: d.IntervalDays,
-  easeFactor: Number(d.EaseFactor),
-  repetitions: d.Repetitions,
-  nextReview: new Date(d.NextReview),
-  lastReviewed: d.LastReviewed ? new Date(d.LastReviewed) : null,
-});
+type Difficulty = FlashcardRating;
 
 const difficultyConfig = {
   again: { icon: XCircle, color: "border-destructive/30 text-destructive hover:bg-destructive/10" },
@@ -81,12 +47,9 @@ const SpacedRepetition = () => {
   const [explanation, setExplanation] = useState<string | null>(null);
   const [generateTopic, setGenerateTopic] = useState("");
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
-  const queryClient = useQueryClient();
 
-  const cardsQuery = useQuery({
-    queryKey: ["flashcards", "review"],
-    queryFn: async () => (await api.get<FlashcardDto[]>("/Flashcards")).data.map(toCard),
-  });
+  // Same query key as Flashcards.tsx: an edit, import or add-to-my-cards made there is reflected here immediately.
+  const cardsQuery = useFlashcardsQuery();
   const cards = useMemo(() => cardsQuery.data ?? [], [cardsQuery.data]);
   const loading = cardsQuery.isLoading;
 
@@ -105,7 +68,7 @@ const SpacedRepetition = () => {
   const reviewDeckSize = sessionIds.length;
   const currentCard = isReviewing ? cards.find((c) => c.id === sessionIds[currentIndex]) ?? null : null;
 
-  const calculateNextInterval = (card: ReviewCard, difficulty: Difficulty) => {
+  const calculateNextInterval = (card: FlashcardCard, difficulty: Difficulty) => {
     let { interval, easeFactor, repetitions } = card;
     switch (difficulty) {
       case "again": interval = 1; easeFactor = Math.max(1.3, easeFactor - 0.2); repetitions = 0; break;
@@ -116,26 +79,20 @@ const SpacedRepetition = () => {
     return { interval, easeFactor, repetitions, nextReview: new Date(Date.now() + interval * 86400000), lastReviewed: new Date() };
   };
 
-  const getIntervalLabel = (card: ReviewCard, difficulty: Difficulty) => {
+  const getIntervalLabel = (card: FlashcardCard, difficulty: Difficulty) => {
     const result = calculateNextInterval({ ...card }, difficulty);
     return t("spaced.daysShort", { count: result.interval });
   };
 
-  const reviewMutation = useMutation({
-    mutationFn: async ({ id, rating }: { id: string; rating: Difficulty }) =>
-      toCard((await api.post<FlashcardDto>(`/Flashcards/${id}/review`, { Rating: rating })).data),
-    onSuccess: (updated) => {
-      // The server owns the scheduling; store its result without refetching the deck mid-session
-      queryClient.setQueryData<ReviewCard[]>(["flashcards", "review"], (prev) => (prev ?? []).map((c) => (c.id === updated.id ? updated : c)));
-    },
-    onError: (err) => toast.error(getApiError(err, i18n.t("learning:spaced.toast.saveReviewFailed"))),
-  });
+  // The server owns the SM-2 schedule; the shared hook stores its response in the query cache both pages read.
+  const reviewMutation = useReviewFlashcard();
 
   const handleRate = async (difficulty: Difficulty) => {
     if (!currentCard || reviewMutation.isPending) return;
     try {
       await reviewMutation.mutateAsync({ id: currentCard.id, rating: difficulty });
-    } catch {
+    } catch (err) {
+      toast.error(getApiError(err, i18n.t("learning:spaced.toast.saveReviewFailed")));
       return;
     }
     setSessionStats((prev) => ({ ...prev, reviewed: prev.reviewed + 1, [difficulty]: prev[difficulty] + 1 }));
@@ -158,53 +115,56 @@ const SpacedRepetition = () => {
     setIsReviewing(true);
   };
 
-  const addMutation = useMutation({
-    mutationFn: async () => (await api.post<FlashcardDto>("/Flashcards", {
-      Question: newCard.question, Answer: newCard.answer, Topic: newCard.topic.trim() || null,
-    })).data,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
-      setNewCard({ question: "", answer: "", topic: "" });
-      setAddDialogOpen(false);
-      toast.success(t("spaced.toast.cardAdded"));
-    },
-    onError: (err) => toast.error(getApiError(err, i18n.t("learning:spaced.toast.saveCardFailed"))),
-  });
+  const addMutation = useCreateFlashcard();
 
   const addCard = () => {
     if (!newCard.question || !newCard.answer) { toast.error(t("spaced.toast.fillBoth")); return; }
-    addMutation.mutate();
+    addMutation.mutate(
+      { question: newCard.question, answer: newCard.answer, topic: newCard.topic.trim() || null },
+      {
+        onSuccess: () => {
+          setNewCard({ question: "", answer: "", topic: "" });
+          setAddDialogOpen(false);
+          toast.success(t("spaced.toast.cardAdded"));
+        },
+        onError: (err) => toast.error(getApiError(err, i18n.t("learning:spaced.toast.saveCardFailed"))),
+      }
+    );
   };
 
   // Explain the current card (template-based explanation from the server)
-  const explainMutation = useMutation({
-    mutationFn: async (id: string) => (await api.post<{ Explanation: string; Generator: string }>(`/Flashcards/${id}/explain`)).data,
-    onSuccess: (data) => setExplanation(data.Explanation || t("spaced.noExplanation")),
-    onError: (err) => toast.error(getApiError(err, i18n.t("learning:spaced.toast.explainFailed"))),
-  });
+  const explainMutation = useExplainFlashcard();
   const isExplaining = explainMutation.isPending;
-  const explainCard = () => { if (currentCard) explainMutation.mutate(currentCard.id); };
+  const explainCard = () => {
+    if (!currentCard) return;
+    explainMutation.mutate(currentCard.id, {
+      onSuccess: (data) => setExplanation(data.Explanation || t("spaced.noExplanation")),
+      onError: (err) => toast.error(getApiError(err, i18n.t("learning:spaced.toast.explainFailed"))),
+    });
+  };
 
   // Generate cards for a topic (server saves them)
-  const generateMutation = useMutation({
-    mutationFn: async (topic: string) => (await api.post<FlashcardDto[]>("/Flashcards/generate", { Topic: topic, Count: 8 })).data,
-    onSuccess: (created) => {
-      queryClient.invalidateQueries({ queryKey: ["flashcards"] });
-      if (created.length === 0) { toast.info(t("spaced.toast.noneGenerated")); return; }
-      setGenerateTopic("");
-      setGenerateDialogOpen(false);
-      toast.success(t("spaced.toast.generated", { count: created.length }));
-    },
-    onError: (err) => toast.error(getApiError(err, i18n.t("learning:spaced.toast.generateFailed"))),
-  });
+  const generateMutation = useGenerateFlashcards();
   const isGeneratingCards = generateMutation.isPending;
   const generateCards = () => {
     if (!generateTopic.trim()) { toast.error(t("spaced.toast.enterTopic")); return; }
-    generateMutation.mutate(generateTopic.trim());
+    generateMutation.mutate(
+      { topic: generateTopic.trim(), count: 8 },
+      {
+        onSuccess: (created) => {
+          if (created.length === 0) { toast.info(t("spaced.toast.noneGenerated")); return; }
+          setGenerateTopic("");
+          setGenerateDialogOpen(false);
+          toast.success(t("spaced.toast.generated", { count: created.length }));
+        },
+        onError: (err) => toast.error(getApiError(err, i18n.t("learning:spaced.toast.generateFailed"))),
+      }
+    );
   };
 
-  const masteredCards = cards.filter((c) => c.repetitions >= 3);
-  const learningCards = cards.filter((c) => c.repetitions > 0 && c.repetitions < 3);
+  // Mastery is the server-computed IsMastered flag; never recomputed client-side.
+  const masteredCards = cards.filter((c) => c.isMastered);
+  const learningCards = cards.filter((c) => c.repetitions > 0 && !c.isMastered);
   const newCards = cards.filter((c) => c.repetitions === 0);
   const retentionRate = cards.length > 0 ? Math.round((masteredCards.length / cards.length) * 100) : 0;
 
@@ -417,7 +377,7 @@ const SpacedRepetition = () => {
                 )}
                 {cards.map((card) => {
                   const isDue = card.nextReview <= new Date();
-                  const statusColor = card.repetitions >= 3 ? "bg-accent" : card.repetitions > 0 ? "bg-success" : "bg-muted-foreground";
+                  const statusColor = card.isMastered ? "bg-accent" : card.repetitions > 0 ? "bg-success" : "bg-muted-foreground";
                   return (
                     <div key={card.id} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:bg-muted/30 transition-colors group">
                       <span className={cn("w-2 h-2 rounded-full flex-shrink-0", statusColor)} />
@@ -427,7 +387,7 @@ const SpacedRepetition = () => {
                           <Badge variant="outline" className="text-[10px] px-1.5 py-0">{card.topic ?? t("spaced.generalTopic")}</Badge>
                           <MemoryStrengthBadge repetitions={card.repetitions} easeFactor={card.easeFactor} />
                           <span className="text-[10px] text-muted-foreground">
-                            {card.repetitions === 0 ? t("spaced.stats.new") : card.repetitions >= 3 ? t("spaced.stats.mastered") : t("spaced.reviewsCount", { count: card.repetitions })}
+                            {card.repetitions === 0 ? t("spaced.stats.new") : card.isMastered ? t("spaced.stats.mastered") : t("spaced.reviewsCount", { count: card.repetitions })}
                           </span>
                         </div>
                       </div>
@@ -450,11 +410,11 @@ const SpacedRepetition = () => {
             <CardContent className="p-5">
               <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">{t("spaced.tips.title")}</h3>
               <ul className="text-sm text-muted-foreground space-y-1.5">
-                <li>{t("spaced.tips.easy")}</li>
-                <li>{t("spaced.tips.hard")}</li>
-                <li>{t("spaced.tips.generate")}</li>
-                <li>{t("spaced.tips.explain")}</li>
-                <li>{t("spaced.tips.curve")}</li>
+                <li><Trans i18nKey="learning:spaced.tips.easy" components={{ b: <strong className="font-semibold text-foreground" /> }} /></li>
+                <li><Trans i18nKey="learning:spaced.tips.hard" components={{ b: <strong className="font-semibold text-foreground" /> }} /></li>
+                <li><Trans i18nKey="learning:spaced.tips.generate" components={{ b: <strong className="font-semibold text-foreground" /> }} /></li>
+                <li><Trans i18nKey="learning:spaced.tips.explain" components={{ b: <strong className="font-semibold text-foreground" /> }} /></li>
+                <li><Trans i18nKey="learning:spaced.tips.curve" components={{ b: <strong className="font-semibold text-foreground" /> }} /></li>
               </ul>
             </CardContent>
           </Card>

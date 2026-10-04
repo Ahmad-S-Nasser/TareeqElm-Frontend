@@ -2,46 +2,60 @@ import {
     LayoutDashboard,
     Users,
     BookOpen,
-    Settings,
-    LogOut,
     Menu,
     ChevronLeft,
     ChevronRight,
     BarChart2,
     ListChecks,
-    Shield,
+    ShieldCheck,
+    TrendingUp,
+    Tag,
+    Receipt,
+    Ticket,
+    Banknote,
+    Handshake,
+    FileClock,
+    Building,
+    Undo2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PERMISSIONS } from "@/lib/permissions";
+import logo from "@/assets/logo.png";
 
 interface SidebarProps {
     onCollapse?: (collapsed: boolean) => void;
 }
 
-const menuItems = [
+// `permission`: the item is hidden unless the signed-in user holds it (routes still use the base role).
+const menuItems: { icon: typeof Users; labelKey: string; path: string; permission?: string }[] = [
     { icon: LayoutDashboard, labelKey: "dashboard", path: "/admin" },
-    { icon: Users, labelKey: "users", path: "/admin/users" },
+    { icon: Users, labelKey: "users", path: "/admin/users", permission: PERMISSIONS.usersManage },
     { icon: BookOpen, labelKey: "courses", path: "/admin/courses" },
-    { icon: ListChecks, labelKey: "enrollments", path: "/admin/enrollments" },
-    { icon: BarChart2, labelKey: "analytics", path: "/admin/analytics" },
-    { icon: Settings, labelKey: "settings", path: "/admin/settings" },
+    { icon: ListChecks, labelKey: "enrollments", path: "/admin/enrollments", permission: PERMISSIONS.enrollmentsManage },
+    { icon: BarChart2, labelKey: "analytics", path: "/admin/analytics", permission: PERMISSIONS.adminStats },
+    // Mirrors the Organization entry (same icon, same permission): one shared "Catalog & pricing" body, two shells.
+    { icon: Tag, labelKey: "catalogPricing", path: "/admin/catalog", permission: PERMISSIONS.pricingManage },
+    { icon: TrendingUp, labelKey: "revenue", path: "/admin/revenue", permission: PERMISSIONS.revenueView },
+    { icon: Receipt, labelKey: "orders", path: "/admin/orders", permission: PERMISSIONS.ordersManage },
+    { icon: Undo2, labelKey: "refundRequests", path: "/admin/refund-requests", permission: PERMISSIONS.refundRequestsManage },
+    { icon: Ticket, labelKey: "coupons", path: "/admin/coupons", permission: PERMISSIONS.couponsManage },
+    { icon: Banknote, labelKey: "payouts", path: "/admin/payouts", permission: PERMISSIONS.payoutsManage },
+    { icon: Handshake, labelKey: "leads", path: "/admin/leads", permission: PERMISSIONS.leadsManage },
+    { icon: Building, labelKey: "organizations", path: "/admin/organizations", permission: PERMISSIONS.organizationsManage },
+    { icon: ShieldCheck, labelKey: "roles", path: "/admin/roles", permission: PERMISSIONS.rolesManage },
+    { icon: FileClock, labelKey: "audit", path: "/admin/audit", permission: PERMISSIONS.auditView },
 ];
 
 export const AdminSidebarContent = ({ collapsed }: { collapsed: boolean }) => {
     const location = useLocation();
     const { t } = useTranslation("nav");
-    const { signOut } = useAuth();
-    const navigate = useNavigate();
-
-    const handleSignOut = async () => {
-        await signOut();
-        navigate("/auth");
-    };
+    const { can } = usePermissions();
 
     return (
         <div className="flex flex-col h-full bg-card/50 backdrop-blur-xl border-e border-border/50">
@@ -49,18 +63,18 @@ export const AdminSidebarContent = ({ collapsed }: { collapsed: boolean }) => {
                 "p-6 flex items-center gap-3",
                 collapsed ? "justify-center px-2" : ""
             )}>
-                <div className="w-8 h-8 rounded-lg bg-rose-500 flex items-center justify-center shrink-0">
-                    <Shield className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+                    <img src={logo} alt="" className="w-8 h-8 object-contain" />
                 </div>
                 {!collapsed && (
-                    <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-rose-500 to-orange-400">
+                    <span className="font-extrabold text-lg text-black">
                         {t("sidebar.brand.admin")}
                     </span>
                 )}
             </div>
 
             <div className="flex-1 py-6 px-3 space-y-1.5 overflow-y-auto scrollbar-none">
-                {menuItems.map((item) => {
+                {menuItems.filter((item) => !item.permission || can(item.permission)).map((item) => {
                     const Icon = item.icon;
                     const isActive =
                         item.path === "/admin"
@@ -73,11 +87,11 @@ export const AdminSidebarContent = ({ collapsed }: { collapsed: boolean }) => {
                                 variant={isActive ? "secondary" : "ghost"}
                                 className={cn(
                                     "w-full justify-start gap-3 transition-all duration-300",
-                                    isActive && "bg-rose-500/10 text-rose-500 hover:bg-rose-500/20",
+                                    isActive && "bg-warning/10 text-warning hover:bg-warning/20",
                                     collapsed ? "justify-center px-2" : "px-4"
                                 )}
                             >
-                                <Icon className={cn("w-5 h-5", isActive && "text-rose-500")} />
+                                <Icon className={cn("w-5 h-5", isActive && "text-warning")} />
                                 {!collapsed && <span>{t(`sidebar.admin.${item.labelKey}`)}</span>}
                             </Button>
                         </Link>
@@ -86,18 +100,7 @@ export const AdminSidebarContent = ({ collapsed }: { collapsed: boolean }) => {
             </div>
 
             <div className="p-4 border-t border-border/50">
-                <Button
-                    variant="ghost"
-                    className={cn(
-                        "w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10",
-                        collapsed ? "justify-center px-2" : "px-4"
-                    )}
-                    onClick={handleSignOut}
-                >
-                    <LogOut className="w-5 h-5" />
-                    {!collapsed && <span>{t("sidebar.signOut")}</span>}
-                </Button>
-                {!collapsed && <LanguageSwitcher className="mt-3 lg:hidden" />}
+                {!collapsed && <LanguageSwitcher className="lg:hidden" />}
             </div>
         </div>
     );

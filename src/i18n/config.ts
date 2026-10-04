@@ -26,8 +26,12 @@ export const NAMESPACES = [
   'instructor',
   'organization',
   'admin',
+  'rbac',
   'profile',
   'errorBoundary',
+  'notifications',
+  'billing',
+  'certificates',
 ] as const;
 export type AppNamespace = (typeof NAMESPACES)[number];
 

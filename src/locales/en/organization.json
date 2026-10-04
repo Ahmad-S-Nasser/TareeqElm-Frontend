@@ -28,8 +28,8 @@
     "departments": "Departments",
     "avgCompletion": "Avg. completion",
     "activeCourses": "Active courses",
-    "trainers": "Trainers",
-    "totalTrainers": "Total trainers",
+    "trainers": "Trainees",
+    "totalTrainers": "Total trainees",
     "instructors": "Instructors",
     "enrolledAcross": "Enrolled across departments",
     "activeOrgWide": "Active organization-wide",
@@ -41,8 +41,8 @@
     "deptMeta": "{{head}} · {{courses}} · {{trainers}}",
     "coursesCount_one": "{{count}} course",
     "coursesCount_other": "{{count}} courses",
-    "trainersCount_one": "{{count}} trainer",
-    "trainersCount_other": "{{count}} trainers",
+    "trainersCount_one": "{{count}} trainee",
+    "trainersCount_other": "{{count}} trainees",
     "quickInsights": "Quick insights",
     "topDept": "Top performing department",
     "score": "{{value}} score",
@@ -60,12 +60,100 @@
   "enrollment": {
     "title": "Enrollment management",
     "subtitle": "Approve, reject, and track course enrollment requests",
-    "body": "Trainers currently enroll in open courses directly, so there are no enrollment requests to review."
+    "filters": {
+      "search": "Search trainees…",
+      "allCourses": "All courses",
+      "allSections": "All sections",
+      "allDepartments": "All departments",
+      "allStatuses": "All statuses",
+      "departmentAria": "Department"
+    },
+    "status": {
+      "Active": "Active",
+      "Pending": "Pending",
+      "Waitlisted": "Waitlisted",
+      "Dropped": "Dropped",
+      "Rejected": "Rejected"
+    },
+    "table": {
+      "trainer": "Trainee",
+      "course": "Course",
+      "section": "Section",
+      "status": "Status",
+      "progress": "Progress",
+      "enrolledAt": "Enrolled"
+    },
+    "noSection": "—",
+    "loadFailed": "Could not load enrollments.",
+    "empty": "No enrollments match your filters.",
+    "pageInfo": "Page {{page}} of {{pages}} · {{count}} enrollments",
+    "approve": "Approve",
+    "reject": "Reject",
+    "unenroll": "Unenroll",
+    "approved": "Enrollment approved",
+    "approveFailed": "Could not approve the enrollment",
+    "rejected": "Enrollment rejected",
+    "rejectFailed": "Could not reject the enrollment",
+    "unenrolled": "Trainee unenrolled",
+    "unenrollFailed": "Could not unenroll the trainee",
+    "confirmUnenrollTitle": "Unenroll {{name}}?",
+    "confirmUnenrollDescription": "{{name}} will be removed from \"{{course}}\". You can enroll them again later.",
+    "bulk": {
+      "trigger": "Bulk enroll",
+      "title": "Bulk enroll trainees",
+      "description": "Enroll a list of trainees, or every active trainee in a department, into a course.",
+      "course": "Course",
+      "coursePlaceholder": "Select a course",
+      "section": "Section (optional)",
+      "noSectionOption": "No section",
+      "modeTrainers": "Selected trainees",
+      "modeDepartment": "Whole department",
+      "trainersLabel": "Trainees",
+      "trainersSelected": "{{count}} selected",
+      "trainersSearchPlaceholder": "Search trainees…",
+      "noTrainersFound": "No trainees found.",
+      "departmentLabel": "Department",
+      "departmentPlaceholder": "Select a department",
+      "submit": "Enroll",
+      "courseRequired": "Choose a course",
+      "targetsRequired": "Choose at least one trainee, or a department",
+      "resultTitle": "Bulk enroll results",
+      "resultOk": "{{count}} enrolled",
+      "resultWaitlisted": "{{count}} waitlisted",
+      "resultConflict": "{{count}} already enrolled",
+      "resultFull": "{{count}} could not be enrolled",
+      "rowStatus": {
+        "ok": "Enrolled",
+        "waitlisted": "Waitlisted",
+        "conflict": "Already enrolled",
+        "full": "Could not enroll"
+      },
+      "close": "Close",
+      "submitFailed": "Could not bulk enroll the selected trainees"
+    }
   },
   "exams": {
-    "title": "Exams management",
-    "subtitle": "Schedule exams, track grades and pass rates",
-    "body": "Exam scheduling and grading are not part of the platform yet. Quiz results are available to instructors on their own courses."
+    "title": "Exams",
+    "subtitle": "Quiz attempts, averages and pass rates across every course",
+    "filters": {
+      "allCourses": "All courses",
+      "allDepartments": "All departments"
+    },
+    "table": {
+      "exam": "Exam",
+      "course": "Course",
+      "department": "Department",
+      "attempts": "Attempts",
+      "average": "Average",
+      "passRate": "Pass rate"
+    },
+    "questionCount": "{{count}} questions",
+    "noAttempts": "No attempts yet",
+    "viewResults": "View results",
+    "loadFailed": "Could not load exams.",
+    "empty": "No quizzes match your filters.",
+    "resultsTitle": "Trainee results",
+    "resultsLoadFailed": "Could not load the results."
   },
   "roles": {
     "title": "Roles and permissions",
@@ -73,7 +161,7 @@
     "descriptions": {
       "admin": "Full access to all platform features, user management and administrative tools",
       "organization": "Manage departments, terms, sections, announcements and the shared content library",
-      "instructor": "Create and manage courses and quizzes, and track trainer progress",
+      "instructor": "Create and manage courses and quizzes, and track trainee progress",
       "trainer": "Access courses, take quizzes, and track learning progress"
     },
     "customNotAvailable": "Custom roles and per-permission editing are not available yet. Assign roles to users from the admin user management page."
@@ -117,33 +205,169 @@
       "archived": "Archived"
     }
   },
+  "organizationKinds": {
+    "Company": "Company",
+    "Organization": "Organization",
+    "School": "School"
+  },
+  "academicStructure": {
+    "notEnabled": "Academic years and grades are only available for school-type organizations. Ask the platform administrator to change your organization type to School."
+  },
+  "academicYears": {
+    "title": "Academic years",
+    "subtitle": "Plan your school years; terms and grades belong to a year.",
+    "newYear": "New academic year",
+    "createTitle": "Create an academic year",
+    "editTitle": "Edit academic year",
+    "createDescription": "A school year, such as 2026/2027.",
+    "name": "Name",
+    "namePlaceholder": "e.g. 2026/2027",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "statusLabel": "Status",
+    "createYear": "Create year",
+    "saveYear": "Save changes",
+    "created": "Academic year created",
+    "updated": "Academic year updated",
+    "deleted": "Academic year deleted",
+    "saveFailed": "Could not save the academic year",
+    "deleteFailed": "Could not delete the academic year",
+    "missingFields": "Please fill in all required fields",
+    "endBeforeStart": "The end date must be after the start date.",
+    "loadFailed": "Could not load academic years.",
+    "empty": "No academic years yet. Create one to get started.",
+    "confirmDelete": "Delete the academic year \"{{name}}\"?",
+    "dateRange": "{{start}} — {{end}}",
+    "archive": "Archive",
+    "activate": "Activate",
+    "termsCount_one": "{{count}} term",
+    "termsCount_other": "{{count}} terms",
+    "gradesCount_one": "{{count}} grade",
+    "gradesCount_other": "{{count}} grades",
+    "status": {
+      "active": "Active",
+      "upcoming": "Upcoming",
+      "archived": "Archived"
+    },
+    "stats": {
+      "active": "Active years",
+      "upcoming": "Upcoming",
+      "archived": "Archived"
+    }
+  },
+  "grades": {
+    "title": "Grades",
+    "subtitle": "Classes of trainees for each academic year, with a homeroom instructor and a curriculum.",
+    "newGrade": "New grade",
+    "createTitle": "Create a grade",
+    "editTitle": "Edit grade",
+    "createDescription": "A class of trainees within an academic year.",
+    "name": "Name",
+    "namePlaceholder": "e.g. Grade 5 - A",
+    "academicYear": "Academic year",
+    "noYear": "No academic year",
+    "homeroomInstructor": "Homeroom instructor",
+    "noHomeroom": "No homeroom instructor",
+    "homeroom": "Homeroom: {{name}}",
+    "capacity": "Capacity",
+    "members": "Trainees",
+    "curriculum": "Curriculum courses",
+    "noOptions": "Nothing to choose from yet.",
+    "filterByYear": "Filter by academic year",
+    "allYears": "All academic years",
+    "occupancy": "{{members}} / {{capacity}}",
+    "coursesCount_one": "{{count}} course",
+    "coursesCount_other": "{{count}} courses",
+    "createGrade": "Create grade",
+    "saveGrade": "Save changes",
+    "created": "Grade created",
+    "updated": "Grade updated",
+    "deleted": "Grade deleted",
+    "saveFailed": "Could not save the grade",
+    "deleteFailed": "Could not delete the grade",
+    "loadFailed": "Could not load grades.",
+    "empty": "No grades yet. Create one to get started.",
+    "confirmDelete": "Delete the grade \"{{name}}\"?",
+    "nameRequired": "Please enter a name.",
+    "capacityInvalid": "Capacity must be a whole number of at least 1.",
+    "overCapacity": "More trainees are selected than the capacity allows."
+  },
   "analytics": {
     "title": "Analytics and reports",
-    "subtitle": "Insights into organization performance and trainer enrollment.",
+    "subtitle": "Insights into organization performance and trainee enrollment.",
     "loadFailed": "Could not load analytics.",
     "tabs": {
       "enrollment": "Enrollment",
       "academic": "Academic performance",
       "financial": "Financials"
     },
-    "totalTrainers": "Total trainers",
+    "totalTrainers": "Total trainees",
     "activeInstructors": "Active instructors",
     "completionRate": "Course completion rate",
     "trendsNotAvailable": "Enrollment trends over time will appear here once they are tracked.",
-    "trainersByDept": "Trainers by department",
-    "trainersByDeptDesc": "Current trainer count per department.",
-    "trainersSeries": "Trainers",
+    "trainersByDept": "Trainees by department",
+    "trainersByDeptDesc": "Current trainee count per department.",
+    "trainersSeries": "Trainees",
     "noDeptData": "No department data yet.",
     "deptPerformance": "Department performance",
     "deptPerformanceDesc": "Performance score by department.",
     "performanceSeries": "Performance %",
     "coursesByDept": "Courses by department",
     "coursesByDeptDesc": "Share of courses per department.",
-    "financialNotAvailable": "Financial data is not tracked by the platform yet."
+    "financialNotAvailable": "Financial data is not tracked by the platform yet.",
+    "financialNoAccess": "You don't have access to financial data.",
+    "filters": "Financial analytics filters",
+    "comparison": {
+      "title": "Compared with the previous period",
+      "description": "{{from}} – {{to}} against the {{days}} days before it ({{prevFrom}} – {{prevTo}}).",
+      "vsPrevious": "{{value}} vs previous period",
+      "noPrior": "Nothing in the previous period to compare with",
+      "previousValue": "Previous: {{value}}",
+      "up": "Up",
+      "down": "Down",
+      "flat": "No change",
+      "metrics": {
+        "NetRevenue": "Net revenue",
+        "GrossRevenue": "Gross revenue",
+        "PaidOrderCount": "Paid orders",
+        "AverageOrderValue": "Average order value"
+      }
+    },
+    "byDepartment": {
+      "title": "Revenue by department",
+      "description": "What buyers were charged, by the department of the course or track they bought.",
+      "share": "Share of revenue",
+      "shareDesc": "Each department's part of the charged total.",
+      "series": "Charged",
+      "unassigned": "Unassigned",
+      "unknown": "Deleted department",
+      "units": "{{units}} sold",
+      "empty": "No sales in this range yet."
+    },
+    "goal": {
+      "title": "Revenue goal",
+      "description": "Target for {{from}} – {{to}}.",
+      "none": "No target set for this period yet.",
+      "actual": "Actual to date",
+      "target": "Target",
+      "progress": "{{percent}} of target",
+      "onPace": "On pace for {{amount}}",
+      "notStarted": "This period has not started yet.",
+      "days": "Day {{elapsed}} of {{total}}",
+      "linearNote": "A straight-line estimate from the average daily revenue so far, not a forecast.",
+      "targetLabel": "Target amount",
+      "set": "Set target",
+      "update": "Update target",
+      "saved": "Revenue target saved",
+      "saveFailed": "Could not save the revenue target.",
+      "invalidAmount": "Enter a target greater than zero.",
+      "needsRange": "Choose a range longer than one day to set a target.",
+      "loadFailed": "Could not load the revenue goal."
+    }
   },
   "announcements": {
     "title": "Announcements",
-    "subtitle": "Broadcast announcements to trainers, instructors, and departments",
+    "subtitle": "Broadcast announcements to trainees, instructors, and departments",
     "new": "New announcement",
     "createTitle": "Create an announcement",
     "titleLabel": "Title",
@@ -153,14 +377,14 @@
     "audience": "Audience",
     "audiences": {
       "all": "All users",
-      "trainers": "All trainers",
+      "trainers": "All trainees",
       "instructors": "All instructors",
       "department": "A specific department",
       "course": "A specific course"
     },
     "audienceShort": {
       "all": "Everyone",
-      "trainers": "Trainers",
+      "trainers": "Trainees",
       "instructors": "Instructors",
       "department": "Department",
       "course": "Course"
@@ -237,7 +461,7 @@
       "title": "Course title",
       "category": "Category",
       "instructor": "Instructor",
-      "trainers": "Trainers"
+      "trainers": "Trainees"
     },
     "status": {
       "Published": "Published",
@@ -251,12 +475,14 @@
     "viewSyllabus": "View syllabus",
     "syllabus": "Course syllabus",
     "syllabusSubtitle": "{{title}} — {{instructor}}",
-    "enrolledTrainers": "Enrolled trainers",
+    "enrolledTrainers": "Enrolled trainees",
     "outline": "Course outline",
     "noCurriculum": "No curriculum has been added yet.",
     "chapter": "Chapter {{number}}",
     "lessonsCount_one": "{{count}} lesson",
-    "lessonsCount_other": "{{count}} lessons"
+    "lessonsCount_other": "{{count}} lessons",
+    "filterDepartment": "Filter by department",
+    "allDepartments": "All departments"
   },
   "departments": {
     "title": "Departments",
@@ -274,11 +500,151 @@
     "nameRequired": "Department name is required",
     "head": "Head: {{name}}",
     "courses": "Courses",
-    "trainers": "Trainers",
+    "trainers": "Trainees",
     "performance": "Performance score",
     "viewDetails": "View department details",
     "noneFound": "No departments found",
-    "noneHint": "Try adjusting your search or add a new department."
+    "noneHint": "Try adjusting your search or add a new department.",
+    "assign": {
+      "action": "Assign courses & trainees",
+      "actionFor": "Assign courses and trainees to {{name}}",
+      "title": "Assign to {{name}}",
+      "description": "Pick courses and trainees to file under this department. Anything already in another department is moved here.",
+      "courses": "Courses",
+      "trainers": "Trainees",
+      "searchCourses": "Search courses...",
+      "searchTrainers": "Search trainees...",
+      "noCourses": "No courses found.",
+      "noTrainers": "No trainees found.",
+      "alreadyIn": "Already in this department",
+      "currently": "Currently: {{name}}",
+      "submit_one": "Assign {{count}} item",
+      "submit_other": "Assign {{count}} items",
+      "success": "Assigned to {{name}}",
+      "failed": "Could not assign to the department"
+    }
+  },
+  "facilities": {
+    "title": "Facilities",
+    "subtitle": "Manage the buildings and rooms used for offline lesson sessions.",
+    "addBuilding": "Add building",
+    "search": "Search buildings...",
+    "loadFailed": "Could not load facilities.",
+    "actionsMenu": "Building actions",
+    "confirmDeleteBuilding": "Delete {{name}}? Its rooms will be deleted too.",
+    "buildingCreated": "Building created",
+    "buildingCreateFailed": "Could not create the building",
+    "buildingDeleted": "Building deleted",
+    "buildingDeleteFailed": "Could not delete the building",
+    "buildingNameRequired": "Building name is required",
+    "code": "Code: {{code}}",
+    "rooms": "Rooms",
+    "manageRooms": "Manage rooms",
+    "noneFound": "No buildings found",
+    "noneHint": "Try adjusting your search or add a new building.",
+    "addBuildingTitle": "Add a new building",
+    "addBuildingDescription": "Create a building this organization manages.",
+    "buildingName": "Building name",
+    "buildingNamePlaceholder": "e.g. Building A",
+    "buildingCode": "Code",
+    "buildingCodePlaceholder": "e.g. A",
+    "address": "Address",
+    "addressPlaceholder": "e.g. 12 University St.",
+    "roomsOf": "Rooms in {{name}}",
+    "addRoom": "Add room",
+    "roomName": "Room name",
+    "roomNamePlaceholder": "e.g. 3/2",
+    "roomCode": "Code",
+    "capacity": "Capacity",
+    "capacityPlaceholder": "e.g. 30",
+    "roomNameRequired": "Room name is required",
+    "roomCreated": "Room created",
+    "roomCreateFailed": "Could not create the room",
+    "roomDeleted": "Room deleted",
+    "roomDeleteFailed": "Could not delete the room",
+    "loadRoomsFailed": "Could not load rooms.",
+    "noRoomsFound": "No rooms yet",
+    "noRoomsHint": "Add the first room to this building.",
+    "confirmDeleteRoom": "Delete room {{name}}?",
+    "close": "Close"
+  },
+  "sessions": {
+    "title": "Calendar",
+    "subtitle": "Schedule and manage Live-online and Offline lesson sessions.",
+    "newSession": "New session",
+    "editSession": "Edit session",
+    "cancelSession": "Cancel session",
+    "confirmCancelSession": "Cancel this session? Trainees will no longer see it as scheduled.",
+    "created": "Session scheduled",
+    "createFailed": "Could not schedule the session",
+    "updated": "Session updated",
+    "updateFailed": "Could not update the session",
+    "cancelled": "Session cancelled",
+    "cancelFailed": "Could not cancel the session",
+    "loadFailed": "Could not load the calendar.",
+    "noneFound": "No sessions found",
+    "course": "Course",
+    "selectCourse": "Select a course",
+    "lesson": "Lesson",
+    "selectLesson": "Select a lesson",
+    "noSchedulableLessons": "This course has no Live-online or Offline lessons yet. Set a lesson's delivery mode in the curriculum editor first.",
+    "startsAt": "Starts at",
+    "duration": "Duration",
+    "durationMinutes": "Duration (minutes)",
+    "timeZone": "Time zone",
+    "room": "Room",
+    "selectRoom": "Select a room",
+    "locationNotePlaceholder": "Location note (optional)",
+    "meetingProvider": "Meeting provider",
+    "manualLink": "Meeting link",
+    "manualLinkPlaceholder": "https://...",
+    "providerOptions": {
+      "manualLink": "Manual link",
+      "coonMeeting": "Coon Meeting"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "createSession": "Schedule session",
+    "updateSession": "Save changes",
+    "viewAttendance": "Attendance",
+    "calendar": {
+      "today": "Today",
+      "previous": "Back",
+      "next": "Next",
+      "month": "Month",
+      "week": "Week",
+      "day": "Day",
+      "agenda": "Agenda",
+      "date": "Date",
+      "time": "Time",
+      "event": "Session",
+      "noEventsInRange": "No sessions in this range.",
+      "showMore": "+{{count}} more"
+    },
+    "attendance": {
+      "title": "Attendance",
+      "subtitle": "Mark and review who attended this session.",
+      "loadFailed": "Could not load the attendance roster.",
+      "markFailed": "Could not update this trainee's attendance.",
+      "empty": "No trainees are enrolled in this course yet.",
+      "unmarked": "Not marked",
+      "sourceManual": "Manual",
+      "sourceAuto": "Auto",
+      "status": {
+        "present": "Present",
+        "absent": "Absent",
+        "late": "Late",
+        "excused": "Excused"
+      }
+    },
+    "meeting": {
+      "join": "Join",
+      "joinFailed": "Could not join this session right now.",
+      "participant": "Participant"
+    }
   },
   "instructors": {
     "title": "Organization instructors",
@@ -293,20 +659,88 @@
     "profile": "Profile",
     "assigned": "Assigned",
     "noneFound": "No instructors found",
-    "noneHint": "We couldn't find any instructors matching your criteria. Try adjusting your search term."
+    "noneHint": "We couldn't find any instructors matching your criteria. Try adjusting your search term.",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "menu": {
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "statusUpdated": "Status updated",
+      "statusUpdateFailed": "Could not update the status"
+    },
+    "addDialog": {
+      "title": "Add a new instructor",
+      "description": "Create an instructor account for the organization.",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "e.g. Dr. Sara Ahmed",
+      "email": "Email",
+      "emailPlaceholder": "instructor@example.com",
+      "password": "Initial password",
+      "passwordPlaceholder": "At least 8 characters",
+      "department": "Department",
+      "noDepartment": "No department",
+      "submit": "Add instructor",
+      "missingFields": "Please fill in the required fields",
+      "passwordShort": "The password must be at least 8 characters",
+      "created": "Instructor added",
+      "createFailed": "Could not add the instructor"
+    },
+    "profileDialog": {
+      "title": "Instructor profile",
+      "email": "Email",
+      "department": "Department",
+      "status": "Status",
+      "activeCourses": "Active courses"
+    },
+    "assignedDialog": {
+      "title": "Courses taught by {{name}}",
+      "loadFailed": "Could not load the assigned courses.",
+      "empty": "No courses assigned yet."
+    }
   },
   "trainers": {
-    "title": "Organization trainers",
-    "subtitle": "Global trainer registry and organizational performance tracking.",
-    "add": "Enroll new trainer",
+    "title": "Organization trainees",
+    "subtitle": "Global trainee registry and organizational performance tracking.",
+    "add": "Enroll new trainee",
     "search": "Search by name, email or department...",
     "filterYear": "Year",
-    "loadFailed": "Could not load trainers.",
+    "loadFailed": "Could not load trainees.",
     "active": "Active",
     "progress": "Academic progress",
     "viewProfile": "View academic profile",
-    "noneFound": "No trainers found",
-    "noneHint": "We couldn't find any trainers matching your criteria. Try adjusting your search term."
+    "noneFound": "No trainees found",
+    "noneHint": "We couldn't find any trainees matching your criteria. Try adjusting your search term.",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "addDialog": {
+      "title": "Enroll a new trainee",
+      "description": "Create a trainee account for the organization.",
+      "fullName": "Full name",
+      "fullNamePlaceholder": "e.g. Omar Khalid",
+      "email": "Email",
+      "emailPlaceholder": "trainee@example.com",
+      "password": "Initial password",
+      "passwordPlaceholder": "At least 8 characters",
+      "department": "Department",
+      "noDepartment": "No department",
+      "submit": "Enroll trainee",
+      "missingFields": "Please fill in the required fields",
+      "passwordShort": "The password must be at least 8 characters",
+      "created": "Trainee enrolled",
+      "createFailed": "Could not enroll the trainee"
+    },
+    "profileDialog": {
+      "title": "Academic profile of {{name}}",
+      "loadFailed": "Could not load the academic profile.",
+      "empty": "Not enrolled in any course yet.",
+      "course": "Course",
+      "progress": "Progress",
+      "issueCertificate": "Issue academic certificate"
+    }
   },
   "reports": {
     "title": "Reports",
@@ -315,16 +749,16 @@
     "empty": "No department data yet.",
     "deptPerformance": "Department performance",
     "performanceSeries": "Performance %",
-    "trainersByDept": "Trainers by department",
+    "trainersByDept": "Trainees by department",
     "pieLabel": "{{name}}: {{value}}",
     "deptSummary": "Department summary",
-    "trainersCount_one": "{{count}} trainer",
-    "trainersCount_other": "{{count}} trainers",
+    "trainersCount_one": "{{count}} trainee",
+    "trainersCount_other": "{{count}} trainees",
     "performanceLabel": "performance",
     "cards": {
       "trainerPerformance": {
-        "title": "Trainer performance report",
-        "description": "Detailed grade distribution, pass/fail rates, and trainer progress across all courses"
+        "title": "Trainee performance report",
+        "description": "Detailed grade distribution, pass/fail rates, and trainee progress across all courses"
       },
       "courseCompletion": {
         "title": "Course completion statistics",
@@ -336,7 +770,176 @@
       },
       "instructorActivity": {
         "title": "Instructor activity report",
-        "description": "Teaching hours, trainer engagement scores, course ratings, and content uploads"
+        "description": "Sessions taught, attendance rates, content uploads, and active courses and enrollments per instructor"
+      }
+    },
+    "financial": {
+      "noAccess": "You don't have access to financial reports.",
+      "title": "Financial & orders report",
+      "subtitle": "Invoices issued for paid orders, with totals over everything that matches your filters.",
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "statuses": {
+        "Issued": "Issued",
+        "Voided": "Voided"
+      },
+      "provider": "Payment provider",
+      "allProviders": "All providers",
+      "course": "Course",
+      "allCourses": "All courses",
+      "search": "Search",
+      "searchPlaceholder": "Invoice number, buyer or order id…",
+      "summary": {
+        "count": "Invoices",
+        "totalAmount": "Total invoiced",
+        "totalTax": "Total tax",
+        "totalRefunded": "Total refunded",
+        "mixedCurrencies": "Mixed currencies — amounts are summed as plain numbers"
+      },
+      "table": {
+        "number": "Invoice",
+        "buyer": "Buyer",
+        "issuedAt": "Issued",
+        "tax": "Tax",
+        "total": "Total",
+        "refunded": "-{{amount}} refunded",
+        "status": "Status",
+        "currency": "Currency",
+        "orderId": "Order id"
+      },
+      "empty": "No invoices match these filters.",
+      "loadFailed": "Could not load the financial report.",
+      "export": "Export CSV",
+      "exporting": "Exporting…",
+      "exported": "Report exported",
+      "exportFailed": "Export failed",
+      "pageInfo": "Page {{page}} of {{pages}} · {{total}} invoices"
+    },
+    "builder": {
+      "back": "Back to reports",
+      "filters": "Filters",
+      "generate": "Generate report",
+      "regenerate": "Generate again",
+      "results": "Report results",
+      "promptTitle": "Run this report to see results",
+      "promptDescription": "Choose your filters, then click Generate report. Nothing is loaded until you do.",
+      "loading": "Generating report…",
+      "loadFailed": "Could not generate this report.",
+      "empty": "No data matches these filters.",
+      "from": "From",
+      "to": "To",
+      "invalidRange": "The start date must be on or before the end date.",
+      "noAccess": "You don't have access to this report."
+    },
+    "launcher": {
+      "heading": "Available reports",
+      "open": "Open report",
+      "financialOrders": {
+        "title": "Financial & orders report",
+        "description": "Invoices for paid orders by status, dates, payment provider and course, with total and tax summaries and CSV export"
+      }
+    },
+    "departmentAnalytics": {
+      "title": "Department analytics",
+      "subtitle": "Compare departments' performance, courses and trainees over a date range.",
+      "description": "Cross-department performance comparison, trainee distribution, and course counts over any date range",
+      "windowNote": "Performance counts only enrollments made in the selected dates; course and trainee counts are current totals.",
+      "empty": "No department data yet.",
+      "loadFailed": "Could not load department data."
+    },
+    "performanceFilters": {
+      "from": "From",
+      "to": "To",
+      "course": "Course",
+      "allCourses": "All courses",
+      "department": "Department",
+      "allDepartments": "All departments",
+      "invalidRange": "The start date must be on or before the end date."
+    },
+    "traineePerformance": {
+      "title": "Trainee performance",
+      "subtitle": "Grade distribution and pass/fail rates from quiz attempts over a date range.",
+      "noAccess": "You don't have access to this report.",
+      "loadFailed": "Could not generate this report.",
+      "empty": "No quiz attempts match these filters.",
+      "passed": "Passed",
+      "failed": "Failed",
+      "kpis": {
+        "attempts": "Attempts",
+        "passRate": "Pass rate",
+        "averageScore": "Average score"
+      },
+      "distribution": {
+        "title": "Score distribution",
+        "attempts": "attempts"
+      },
+      "buckets": {
+        "0-59": "0-59%",
+        "60-69": "60-69%",
+        "70-79": "70-79%",
+        "80-89": "80-89%",
+        "90-100": "90-100%"
+      },
+      "byCourse": {
+        "title": "By course"
+      },
+      "attempts": {
+        "title": "Attempts"
+      },
+      "table": {
+        "trainee": "Trainee",
+        "course": "Course",
+        "quiz": "Quiz",
+        "score": "Score",
+        "result": "Result",
+        "takenAt": "Taken at"
+      },
+      "pagination": {
+        "pageOf": "Page {{page}} of {{pages}} · {{total}} attempts",
+        "previous": "Previous",
+        "next": "Next"
+      }
+    },
+    "courseCompletion": {
+      "title": "Course completion",
+      "subtitle": "Completion, dropout, and average time-to-complete rates by course over a date range.",
+      "noAccess": "You don't have access to this report.",
+      "loadFailed": "Could not generate this report.",
+      "empty": "No enrollments match these filters.",
+      "kpis": {
+        "enrollments": "Enrollments",
+        "completionRate": "Completion rate",
+        "averageDays": "Avg. days to complete",
+        "dropoutRate": "Dropout rate"
+      },
+      "table": {
+        "course": "Course",
+        "enrollments": "Enrollments",
+        "completed": "Completed",
+        "dropped": "Dropped",
+        "completionRate": "Completion rate",
+        "averageDays": "Avg. days",
+        "dropoutRate": "Dropout rate"
+      },
+      "noCompletions": "No completions yet"
+    },
+    "instructorActivity": {
+      "title": "Instructor activity",
+      "subtitle": "Sessions taught, attendance, content uploads, and current course load for each instructor.",
+      "noAccess": "You don't have access to this report.",
+      "loadFailed": "Could not generate this report.",
+      "empty": "No instructors match these filters.",
+      "instructor": "Instructor",
+      "allInstructors": "All instructors",
+      "windowNote": "Sessions, attendance and uploads count only the selected dates; active courses and enrollments are current totals.",
+      "noAttendance": "No attendance recorded in these dates",
+      "table": {
+        "instructor": "Instructor",
+        "sessionsTaught": "Sessions taught",
+        "attendanceRate": "Attendance rate",
+        "contentUploads": "Content uploads",
+        "activeCourses": "Active courses",
+        "activeEnrollments": "Active enrollments"
       }
     }
   },
@@ -355,42 +958,82 @@
   },
   "settings": {
     "title": "Settings",
-    "subtitle": "Manage organization profile, billing, and system preferences.",
-    "saved": "Settings saved",
-    "savedDescription": "Your organization preferences have been updated.",
-    "saveChanges": "Save changes",
-    "savePreferences": "Save preferences",
+    "subtitle": "Manage the platform profile and your notification preferences.",
     "tabs": {
       "general": "General",
-      "billing": "Billing",
       "notifications": "Notifications"
     },
-    "profile": {
-      "title": "Organization profile",
-      "description": "Update your institution's public information.",
+    "org": {
+      "title": "Organization",
       "name": "Organization name",
-      "domain": "Custom domain",
-      "address": "Address"
+      "namePlaceholder": "Acme Corporation",
+      "logo": "Logo",
+      "uploadLogo": "Upload logo",
+      "logoHint": "PNG, JPG · 512×512 px recommended"
     },
-    "billing": {
-      "title": "Subscription and billing",
-      "description": "Manage your subscription plan and payment methods.",
-      "plan": "Enterprise plan",
-      "renews": "Active • Renews on {{date}}",
-      "manage": "Manage",
-      "paymentMethod": "Payment method",
-      "card": "Visa ending in {{last4}}",
-      "update": "Update"
+    "joinCode": {
+      "title": "Join code",
+      "description": "Share this code with Trainees so they can join your organization immediately at signup, with no approval needed.",
+      "copy": "Copy join code",
+      "regenerate": "Regenerate",
+      "regenerated": "Join code regenerated",
+      "regenerateFailed": "Could not regenerate the join code",
+      "confirmTitle": "Regenerate the join code?",
+      "confirmDescription": "The current code will stop working immediately. Anyone you already shared it with will need the new one.",
+      "confirmCancel": "Cancel",
+      "confirmAction": "Regenerate"
     },
-    "notifications": {
-      "title": "Notification preferences",
-      "description": "Configure how and when you receive alerts.",
-      "systemAlerts": "System alerts",
-      "systemAlertsHint": "Receive emails about critical system updates.",
-      "applications": "New instructor applications",
-      "applicationsHint": "Notify when a new instructor applies.",
-      "approvals": "Course approvals",
-      "approvalsHint": "Notify when courses are submitted for approval."
+    "locale": {
+      "title": "Locale and region",
+      "timezone": "Time zone",
+      "language": "Language"
+    },
+    "languages": {
+      "en": "English",
+      "ar": "Arabic"
+    },
+    "branding": {
+      "title": "Branding",
+      "accent": "Accent color",
+      "customColor": "Custom color",
+      "pickColor": "Choose color {{color}}"
+    },
+    "ai": {
+      "title": "AI and notifications",
+      "enable": "Enable AI assistant",
+      "enableSub": "Allow trainees to use the AI Q&A chat in all courses",
+      "notifyCompletion": "Notify on course completion",
+      "notifyCompletionSub": "Send alerts when trainees complete a course",
+      "notifyAtRisk": "Alert on at-risk trainees",
+      "notifyAtRiskSub": "Flag trainees who have gone quiet for review"
+    },
+    "save": "Save settings",
+    "loadFailed": "Could not load the platform settings.",
+    "toast": {
+      "saved": "Settings saved",
+      "savedDescription": "The platform settings have been updated.",
+      "saveFailed": "Could not save the settings",
+      "logoUploadFailed": "Could not upload the logo"
     }
+  },
+  "pendingMembers": {
+    "title": "Pending Members",
+    "subtitle": "Trainees who asked to join your organization without a join code. Approve to let them log in, or reject to let them try again.",
+    "noAccess": "You don't have access to pending member requests.",
+    "columns": {
+      "name": "Name",
+      "requestedAt": "Requested",
+      "actions": "Actions"
+    },
+    "approve": "Approve",
+    "reject": "Reject",
+    "approved": "{{name}} approved",
+    "approveFailed": "Could not approve this request",
+    "rejected": "{{name}}'s request was rejected",
+    "rejectFailed": "Could not reject this request",
+    "loadFailed": "Could not load pending members.",
+    "empty": "No pending requests.",
+    "confirmRejectTitle": "Reject this request?",
+    "confirmRejectDescription": "{{name}}'s pending account will be deleted. They can register again, e.g. with a join code or a different organization."
   }
 }

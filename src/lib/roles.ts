@@ -31,6 +31,9 @@ const ROLE_LABEL: Readonly<Record<AppRole, string>> = {
 /** Where users without a usable role are sent (never a protected page). */
 export const SIGN_IN_PATH = '/auth';
 
+/** Where RoleGuard sends a signed-in user whose account must change its password before anything else works. */
+export const SET_PASSWORD_PATH = '/auth/set-password';
+
 export const isAppRole = (value: unknown): value is AppRole =>
   typeof value === 'string' && (APP_ROLES as readonly string[]).includes(value);
 

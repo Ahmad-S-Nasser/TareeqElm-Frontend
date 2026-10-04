@@ -6,9 +6,9 @@
   "completed": "Completed",
   "statistics": {
     "title": "Learning statistics",
-    "studyHours": "Total study hours",
+    "studyHours": "Total learning hours",
     "studyHoursValue": "{{value}} h",
-    "streak": "Study streak",
+    "streak": "Learning streak",
     "completedCourses": "Completed courses",
     "quizAverage": "Quiz average",
     "flashcards": "Flashcards",
@@ -36,8 +36,8 @@
         "description": "Complete 10 lessons"
       },
       "studyMarathon": {
-        "name": "Study Marathon",
-        "description": "Study for 50+ hours total"
+        "name": "Learning Marathon",
+        "description": "Learn for 50+ hours total"
       },
       "courseChampion": {
         "name": "Course Champion",
@@ -67,7 +67,7 @@
     },
     "roles": {
       "applicant": "Access courses, flashcards and AI tutoring",
-      "instructor": "Create and manage courses, track trainer progress",
+      "instructor": "Create and manage courses, track trainee progress",
       "organization": "Manage departments, instructors and analytics",
       "organizationLabel": "Organization / Admin"
     },
@@ -79,7 +79,7 @@
         "description": "Get exam-ready with practice tests and AI coaching"
       },
       "consistency": {
-        "label": "Improve study consistency",
+        "label": "Improve learning consistency",
         "description": "Build daily habits and maintain streaks"
       },
       "subjects": {
@@ -95,8 +95,8 @@
       "title": "Your AI experience is ready!",
       "description": "Based on your preferences, we have prepared a personalized learning environment for you.",
       "coach": {
-        "label": "AI study coach",
-        "description": "Get personalized guidance and study strategies"
+        "label": "AI learning coach",
+        "description": "Get personalized guidance and learning strategies"
       },
       "courses": {
         "label": "Suggested courses",
@@ -104,7 +104,7 @@
         "descriptionOther": "Popular courses in your domain"
       },
       "schedule": {
-        "label": "Smart study schedule",
+        "label": "Smart learning schedule",
         "description": "AI-generated time blocks optimized for your peak hours"
       },
       "spaced": {

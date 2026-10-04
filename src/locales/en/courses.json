@@ -17,12 +17,15 @@
     "advanced": "Advanced"
   },
   "category": {
-    "certification": "Certification Prep",
-    "testing-techniques": "Testing Techniques",
-    "automation": "Test Automation",
-    "agile": "Agile & DevOps",
-    "tools": "Tools & Frameworks",
-    "soft-skills": "Soft Skills"
+    "languages": "Languages",
+    "science": "Science",
+    "mathematics": "Mathematics",
+    "technology": "Technology & IT",
+    "business": "Business",
+    "arts-humanities": "Arts & Humanities",
+    "professional-development": "Professional Development",
+    "test-prep": "Test Prep & Certification",
+    "other": "Other"
   },
   "lessonType": {
     "video": "Video",
@@ -30,6 +33,11 @@
     "quiz": "Quiz",
     "exercise": "Exercise",
     "flashcards": "Flashcards"
+  },
+  "deliveryMode": {
+    "preRecorded": "Pre-recorded",
+    "liveOnline": "Live online",
+    "offline": "In-person"
   },
   "chapter": {
     "completed": "Completed"
@@ -59,7 +67,16 @@
     "noneFound": "No courses found",
     "noPublished": "There are no published courses yet. Check back soon.",
     "adjustFilters": "Try adjusting your search or filters",
-    "clearFilters": "Clear all filters"
+    "clearFilters": "Clear all filters",
+    "price": "Price",
+    "priceFilter": {
+      "all": "All prices",
+      "free": "Free only",
+      "paid": "Paid only",
+      "owned": "Purchased"
+    },
+    "department": "Department",
+    "allDepartments": "All departments"
   },
   "catalog": {
     "enrolled": "Enrolled",
@@ -96,7 +113,19 @@
     "updated": "Course Updated",
     "updatedDesc": "Your changes have been saved",
     "deleted": "Course Deleted",
-    "deletedDesc": "The course has been permanently deleted"
+    "deletedDesc": "The course has been permanently deleted",
+    "prerequisitesNotMet": "Prerequisites not completed",
+    "prerequisitesNotMetDesc": "You must complete the prerequisite course(s) before enrolling."
+  },
+  "materials": {
+    "title": "Course materials",
+    "empty": "No materials have been shared yet.",
+    "loadFailed": "Could not load the course materials.",
+    "download": "Download {{name}}",
+    "units": {
+      "KB": "{{value}} KB",
+      "MB": "{{value}} MB"
+    }
   },
   "detail": {
     "loadFailedTitle": "Could not load this course",
@@ -104,8 +133,8 @@
     "notFound": "Course not found",
     "notFoundDesc": "This course doesn't exist or has been removed.",
     "backToCourses": "Back to courses",
-    "trainersCount_one": "{{count}} trainer",
-    "trainersCount_other": "{{count}} trainers",
+    "trainersCount_one": "{{count}} trainee",
+    "trainersCount_other": "{{count}} trainees",
     "yourProgress": "Your progress",
     "lessonsCompleted": "{{done}} of {{total}} lessons completed",
     "chaptersDone": "{{done}} of {{total}} chapters done",
@@ -121,6 +150,18 @@
     "unlockDesc": "Lesson content and videos are available once you are enrolled.",
     "noLessons": "The instructor has not added any lessons yet.",
     "instructor": "Instructor",
-    "courseInstructor": "Course instructor"
+    "courseInstructor": "Course instructor",
+    "buyToStart": "Buy this course to start learning",
+    "buyToUnlockTitle": "Buy this course to unlock it",
+    "buyToUnlockDesc": "Lesson content and videos are available once you own this course. Preview chapters stay free.",
+    "inTrackTitle": "Also part of {{track}}",
+    "inTrackDesc_one": "Buy the whole learning path and get this course plus {{count}} more.",
+    "inTrackDesc_other": "Buy the whole learning path and get this course plus {{count}} more.",
+    "buyTrack": "Buy the path",
+    "whatYouWillLearn": "What you'll learn",
+    "tagsLabel": "Tags",
+    "prerequisites": "Prerequisites",
+    "prerequisitesDesc": "Complete these courses before you can enroll.",
+    "relatedCourses": "Related courses"
   }
 }

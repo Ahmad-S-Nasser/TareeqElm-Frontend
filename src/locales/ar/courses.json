@@ -25,12 +25,15 @@
     "advanced": "متقدّم"
   },
   "category": {
-    "certification": "التحضير للشهادات",
-    "testing-techniques": "تقنيات الاختبار",
-    "automation": "أتمتة الاختبار",
-    "agile": "أجايل وديف أوبس",
-    "tools": "الأدوات والأطر",
-    "soft-skills": "المهارات الشخصية"
+    "languages": "اللغات",
+    "science": "العلوم",
+    "mathematics": "الرياضيات",
+    "technology": "التقنية وتكنولوجيا المعلومات",
+    "business": "الأعمال",
+    "arts-humanities": "الفنون والعلوم الإنسانية",
+    "professional-development": "التطوير المهني",
+    "test-prep": "التحضير للاختبارات والشهادات",
+    "other": "أخرى"
   },
   "lessonType": {
     "video": "فيديو",
@@ -38,6 +41,11 @@
     "quiz": "اختبار",
     "exercise": "تمرين",
     "flashcards": "بطاقات"
+  },
+  "deliveryMode": {
+    "preRecorded": "مسجّل مسبقًا",
+    "liveOnline": "مباشر عبر الإنترنت",
+    "offline": "حضوري"
   },
   "chapter": {
     "completed": "مكتمل"
@@ -67,7 +75,16 @@
     "noneFound": "لم يتم العثور على دورات",
     "noPublished": "لا توجد دورات منشورة بعد. عد قريبًا.",
     "adjustFilters": "جرّب تعديل البحث أو عوامل التصفية",
-    "clearFilters": "مسح كل عوامل التصفية"
+    "clearFilters": "مسح كل عوامل التصفية",
+    "price": "السعر",
+    "priceFilter": {
+      "all": "كل الأسعار",
+      "free": "المجانية فقط",
+      "paid": "المدفوعة فقط",
+      "owned": "التي اشتريتها"
+    },
+    "department": "القسم",
+    "allDepartments": "جميع الأقسام"
   },
   "catalog": {
     "enrolled": "مسجّل",
@@ -104,7 +121,19 @@
     "updated": "تم تحديث الدورة",
     "updatedDesc": "تم حفظ تغييراتك",
     "deleted": "تم حذف الدورة",
-    "deletedDesc": "تم حذف الدورة نهائيًا"
+    "deletedDesc": "تم حذف الدورة نهائيًا",
+    "prerequisitesNotMet": "لم تُكمل المتطلبات المسبقة",
+    "prerequisitesNotMetDesc": "يجب إكمال الدورات المتطلَّبة مسبقًا قبل التسجيل."
+  },
+  "materials": {
+    "title": "مواد الدورة",
+    "empty": "لم تتم مشاركة أي مواد بعد.",
+    "loadFailed": "تعذّر تحميل مواد الدورة.",
+    "download": "تنزيل {{name}}",
+    "units": {
+      "KB": "{{value}} ك.ب",
+      "MB": "{{value}} م.ب"
+    }
   },
   "detail": {
     "loadFailedTitle": "تعذّر تحميل هذه الدورة",
@@ -133,6 +162,22 @@
     "unlockDesc": "يتوفر محتوى الدروس والفيديوهات بعد التسجيل.",
     "noLessons": "لم يضف المدرّس أي دروس بعد.",
     "instructor": "المدرّس",
-    "courseInstructor": "مدرّس الدورة"
+    "courseInstructor": "مدرّس الدورة",
+    "buyToStart": "اشترِ هذه الدورة لتبدأ التعلّم",
+    "buyToUnlockTitle": "اشترِ هذه الدورة لفتحها",
+    "buyToUnlockDesc": "يتوفر محتوى الدروس والفيديوهات بعد شراء الدورة. تبقى فصول المعاينة مجانية.",
+    "inTrackTitle": "متاحة أيضًا ضمن {{track}}",
+    "inTrackDesc_zero": "اشترِ المسار كاملًا للحصول على هذه الدورة.",
+    "inTrackDesc_one": "اشترِ المسار كاملًا للحصول على هذه الدورة ودورة أخرى.",
+    "inTrackDesc_two": "اشترِ المسار كاملًا للحصول على هذه الدورة ودورتين أخريين.",
+    "inTrackDesc_few": "اشترِ المسار كاملًا للحصول على هذه الدورة و{{count}} دورات أخرى.",
+    "inTrackDesc_many": "اشترِ المسار كاملًا للحصول على هذه الدورة و{{count}} دورةً أخرى.",
+    "inTrackDesc_other": "اشترِ المسار كاملًا للحصول على هذه الدورة و{{count}} دورة أخرى.",
+    "buyTrack": "اشترِ المسار",
+    "whatYouWillLearn": "ماذا ستتعلّم",
+    "tagsLabel": "الوسوم",
+    "prerequisites": "المتطلبات المسبقة",
+    "prerequisitesDesc": "أكمل هذه الدورات قبل أن تتمكّن من التسجيل.",
+    "relatedCourses": "دورات ذات صلة"
   }
 }

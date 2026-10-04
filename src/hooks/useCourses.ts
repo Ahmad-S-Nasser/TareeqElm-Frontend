@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import api, { getApiError } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
+import api, { getApiError, getApiErrorCode } from '@/lib/api';
 import i18n from '@/i18n';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
+import type { PricingDto } from './useBilling';
 
 export interface Course {
   Id: string;
@@ -21,6 +23,29 @@ export interface Course {
   EnrolledCount?: number;
   CreatedAt: string;
   UpdatedAt: string;
+  /** `Free | Subscription | AlaCarte`; only `AlaCarte` with a non-free `Pricing` actually costs money. */
+  AccessModel?: string | null;
+  RequiresApproval?: boolean;
+  /** The course price; null on every free course. */
+  Pricing?: PricingDto | null;
+  /** The caller already owns this course (bought it directly, or through a track). */
+  Owned?: boolean;
+  /** At least one chapter of this course is sold separately. */
+  HasChapterPricing?: boolean;
+  /** Free-text catalog tags (the server trims, de-duplicates and caps them at 10 x 30 characters). */
+  Tags?: string[];
+  /** Ordered "what you'll learn" bullets (at most 15 x 200 characters). */
+  Outcomes?: string[];
+  /** Detail only: courses a trainer must complete before self-enrolling (hard gate). */
+  PrerequisiteCourseIds?: string[];
+  /** Detail only: optional "related courses" recommendations (never gate enrollment). */
+  RelatedCourseIds?: string[];
+  /** Detail only: the certificate also needs a pass on `CertificateExamQuizId` (at that quiz's own PassingScore). */
+  CertificateRequiresExam?: boolean;
+  /** Detail only: the course's own quiz whose pass unlocks the certificate. */
+  CertificateExamQuizId?: string | null;
+  /** The department the course is filed under (same organization); null when unassigned. */
+  DepartmentId?: string | null;
 }
 
 export interface Enrollment {
@@ -40,6 +65,19 @@ export interface CourseWithEnrollment extends Course {
   Enrollment?: Enrollment;
   EnrollmentCount?: number;
 }
+
+/** The signed-in instructor's own courses (all statuses), for course pickers (content upload, announcements audience...). */
+export const useMyCoursesQuery = () => {
+  const { user, role } = useAuth();
+  return useQuery({
+    queryKey: ['instructor-courses', user?.Id],
+    queryFn: async () => (await api.get<Course[]>('/Courses/mine')).data,
+    enabled: !!user && (role === 'instructor' || role === 'admin'),
+  });
+};
+
+/** Server error code for a self-enroll refused because a prerequisite course is not completed yet. */
+export const ENROLLMENT_PREREQUISITES_NOT_MET = 'enrollment.prerequisites_not_met';
 
 export const useCourses = () => {
   const [courses, setCourses] = useState<CourseWithEnrollment[]>([]);
@@ -149,6 +187,15 @@ export const useCourses = () => {
             ? i18n.t('courses:toast.alreadyEnrolledIn', { course: courseTitle })
             : i18n.t('courses:toast.alreadyEnrolledDesc'), });
         return { error: null };
+      }
+      // 403 enrollment.prerequisites_not_met: a specific, actionable message instead of the generic failure.
+      if (getApiErrorCode(error) === ENROLLMENT_PREREQUISITES_NOT_MET) {
+        toast({
+          title: i18n.t('courses:toast.prerequisitesNotMet'),
+          description: i18n.t('courses:toast.prerequisitesNotMetDesc'),
+          variant: 'destructive',
+        });
+        return { error: error as Error };
       }
       toast({
         title: i18n.t('courses:toast.enrollFailed'),

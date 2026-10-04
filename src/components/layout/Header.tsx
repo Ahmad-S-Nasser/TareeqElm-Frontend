@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { isAppRole } from "@/lib/roles";
 import { GlobalSearchDialog } from "./GlobalSearchDialog";
+import { NotificationBell } from "./NotificationBell";
 
 interface HeaderProps {
   userName?: string;
@@ -85,16 +86,7 @@ export const Header = ({
         <LanguageSwitcher />
 
         {/* Notifications */}
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={t("nav:header.notifications")}
-          className="relative hover:bg-primary/10 hover:text-primary transition-colors"
-          onClick={() => navigate(userRole === 'Instructor' ? '/instructor/notifications' : userRole === 'Organization' ? '/organization/announcements' : userRole === 'Admin' ? '/admin' : '/notifications')}
-        >
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-2 end-2 w-2 h-2 rounded-full bg-destructive border-2 border-background" />
-        </Button>
+        <NotificationBell />
 
         {/* User Profile Dropdown */}
         <DropdownMenu>

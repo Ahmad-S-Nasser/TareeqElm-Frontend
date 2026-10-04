@@ -65,9 +65,132 @@
       "course_delete": "حذف دورة",
       "course_publish": "نشر دورة",
       "course_archive": "أرشف دورة",
+      "course_status_change": "غيّر حالة دورة",
+      "course_pricing_update": "غيّر سعر دورة",
+      "course_pricing_grandfather": "أبقى وصول المتدرّبين المسجّلين مجانيًا",
+      "chapter_pricing_update": "غيّر سعر فصل",
+      "auth_login_success": "سجّل الدخول",
+      "auth_login_failure": "فشل في تسجيل الدخول",
+      "auth_register": "أنشأ حسابًا",
+      "auth_password_change": "غيّر كلمة المرور",
+      "preferences_update": "حدّث التفضيلات",
+      "role_create": "أنشأ دورًا",
+      "role_update": "حدّث دورًا",
+      "role_delete": "حذف دورًا",
+      "track_create": "أنشأ مسارًا",
+      "track_update": "حدّث مسارًا",
+      "track_delete": "حذف مسارًا",
+      "track_courses_update": "غيّر دورات مسار",
+      "track_pricing_update": "غيّر سعر مسار",
+      "order_create": "أنشأ طلبًا",
+      "order_paid": "أتمّ دفع طلب",
+      "order_mark_paid": "علّم طلبًا كمدفوع",
+      "order_cancel": "ألغى طلبًا",
+      "order_expired": "انتهت صلاحية طلب",
+      "order_reapply": "أعاد تطبيق ما منحه طلب",
+      "order_reconciled": "سوّى طلبًا",
+      "order_refund": "استرد قيمة طلب",
+      "order_refund_access_kept": "استرد قيمة طلب مع الإبقاء على الوصول",
+      "order_refund_failed": "فشل استرداد قيمة طلب",
+      "payment_amount_mismatch": "استلم دفعة بمبلغ غير مطابق",
+      "payment_event_abandoned": "أهمل حدث دفع",
+      "coupon_create": "أنشأ رمز خصم",
+      "coupon_update": "حدّث رمز خصم",
+      "coupon_delete": "حذف رمز خصم",
+      "coupon_deactivate": "عطّل رمز خصم",
+      "entitlement_grant": "منح وصولًا",
+      "entitlement_grant_enroll": "سجّل متدرّبًا بوصول ممنوح",
+      "entitlement_revoke": "سحب وصولًا",
+      "entitlement_revoke_unenroll": "ألغى تسجيل متدرّب بعد سحب الوصول",
+      "payout_create": "أنشأ دفعة",
+      "payout_approve": "اعتمد دفعة",
+      "payout_mark_paid": "علّم دفعة كمدفوعة",
+      "payout_cancel": "ألغى دفعة",
+      "payout_commission": "غيّر عمولة مدرّب",
+      "enrollment_bulk": "سجّل متدرّبين دفعة واحدة",
+      "enrollment_unenroll": "ألغى تسجيل متدرّب",
+      "announcement_create": "نشر إعلانًا",
+      "announcement_update": "حدّث إعلانًا",
+      "announcement_delete": "حذف إعلانًا",
+      "assignment_create": "أنشأ تكليفًا",
+      "assignment_update": "حدّث تكليفًا",
+      "assignment_delete": "حذف تكليفًا",
+      "assignment_grade": "صحّح تسليمًا",
+      "discussion_create": "بدأ نقاشًا",
+      "discussion_update": "حدّث نقاشًا",
+      "discussion_delete": "حذف نقاشًا",
+      "discussion_reply": "ردّ في نقاش",
+      "discussion_reply_delete": "حذف ردًا",
+      "discussion_state": "غيّر حالة نقاش",
+      "deck_create": "أنشأ حزمة بطاقات",
+      "deck_update": "حدّث حزمة بطاقات",
+      "deck_delete": "حذف حزمة بطاقات",
+      "deck_card_create": "أضاف بطاقة",
+      "deck_card_update": "حدّث بطاقة",
+      "deck_card_delete": "حذف بطاقة",
+      "deck_card_import": "استورد بطاقات",
+      "deck_add_to_my_cards": "نسخ حزمة إلى بطاقاته",
+      "content_create": "أضاف عنصر محتوى",
+      "content_delete": "حذف عنصر محتوى",
+      "quiz_delete": "حذف اختبارًا",
+      "section_create": "أنشأ شعبة",
+      "section_update": "حدّث شعبة",
+      "section_delete": "حذف شعبة",
+      "department_create": "أنشأ قسمًا",
+      "department_update": "حدّث قسمًا",
+      "department_delete": "حذف قسمًا",
+      "term_create": "أنشأ فصلًا دراسيًا",
+      "term_update": "حدّث فصلًا دراسيًا",
+      "term_delete": "حذف فصلًا دراسيًا",
+      "lead_status_update": "غيّر حالة عميل محتمل",
+      "settings_update": "غيّر إعدادات المنصّة",
       "unknown": "نفّذ إجراءً"
     },
-    "line": "{{actor}} {{action}} · {{target}}"
+    "line": "{{actor}} {{action}} · {{target}}",
+    "title": "سجلّ التدقيق",
+    "subtitle": "من فعل ماذا، ومتى.",
+    "filters": {
+      "actor": "المنفّذ",
+      "action": "الإجراء",
+      "targetType": "الهدف",
+      "anyAction": "كل الإجراءات",
+      "anyTargetType": "كل الأهداف",
+      "from": "من",
+      "to": "إلى",
+      "clearActor": "إزالة مرشّح المنفّذ",
+      "actorHint": "انقر اسمًا في الجدول لعرض إجراءات هذا الشخص فقط.",
+      "reset": "مسح المرشّحات"
+    },
+    "table": {
+      "when": "الوقت",
+      "actor": "المنفّذ",
+      "action": "الإجراء",
+      "target": "الهدف",
+      "detail": "التفاصيل",
+      "ip": "عنوان IP"
+    },
+    "system": "النظام",
+    "noTarget": "—",
+    "noDetail": "—",
+    "empty": "لا توجد سجلات مطابقة لهذه المرشّحات.",
+    "emptyHint": "جرّب مدى تواريخ أوسع، أو امسح المرشّحات.",
+    "loadFailed": "تعذّر تحميل سجلّ التدقيق.",
+    "pageInfo": "صفحة {{page}} من {{pages}} · {{count}} سجل",
+    "targets": {
+      "User": "مستخدم",
+      "Course": "دورة",
+      "Chapter": "فصل",
+      "Track": "مسار",
+      "Order": "طلب",
+      "Refund": "استرداد",
+      "Coupon": "رمز خصم",
+      "Payout": "دفعة",
+      "Entitlement": "منح وصول",
+      "Enrollment": "تسجيل",
+      "Role": "دور",
+      "Lead": "عميل محتمل",
+      "PlatformSettings": "إعدادات المنصّة"
+    }
   },
   "users": {
     "title": "إدارة المستخدمين",
@@ -82,6 +205,7 @@
     "allRoles": "جميع الأدوار",
     "table": {
       "name": "الاسم",
+      "organization": "المؤسسة",
       "department": "القسم",
       "role": "الدور",
       "status": "الحالة"
@@ -93,6 +217,10 @@
     "loadFailed": "تعذّر تحميل المستخدمين.",
     "empty": "لا يوجد مستخدمون مطابقون لبحثك.",
     "noDepartment": "بدون",
+    "noOrganization": "على مستوى المنصة (مشرف)",
+    "selectOrganization": "اختر مؤسسة",
+    "organizationRequired": "المؤسسة مطلوبة",
+    "organizationRequiredDescription": "اختر مؤسسة لهذا الدور — فقط المشرف يكون على مستوى المنصة بالكامل.",
     "editAria": "تعديل {{name}}",
     "pageInfo_zero": "الصفحة {{page}} من {{pages}} · لا مستخدمين",
     "pageInfo_one": "الصفحة {{page}} من {{pages}} · مستخدم واحد",
@@ -102,16 +230,16 @@
     "pageInfo_other": "الصفحة {{page}} من {{pages}} · {{count}} مستخدم",
     "add_dialog": {
       "title": "إضافة مستخدم جديد",
-      "description": "أنشئ حسابًا وعيّن كلمة مرور مبدئية."
+      "description": "أنشئ حسابًا — سيتم توليد كلمة مرور له تلقائيًا."
     },
     "fields": {
       "fullName": "الاسم الكامل",
       "fullNamePlaceholder": "سارة أحمد",
       "email": "البريد الإلكتروني",
       "emailPlaceholder": "name@example.com",
-      "initialPassword": "كلمة المرور المبدئية",
-      "passwordPlaceholder": "8 أحرف على الأقل",
+      "passwordGeneratedNote": "سيتم توليد كلمة مرور تلقائيًا. ستظهر لك مرة واحدة بعد إنشاء الحساب — وسيُطلب من المستخدم الجديد تعيين كلمة مروره الخاصة عند أول تسجيل دخول.",
       "role": "الدور",
+      "organization": "المؤسسة",
       "department": "القسم",
       "status": "الحالة",
       "resetPassword": "إعادة تعيين كلمة المرور (اختياري)",
@@ -122,9 +250,16 @@
       "selfNote": "لا يمكنك تغيير دورك أو تعطيل حسابك بنفسك.",
       "saveChanges": "حفظ التغييرات"
     },
+    "passwordReveal": {
+      "title": "تم إنشاء الحساب",
+      "description": "هذه كلمة مرور {{name}} المبدئية — لن تظهر مرة أخرى. شاركها معه؛ سيُطلب منه تعيين كلمة مروره الخاصة عند أول تسجيل دخول.",
+      "copy": "نسخ كلمة المرور",
+      "warning": "تأكّد من نسخ كلمة المرور أو مشاركتها الآن.",
+      "done": "تم"
+    },
     "toast": {
       "created": "تم إنشاء المستخدم",
-      "createdDescription": "يمكن لـ {{name}} تسجيل الدخول الآن بكلمة المرور التي عيّنتها.",
+      "createdDescription": "تم إنشاء حساب {{name}}.",
       "createFailed": "تعذّر إنشاء المستخدم",
       "updated": "تم تحديث {{name}}",
       "updateFailed": "تعذّر تحديث المستخدم",
@@ -136,24 +271,18 @@
   },
   "enrollments": {
     "title": "إدارة التسجيلات",
-    "subtitle": "عدد المسجّلين في كل دورة. يسجّل المتدرّبون أنفسهم في الدورات المنشورة.",
-    "coursesCount": "الدورات",
+    "subtitle": "أدر تسجيلات المتدرّبين والموافقات وقوائم الانتظار في جميع الدورات.",
+    "coursesCount": "الدورات المنشورة",
     "totalEnrollments": "إجمالي التسجيلات",
-    "searchPlaceholder": "ابحث في الدورات أو المدرّسين…",
-    "loadFailed": "تعذّر تحميل الدورات.",
-    "empty": "لم يتم العثور على دورات.",
-    "enrolled_zero": "لا مسجّلين",
-    "enrolled_one": "مسجّل واحد",
-    "enrolled_two": "مسجّلان",
-    "enrolled_few": "{{count}} مسجّلين",
-    "enrolled_many": "{{count}} مسجّلًا",
-    "enrolled_other": "{{count}} مسجّل",
-    "note": "التسجيل المباشر وإعدادات التسجيل المفتوح غير متاحة بعد.",
-    "status": {
-      "Draft": "مسوّدة",
-      "Published": "منشورة",
-      "Archived": "مؤرشفة",
-      "unknown": "غير معروفة"
+    "searchPlaceholder": "ابحث عن متدرّب…",
+    "allCourses": "جميع الدورات",
+    "allStatuses": "جميع الحالات",
+    "loadFailed": "تعذّر تحميل التسجيلات.",
+    "empty": "لا توجد تسجيلات مطابقة لعوامل التصفية.",
+    "pageInfo": "الصفحة {{page}} من {{pages}} · {{count}} تسجيل",
+    "tabs": {
+      "enrollments": "التسجيلات",
+      "access": "الوصول"
     }
   },
   "courses": {
@@ -244,76 +373,35 @@
   },
   "analytics": {
     "title": "التحليلات والرؤى",
-    "subtitle": "اتجاهات الأداء وفجوات المهارات وبيانات القرار",
-    "export": "تصدير التقرير",
-    "vsLastMonth": "{{value}} مقارنة بالشهر الماضي",
+    "subtitle": "إحصاءات على مستوى المؤسسة والمتدرّبون الذين يحتاجون إلى متابعة.",
+    "export": "تصدير قائمة المعرّضين للخطر",
+    "loadFailed": "تعذّر تحميل التحليلات.",
     "kpi": {
+      "totalTrainers": "إجمالي المتدرّبين",
+      "activeInstructors": "المدرّسون النشطون",
       "completion": "معدل الإكمال في المؤسسة",
-      "score": "متوسط درجات التقييم",
-      "improvement": "التحسّن بين الاختبار القبلي والبعدي",
-      "atRisk": "الموظفون المعرّضون للخطر"
-    },
-    "topics": {
-      "title": "اتجاهات صعوبة المواضيع",
-      "avg": "المتوسط {{value}}",
-      "struggling": "{{value}} يواجهون صعوبة"
-    },
-    "departments": {
-      "title": "مقارنة الأقسام",
-      "atRisk": "{{count}} معرّضون للخطر",
-      "doneScore": "اكتمل {{completion}} · الدرجة {{score}}"
+      "atRisk": "المتدرّبون المعرّضون للخطر"
     },
     "flagged": {
-      "title": "موظفون تم رصد ضعف أدائهم",
-      "employee": "الموظف",
+      "title": "متدرّبون معرّضون للخطر",
+      "subtitle": "مسجّلون ولم يكملوا الدورة، وغير نشطين منذ فترة.",
+      "trainer": "المتدرّب",
       "course": "الدورة",
-      "score": "الدرجة",
-      "completion": "الإكمال",
-      "action": "الإجراء",
-      "followUp": "متابعة"
+      "department": "القسم",
+      "daysInactive": "أيام عدم النشاط",
+      "progress": "التقدّم",
+      "empty": "لا يوجد متدرّبون معرّضون للخطر حاليًا."
     },
     "toast": {
       "exported": "تم تصدير التقرير",
-      "exportedDescription": "تم تنزيل {{file}}.",
-      "sessionPlanned": "تم تحديد جلسة",
-      "sessionPlannedDescription": "تم جدولة جلسة متابعة لـ {{name}}."
+      "exportedDescription": "تم تنزيل {{file}}."
     },
     "csv": {
+      "trainer": "المتدرّب",
+      "course": "الدورة",
       "department": "القسم",
-      "completion": "الإكمال %",
-      "avgScore": "متوسط الدرجات",
-      "employees": "الموظفون",
-      "atRisk": "المعرّضون للخطر"
-    },
-    "seed": {
-      "topics": {
-        "1": "React Hooks",
-        "2": "هياكل بيانات بايثون",
-        "3": "حل النزاعات",
-        "4": "الجداول المحورية في إكسل",
-        "5": "بروتوكولات الأمان"
-      },
-      "departments": {
-        "Engineering": "الهندسة",
-        "Finance": "المالية",
-        "Operations": "العمليات",
-        "DesignAndProduct": "التصميم والمنتجات",
-        "SalesAndMarketing": "المبيعات والتسويق",
-        "All": "الجميع",
-        "Analytics": "التحليلات",
-        "IT": "تقنية المعلومات",
-        "Sales": "المبيعات"
-      },
-      "people": {
-        "1": "توم تشين",
-        "2": "كارلوس ريفيرا",
-        "3": "أليس ميرسر"
-      },
-      "courses": {
-        "1": "أساسيات React",
-        "2": "أساسيات القيادة",
-        "3": "إكسل وتحليل البيانات"
-      }
+      "daysInactive": "أيام عدم النشاط",
+      "progress": "التقدّم %"
     }
   },
   "settings": {
@@ -334,10 +422,7 @@
     },
     "languages": {
       "en": "الإنجليزية",
-      "ar": "العربية",
-      "fr": "الفرنسية",
-      "de": "الألمانية",
-      "es": "الإسبانية"
+      "ar": "العربية"
     },
     "branding": {
       "title": "الهوية البصرية",
@@ -355,11 +440,125 @@
       "notifyAtRiskSub": "رصد الموظفين الذين تقل درجاتهم عن 50% للمراجعة"
     },
     "save": "حفظ الإعدادات",
+    "loadFailed": "تعذّر تحميل إعدادات المنصة.",
     "toast": {
       "saved": "تم حفظ الإعدادات",
-      "savedDescription": "تم تحديث إعدادات مؤسستك.",
-      "logo": "رفع الشعار",
-      "logoDescription": "رفع الشعار سيتوفر قريبًا."
+      "savedDescription": "تم تحديث إعدادات المنصة.",
+      "saveFailed": "تعذّر حفظ الإعدادات",
+      "logoUploadFailed": "تعذّر رفع الشعار"
+    }
+  },
+  "leads": {
+    "title": "العملاء المحتملون",
+    "subtitle": "طلبات التعاون الواردة من نموذج «انضم إلينا» في الموقع.",
+    "searchPlaceholder": "ابحث بالشركة أو جهة الاتصال أو البريد الإلكتروني…",
+    "filters": {
+      "anyStatus": "كل الحالات",
+      "anyOrganizationType": "كل أنواع المؤسسات",
+      "from": "من",
+      "to": "إلى",
+      "reset": "إزالة عوامل التصفية"
+    },
+    "table": {
+      "company": "الشركة",
+      "contact": "جهة الاتصال",
+      "email": "البريد الإلكتروني",
+      "organizationType": "نوع المؤسسة",
+      "status": "الحالة",
+      "source": "صفحة المصدر",
+      "submitted": "تاريخ الإرسال"
+    },
+    "status": {
+      "New": "جديد",
+      "Contacted": "تم التواصل",
+      "Qualified": "مؤهَّل",
+      "Closed": "مغلق"
+    },
+    "organizationType": {
+      "Enterprise": "شركة كبرى",
+      "University": "جامعة",
+      "School": "مدرسة",
+      "Sme": "شركة صغيرة أو متوسطة",
+      "Other": "أخرى"
+    },
+    "fields": {
+      "phone": "رقم الهاتف",
+      "estimatedLearners": "عدد المتدربين التقريبي",
+      "message": "الرسالة",
+      "status": "الحالة",
+      "statusNote": "ملاحظة على الحالة",
+      "statusNoteHint": "تُحفظ مع العميل المحتمل كملاحظة داخلية — لا يراها الزائر إطلاقًا.",
+      "updatedAt": "آخر تحديث"
+    },
+    "detail": {
+      "description": "كل ما أرسله الزائر، وموضع المحادثة الحالي.",
+      "updateStatus": "تحديث الحالة",
+      "saving": "جارٍ الحفظ…",
+      "saved": "تم تحديث حالة العميل المحتمل.",
+      "saveFailed": "تعذّر تحديث حالة العميل المحتمل.",
+      "loadFailed": "تعذّر تحميل بيانات هذا العميل المحتمل."
+    },
+    "openDetails": "عرض تفاصيل {{company}}",
+    "notProvided": "غير مذكور",
+    "noMessage": "لم يترك الزائر رسالة.",
+    "loading": "جارٍ تحميل العملاء المحتملين…",
+    "loadFailed": "تعذّر تحميل العملاء المحتملين.",
+    "empty": "لا يوجد عملاء محتملون مطابقون لعوامل التصفية.",
+    "emptyHint": "جرّب نطاقًا زمنيًا أوسع، أو أزل عوامل التصفية.",
+    "forbidden": "لا تملك صلاحية الاطّلاع على العملاء المحتملين.",
+    "pageInfo": "الصفحة {{page}} من {{pages}} · {{count}} عميل محتمل"
+  },
+  "organizations": {
+    "title": "المؤسسات",
+    "subtitle": "أنشئ المؤسسات على المنصة وعدّلها وعلّقها.",
+    "add": "مؤسسة جديدة",
+    "search": "البحث في المؤسسات",
+    "loadFailed": "تعذّر تحميل المؤسسات.",
+    "empty": "لم يتم العثور على مؤسسات.",
+    "legacy": "قديمة",
+    "activeToggle": "نشطة: {{name}}",
+    "editOrg": "تعديل {{name}}",
+    "createTitle": "إنشاء مؤسسة",
+    "editTitle": "تعديل المؤسسة",
+    "formDescription": "يحدد نوع المؤسسة الميزات المتاحة لها: المدرسة وحدها يمكنها إدارة السنوات الدراسية والصفوف.",
+    "create": "إنشاء المؤسسة",
+    "save": "حفظ التغييرات",
+    "created": "تم إنشاء المؤسسة",
+    "updated": "تم تحديث المؤسسة",
+    "activated": "تمت إعادة تفعيل المؤسسة",
+    "suspended": "تم تعليق المؤسسة",
+    "saveFailed": "تعذّر حفظ المؤسسة",
+    "activeFailed": "تعذّر تغيير حالة المؤسسة",
+    "nameRequired": "يجب أن يتكون الاسم من حرفين على الأقل.",
+    "traineeCapInvalid": "يجب أن يكون الحد الأقصى للمتدربين رقمًا صحيحًا 0 أو أكثر.",
+    "uncapped": "بلا حد",
+    "columns": {
+      "name": "الاسم",
+      "kind": "النوع",
+      "seatCap": "الحد الأقصى للمقاعد",
+      "contactEmail": "بريد التواصل",
+      "created": "تاريخ الإنشاء",
+      "active": "نشطة",
+      "actions": "الإجراءات"
+    },
+    "form": {
+      "kind": "نوع المؤسسة",
+      "kindHint": "نوع المدرسة يفعّل السنوات الدراسية والصفوف.",
+      "name": "الاسم",
+      "slug": "المعرّف المختصر",
+      "logoUrl": "رابط الشعار",
+      "contactEmail": "بريد التواصل",
+      "isActive": "نشطة",
+      "seatCapTitle": "تجاوز الحد الأقصى للمتدربين",
+      "seatCapHint": "مستقل عن أي باقة اشترتها هذه المؤسسة — يُحدَّد مباشرة من أجل اتفاق خاص. اترك الحقل فارغًا لعدم إجراء أي تغيير (لا يمكن إعادته إلى بلا حد من هنا).",
+      "traineeCap": "الحد الأقصى للمتدربين",
+      "traineeCapPlaceholder": "بلا حد",
+      "packageTier": "اسم الباقة"
+    },
+    "kinds": {
+      "Company": "شركة",
+      "Organization": "مؤسسة",
+      "School": "مدرسة"
     }
   },
   "statistics": {
